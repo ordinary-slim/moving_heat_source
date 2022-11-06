@@ -36,7 +36,9 @@ class Mesh {
       Line l;
       l.pos[0] = pos[ con[ielem][0] ];
       l.pos[1] = pos[ con[ielem][1] ];
-      l.setGposClosed();
+      l.vol = pos[ con[ielem][1] ] - pos[ con[ielem][0] ];
+      l.con = con[ielem];
+      l.setClosedIntegration();
       return l;
     }
 

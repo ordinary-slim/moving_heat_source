@@ -1,6 +1,7 @@
 #ifndef ELEMENT
 #include <iostream>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 class Element {
@@ -8,20 +9,19 @@ class Element {
     int nnodes;
     vector<double> rpos, rgpos;
     vector<double> pos, gpos;
-    vector<vector<double>> baseFunGpValues;
+    vector<int> con;
     double vol;
+    vector<vector<double>> baseFunGpVals;
 
-    void setGposClosed(){
-      baseFunGpValues.reserve( nnodes );
+    void setClosedIntegration(){
       gpos.reserve( nnodes );
+      baseFunGpVals.resize( nnodes );
       // gauss point positions
       for (int inode = 0; inode < nnodes; inode++) {
         gpos[inode] = pos[inode];
-        baseFunGpValues[inode].reserve( nnodes );
-        for (int igp = 0; igp < nnodes; igp++) {
-          baseFunGpValues[inode][igp] = 0.0;
-          if ( inode==igp ) { baseFunGpValues[inode][igp] = 1.0; };
-        }
+        baseFunGpVals[inode].resize( nnodes );
+        fill( baseFunGpVals[inode].begin(), baseFunGpVals[inode].end(), 0.0);
+        baseFunGpVals[inode][inode] = 1.0;
       }
     }
 
@@ -30,12 +30,6 @@ class Element {
         cout << pos[i] << ", ";
       }
       cout << endl;
-      // values base func at gp
-      for (int inode=0; inode < nnodes; inode++) {
-        for (int igp = 0; igp < nnodes; igp++) {
-          printf("(%d, %d) ---- %.2f\n", inode, igp, baseFunGpValues[inode][igp]);
-        }
-      }
     }
 };
 #define ELEMENT
