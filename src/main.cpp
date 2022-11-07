@@ -7,6 +7,10 @@
 #include <Eigen/Sparse>
 using namespace std;
 
+//plotting
+#include <matplotlib-cpp/matplotlibcpp.h>
+namespace plt = matplotlibcpp;
+
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
@@ -14,25 +18,26 @@ void compute_pulse(Eigen::VectorXd &pulse, double x0, double radius, double P, M
 
 int main() {
   // params
-  double L=20.0, radius=2.0, P=100.0;
-  double x0 = 0.0, v=10, t=0.0, Tfinal=10.0;
+  double L=10.0, radius=2.0, P=100.0;
+  double x0 = 0.0, speed=10, t=0.0, Tfinal=10.0;
   double rho = 4000, k = 40, c_p = 10;
   // numerical params
   double dt;
   double CFL;
   double m_ij, k_ij, ip;
-  int nels;
+  int nels = 100;
   int iter=0, maxIter=100;
 
-  nels = 4;
   Mesh mesh;
   mesh.initialize1DMesh( 0.0, L, nels);
 
   // set timestep
-  CFL = 1.0;
-  dt = CFL * (L / nels) / v;
-  cout << dt << endl;
-
+  /*
+  CFL = 5.0;
+  dt = CFL * (L / nels) / speed;
+  */
+  dt = 0.05;
+  maxIter = L / (speed*dt) + 5;
 
   // Assembly
   SpMat M(mesh.nnodes, mesh.nnodes); // mass mat
@@ -72,18 +77,34 @@ int main() {
           }
         }
       }
+    M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
+    K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
+
     //update laser position
-    x0 = t * v;
+    x0 = t * speed;
     //load vector computation/assembly
     pulse.setZero();
     compute_pulse(pulse, x0, radius, P, mesh);
-    cout << "pulse= " << pulse << endl;
+
+    //solve
+    
+    //update plot
+    //convert from Eigen::Vector to std::vector
+    vector<double> vpulse( pulse.data(), pulse.data() + pulse.size());
+    plt::clf();
+    cout << "current positoin:" << x0 << endl;
+    plt::plot( std::vector<double>({x0}), std::vector<double>({0.0}),
+        {{"marker", "x"}, {"color", "red"}, {"markersize", "20"}});
+    //plt::plot( mesh.pos, vpulse );
+    plt::xlim( 0.0, L );
+    double maxPower = max( maxPower, *max_element( pulse.begin(), pulse.end() ) );
+    //plt::ylim( 0.0, 1.1*maxPower );
+
+    plt::pause( 0.04 );
 
     ++iter;
     t += dt;
   }
 
-  M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
-  K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
 
 }
