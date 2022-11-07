@@ -8,7 +8,7 @@ OBJS=$(SRCS:%=$(OBJDIR)/%.o)
 DEPS=$(OBJS:%.o=%.d)
 
 CFLAGS=-I$(INCLUDE_PATH) -M -MMD -MP
-LFLAGS=-lpython3.8;#matplotlib
+LFLAGS=-lpython3.8#matplotlib
 
 .PHONY: default debug clean run
 

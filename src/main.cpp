@@ -10,10 +10,13 @@ using namespace std;
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
+void compute_pulse(Eigen::VectorXd &pulse, double x0, double radius, double P, Mesh &m);
+
 int main() {
   // params
-  double L=20.0, R;
+  double L=20.0, radius=2.0, P=100.0;
   double x0 = 0.0, v=10, t=0.0, Tfinal=10.0;
+  double rho = 4000, k = 40, c_p = 10;
   // numerical params
   double dt;
   double CFL;
@@ -38,32 +41,44 @@ int main() {
   SpMat K(mesh.nnodes, mesh.nnodes); // stiffness mat
   vector<T> K_coeffs;
   K_coeffs.reserve( 3*mesh.nnodes );
-  Eigen::VectorXd r( mesh.nnodes ); // source term
+  Eigen::VectorXd pulse( mesh.nnodes ); // source term
 
   Line l;
 
   while ((t < Tfinal)&&(iter < maxIter)) {
+      // matrices assembly
+      M.setZero();
+      K.setZero();
       for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
         l = mesh.getElement( ielem );
         for (int inode = 0; inode < l.nnodes; inode++) {
           for (int jnode = 0; jnode < l.nnodes; jnode++) {
+            m_ij = 0;
+            k_ij = 0;
             for (int igp = 0; igp < l.nnodes; igp++) {
               // mass matrix
-              m_ij = 0;
               m_ij += l.gpweight[igp] * l.baseFunGpVals[inode][igp]*l.baseFunGpVals[jnode][igp]*l.vol;
-              M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
               // stiffness matrix
-              k_ij = 0;
               ip = inner_product(l.baseFunGradGpVals[inode][igp].begin(),
                     l.baseFunGradGpVals[inode][igp].end(),
                     l.baseFunGradGpVals[jnode][igp].begin(),
                     0.0);
               k_ij += l.gpweight[igp] * ip * l.vol;
-              K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
             }
+            m_ij *= rho*c_p;
+            k_ij *= k;
+            M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
+            K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
           }
         }
       }
+    //update laser position
+    x0 = t * v;
+    //load vector computation/assembly
+    pulse.setZero();
+    compute_pulse(pulse, x0, radius, P, mesh);
+    cout << "pulse= " << pulse << endl;
+
     ++iter;
     t += dt;
   }
