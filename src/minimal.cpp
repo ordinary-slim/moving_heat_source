@@ -1,10 +1,9 @@
 #include <matplotlib-cpp/matplotlibcpp.h>
+#include <cmath>
 
 namespace plt = matplotlibcpp;
 
 int main() {
-    std::cout << "do i get here?" << std::endl;
-    // Prepare data.
     int n = 5000;
     std::vector<double> x(n), y(n), z(n), w(n,2);
     for(int i=0; i<n; ++i) {
@@ -12,12 +11,8 @@ int main() {
         y.at(i) = sin(2*M_PI*i/360.0);
         z.at(i) = log(i);
     }
-    std::cout << "do i get here?" << std::endl;
 
-    /*
-    // Set the size of output image to 1200x780 pixels
-    plt::figure_size(800, 600);
-    // Plot line from given x and y data. Color is selected automatically.
+    plt::figure_size( 1200, 900 );
     plt::plot(x, y);
     // Plot a red dashed line from given x and y data.
     plt::plot(x, w,"r--");
@@ -30,9 +25,5 @@ int main() {
     // Enable legend.
     plt::legend();
     // Save the image (file format is determined by the extension)
-    //plt::show();
-    //plt::save("./basic.png");
-    plt::detail::_interpreter::kill();
-    return 0;
-    */
+    plt::show();
 }
