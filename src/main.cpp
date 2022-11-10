@@ -84,7 +84,7 @@ int main() {
               k_ij += l.gpweight[igp] * ip * l.vol;
             }
             m_ij *= rho*c_p;
-            //k_ij *= k;
+            k_ij *= k;
             M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
             K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
           }
