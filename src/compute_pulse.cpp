@@ -25,7 +25,7 @@ void compute_pulse(Eigen::VectorXd &r, double x0, double radius, double P, Mesh 
         x_gp = l.gpos[ igp ];
         r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * power_density( x0, x_gp, radius, P);
       }
-      r[inode] += r_i;
+      r[l.con[inode]] += r_i;
     }
   }
 }

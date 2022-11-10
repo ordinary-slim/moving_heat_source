@@ -16,6 +16,7 @@ class Mesh {
       nnodes = nels + 1;
       double L = (B - A);
       double h = L / nels;
+      cout << "h = " << h << endl;
 
       con.resize( nels );
       pos.resize( nnodes );
