@@ -23,7 +23,7 @@ int main() {
   // params
   double L=10.0, radius=2.0, P=1000000.0;
   double x0 = L/2.0, speed=10, t=0.0, Tfinal=10.0;
-  double rho = 4000, k = 1000000, c_p = 10;
+  double rho = 4000, k = 200, c_p = 10;
   double cteInitialCondition = 25;
   // numerical params
   double dt;
@@ -137,6 +137,7 @@ int main() {
       plt::xlim( 0.0, L );
       plt::ylim( -1.0, 50.0 );
 
+      plt::annotate("t = " + to_string( t ), 0.05, 0.95);
       plt::legend();
       plt::pause( 0.16 );
       plt::save("iter" + to_string(iter) + ".png", 300 );
