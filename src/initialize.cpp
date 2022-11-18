@@ -23,10 +23,10 @@ void Problem::initialize(map<string,double> &input) {
 
   // initialize solution and increment
   double environmentTemperature = input["environmentTemperature"];
-  solution = Eigen::VectorXd::Zero( mesh.nnodes );
+  solution = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
   deltaSolution = Eigen::VectorXd::Zero( mesh.nnodes );
   // gaussian IC
-  mhs.computePulse( solution, time, mesh );
+  //mhs.computePulse( solution, time, mesh );
 
   // dirichlet BC
   vector<int> freeNodes(mesh.nnodes);

@@ -17,6 +17,7 @@ class Problem {
     string timeIntegration;
     double time = 0.0;
     double dt;
+    int iter;
 
     void initialize(map<string,double> &input);
     void iterate();

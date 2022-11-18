@@ -82,25 +82,22 @@ void Problem::iterate() {
 
   if (timeIntegration == "ForwardEuler") {
     solver.compute(M);//overkill
-    Eigen::VectorXd diffusion = K*solution;
     mhs.computePulse(pulse, time, mesh);
-    Eigen::VectorXd rhs = pulse - diffusion;
+    Eigen::VectorXd rhs = pulse - K*solution;;
     deltaSolution = dt * solver.solve(rhs);
-
     solution += deltaSolution;
   } else if (timeIntegration == "BackwardEuler") {
     solver.compute(M + dt * K);
-    Eigen::VectorXd diffusion = K*solution;
+    mhs.computePulse(pulse, time+dt, mesh);
     Eigen::VectorXd rhs = M * solution + dt * pulse; 
-    deltaSolution = dt * solver.solve(rhs);
-
-    solution += deltaSolution;
+    solution = solver.solve(rhs);
   } else {
     std::cout << "Check time integration string" << std::endl;
     std::exit(1);
   }
 
   time += dt;
+  ++iter;
 /*
 if (plot_source) {
   //convert from Eigen::Vector to std::vector

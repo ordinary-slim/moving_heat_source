@@ -4,41 +4,63 @@ sys.path.insert(1, '..')
 import MovingHeatSource as mhs
 from readInput import *
 import matplotlib.pyplot as plt
+import numpy as np
 
 class plotter:
-    def __init__(self):
-        self.Tmin = 1
-        self.Tmax = -1
+    def __init__(self, m):
+        self.left = min(m.pos)
+        self.right = max(m.pos)
+        self.Tmin = -1
+        self.Tmax = 1
+        self.range = 0
+        self.figCleared = False
 
-    def plot_problem( self, p ):
-        plt.clf();
-        plt.plot( p.mesh.pos, p.solution, color="red", label="sol");
-        plt.xlim( 0.0, 10 );
+    def clf(self, mesh):
+        plt.clf()
+        self.figCleared = True
+        plt.plot(mesh.pos, np.zeros( len(mesh.pos) ), '-o')
+
+    def plotProblem( self, p, label="solution" ):
+        plt.plot( p.mesh.pos, p.solution, label=label );
+        plt.xlim( self.left, self.right );
         #get max min temperatures
         Tmin = min( p.solution )
         Tmax = max( p.solution )
         if (self.Tmin > Tmin or self.Tmax < Tmax):
             self.Tmin = Tmin
             self.Tmax = Tmax
-        plt.ylim( self.Tmin, self.Tmax )
+            self.range = self.Tmax - self.Tmin
+        plt.ylim( self.Tmin - self.range*0.1, self.Tmax + self.range*0.1)
 
         plt.annotate("time = " + str(round(p.time, 2)), (0.05, 0.95));
         plt.legend();
-        plt.pause( 0.05 );
 
 if __name__=="__main__":
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
-    p = mhs.Problem()
-    p.initialize( d )
+    dFE = dict(d)
+    dBE = dict(d)
+    dFE["timeIntegration"] = 0
+    dBE["timeIntegration"] = 1
+    pFE = mhs.Problem()
+    pFE.initialize( dFE )
+    pBE = mhs.Problem()
+    pBE.initialize( dBE )
 
-    nsteps=100
+    nsteps=int(d["maxIter"])
 
     #show IC
-    plotHandler = plotter()
-    plotHandler.plot_problem( p )
+    plotHandler = plotter(pFE.mesh)
+    plt.figure(dpi=200)
+    plotHandler.plotProblem( pFE, label="FE" )
+    plotHandler.plotProblem( pBE, label="BE" )
+    plt.pause( 0.25 );
     #tstepping
     for istep in range(nsteps):
-        p.iterate()
-        plotHandler.plot_problem( p )
+        pFE.iterate()
+        pBE.iterate()
+        plotHandler.clf( pFE.mesh )
+        plotHandler.plotProblem( pFE, label="FE" )
+        plotHandler.plotProblem( pBE, label="BE" )
+        plt.pause( 0.25 );
