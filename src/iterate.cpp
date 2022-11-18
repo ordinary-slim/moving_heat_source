@@ -17,23 +17,9 @@ namespace py = pybind11;
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
-double power_density( double x0, double x, double radius, double P );
-void compute_pulse(Eigen::VectorXd &pulse, double x0, double radius, double P, Mesh &m);
-
 void Problem::iterate() {
-  // params
-  double radius=2.0, P=1000000.0;
-  double x0 = 5.0, speed=10, Tfinal=10.0;
   // numerical params
-  double CFL;
   double m_ij, k_ij, ip;
-
-  // set timestep
-  /*
-  CFL = 5.0;
-  dt = CFL * (L / nels) / speed;
-  */
-  //maxIter = L / (speed*dt) + 5;
 
   // initialize data structures
   SpMat M(mesh.nnodes, mesh.nnodes); // mass mat
@@ -48,6 +34,9 @@ void Problem::iterate() {
   // matrices assembly
   M.setZero();
   K.setZero();
+
+  vector<int> boundaryNodes;
+
   for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
     l = mesh.getElement( ielem );
     for (int inode = 0; inode < l.nnodes; inode++) {
@@ -66,6 +55,13 @@ void Problem::iterate() {
         }
         m_ij *= material["rho"]*material["cp"];
         k_ij *= material["k"];
+
+        // lookup i or j belong to fixed nodes
+        //
+        // if belong
+        // send it to rhs multiplying dirichlet
+
+
         M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
         K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
       }
@@ -74,18 +70,37 @@ void Problem::iterate() {
   M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
   K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
 
-  //load vector computation/assembly
-  pulse.setZero();
-  compute_pulse(pulse, x0, radius, P, mesh);
+
+  //slice
+  //node 0 and node nnodes-1 are dirichlet nodes at IC
 
   //solve
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  solver.compute(M);//overkill
-  Eigen::VectorXd rhs = pulse + K * solution;
-  deltaSolution = dt * solver.solve(rhs);
 
-  solution += deltaSolution;
+  //load vector computation/assembly inside of time integration
+  pulse.setZero();
 
+  if (timeIntegration == "ForwardEuler") {
+    solver.compute(M);//overkill
+    Eigen::VectorXd diffusion = K*solution;
+    mhs.computePulse(pulse, time, mesh);
+    Eigen::VectorXd rhs = pulse - diffusion;
+    deltaSolution = dt * solver.solve(rhs);
+
+    solution += deltaSolution;
+  } else if (timeIntegration == "BackwardEuler") {
+    solver.compute(M + dt * K);
+    Eigen::VectorXd diffusion = K*solution;
+    Eigen::VectorXd rhs = M * solution + dt * pulse; 
+    deltaSolution = dt * solver.solve(rhs);
+
+    solution += deltaSolution;
+  } else {
+    std::cout << "Check time integration string" << std::endl;
+    std::exit(1);
+  }
+
+  time += dt;
 /*
 if (plot_source) {
   //convert from Eigen::Vector to std::vector
@@ -126,9 +141,6 @@ if (plot_solution) {
 }
 */
 
-  time += dt;
-  //update laser position
-  x0 = x0 + dt * speed;
 }
 
 PYBIND11_MODULE(MovingHeatSource, m) {
@@ -138,8 +150,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("iterate", &Problem::iterate)
         .def_readonly("solution", &Problem::solution)
         .def_readonly("mesh", &Problem::mesh)
-        .def_readonly("dt", &Problem::time)
-        .def_readonly("time", &Problem::dt);
+        .def_readonly("time", &Problem::time)
+        .def_readonly("dt", &Problem::dt);
     py::class_<Mesh>(m, "Mesh")
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)

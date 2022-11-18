@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include "mesh.h"
+#include "heatSource.h"
 #include <Eigen/Core>
 
 using namespace std;
@@ -9,14 +10,15 @@ using namespace std;
 class Problem {
   public:
     Mesh mesh;
-    Mesh fineMesh;
+    HeatSource mhs;
     Eigen::VectorXd solution;
     Eigen::VectorXd deltaSolution;
     map<string,float> material;
-    float time = 0.0;
-    float dt;
+    string timeIntegration;
+    double time = 0.0;
+    double dt;
 
-    void initialize(map<string,float> &input);
+    void initialize(map<string,double> &input);
     void iterate();
     };
 #define PROBLEM
