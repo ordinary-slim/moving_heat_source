@@ -24,7 +24,6 @@ void Problem::initialize(map<string,double> &input) {
   // initialize solution and increment
   double environmentTemperature = input["environmentTemperature"];
   solution = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
-  deltaSolution = Eigen::VectorXd::Zero( mesh.nnodes );
   // gaussian IC
   //mhs.computePulse( solution, time, mesh );
 
@@ -37,10 +36,16 @@ void Problem::initialize(map<string,double> &input) {
   material["k"] = input["conductivity"];
   material["cp"] = input["specific_heat"];
 
-  if (input["timeIntegration"] == 0) {
-    timeIntegration = "ForwardEuler";
-  } else if (input["timeIntegration"] == 1) {
-    timeIntegration = "BackwardEuler";
+  if (input["timeIntegration"] == 0) {//ForwardEuler
+    desiredIntegrator = 0;
+    nstepsRequired = 2;
+  } else if (input["timeIntegration"] == 1) {//BDF1
+    desiredIntegrator = 1;
+    nstepsRequired = 2;
+  } else if (input["timeIntegration"] == 2) {//BDF2
+    desiredIntegrator = 2;
+    nstepsRequired = 3;
   }
-  // initial condition
+  // allocate storage for previous solutions
+  prevSolutions = Eigen::MatrixXd::Zero( mesh.nnodes, nstepsRequired );
 }

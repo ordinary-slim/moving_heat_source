@@ -11,35 +11,20 @@ class Problem {
   public:
     Mesh mesh;
     HeatSource mhs;
-    Eigen::VectorXd solution;
-    Eigen::VectorXd deltaSolution;
     map<string,float> material;
-    string timeIntegration;
+    Eigen::VectorXd solution;
+    Eigen::MatrixXd prevSolutions;
     double time = 0.0;
     double dt;
     int iter;
+
+    int currentIntegrator = 1;
+    int desiredIntegrator = 1;
+    int nstepsRequired = 1;
+    int nstepsStored   = 1;
 
     void initialize(map<string,double> &input);
     void iterate();
     };
 #define PROBLEM
 #endif
-/*
-maxIter		100
-L		10.0
-radius		2.0
-P		1000000.0
-x0		5.0
-speed		10
-t		0.0
-Tfinal		10.0
-rho		4000
-k		200
-c_p		10
-initialTemperature		25
-dt		0.1
-nels		100
-iter		0
-maxIter		100
-plot    True
-*/

@@ -80,63 +80,73 @@ void Problem::iterate() {
   //load vector computation/assembly inside of time integration
   pulse.setZero();
 
-  if (timeIntegration == "ForwardEuler") {
-    solver.compute(M);//overkill
-    mhs.computePulse(pulse, time, mesh);
-    Eigen::VectorXd rhs = pulse - K*solution;;
-    deltaSolution = dt * solver.solve(rhs);
-    solution += deltaSolution;
-  } else if (timeIntegration == "BackwardEuler") {
-    solver.compute(M + dt * K);
-    mhs.computePulse(pulse, time+dt, mesh);
-    Eigen::VectorXd rhs = M * solution + dt * pulse; 
-    solution = solver.solve(rhs);
+  if (nstepsRequired < nstepsStored ) {
+    currentIntegrator = 1;
   } else {
-    std::cout << "Check time integration string" << std::endl;
-    std::exit(1);
+    currentIntegrator = desiredIntegrator;
   }
 
+  Eigen::VectorXd rhs = Eigen::VectorXd::Zero( mesh.nnodes );
+  SpMat lhs( mesh.nnodes, mesh.nnodes );
+
+  switch (currentIntegrator) {
+    case 0:
+      {//Forward Euler
+       //Special treatment explicit scheme
+       //Undo computations for implicit scheme business
+        lhs.setZero();
+        rhs.setZero();
+        lhs += M;
+        mhs.computePulse(pulse, time, mesh);
+        rhs += pulse - K*solution;
+        solver.compute(lhs);//overkill
+        solution += dt * solver.solve(rhs);
+        break;
+      }
+    case 1:
+      {//BE
+        mhs.computePulse(pulse, time+dt, mesh);
+        double lhsCoeff = 1;
+        double rhsCoeff = 1;
+        lhs += K;
+        lhs += (lhsCoeff / dt) * M;
+        rhs += pulse;
+        rhs += (rhsCoeff / dt) * M * solution;
+        solver.compute( lhs );
+        solution = solver.solve(rhs);
+        break;
+      }
+    case 2:
+      {//BDF2
+        solver.compute(M + dt * K);
+        mhs.computePulse(pulse, time+dt, mesh);
+        Eigen::VectorXd rhs = M * solution + dt * pulse; 
+        solution = solver.solve(rhs);
+        break;
+      }
+    default:
+      {
+        std::cout << "Check time integration string" << std::endl;
+        std::exit(1);
+      }
+  }
+
+  // End iteration operations
+  // Overwrite last column of prevSolutions
+  prevSolutions.col( prevSolutions.cols()-1 ) << solution;
+  // Permutate N-1, 0, ..., N-2
+  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(nstepsRequired);
+  Eigen::VectorXi indices(nstepsRequired);
+  for (int i = 0; i < indices.size(); i++) {
+    indices[i] = i-1;
+  }
+  indices[0] = indices.size() -  1 ;
+  perm.indices() = indices;
+  prevSolutions = prevSolutions * perm;
+
+  ++nstepsStored;
   time += dt;
   ++iter;
-/*
-if (plot_source) {
-  //convert from Eigen::Vector to std::vector
-  vector<double> vpulse( pulse.data(), pulse.data() + pulse.size());
-
-  // get power density
-  vector<double> pd( fineMesh.pos.size() );
-  transform( fineMesh.pos.begin(), fineMesh.pos.end(), pd.begin(),
-      [&x0, &radius, &P](double x) { return power_density( x0, x, radius, P ); } );
-
-  plt::clf();
-  plt::plot( std::vector<double>({x0}), std::vector<double>({0.0}),
-      {{"linestyle", "none"}, {"marker", "X"}, {"color", "red"}, {"markersize", "20"}, {"label", "x0"}});
-  plt::plot( mesh.pos, vpulse, {{"marker", "o"}, {"color", "red"}, {"label", "Pi"}} );
-  plt::plot( fineMesh.pos, pd, {{"linestyle", "--"}, {"color", "blue"}, {"label", "f"}} );
-  plt::xlim( 0.0, L );
-  double maxPower = max( maxPower, *max_element( pulse.begin(), pulse.end() ) );
-  //plt::ylim( 0.0, 1.1*maxPower );
-
-  plt::legend();
-  plt::pause( 0.04 );
-  plt::save( "tmp.png", 300 );
-}
-if (plot_solution) {
-  vector<double> vsolution( solution.data(), solution.data() + solution.size());
-
-  plt::clf();
-  plt::plot( std::vector<double>({x0}), std::vector<double>({0.0}),
-      {{"linestyle", "none"}, {"marker", "X"}, {"color", "red"}, {"markersize", "20"}, {"label", "x0"}});
-  plt::plot( mesh.pos, vsolution, {{"color", "red"}, {"label", "sol"}});
-  plt::xlim( 0.0, L );
-  plt::ylim( -1.0, 50.0 );
-
-  plt::annotate("t = " + to_string( time ), 0.05, 0.95);
-  plt::legend();
-  plt::pause( 0.16 );
-  plt::save("iter" + to_string(iter) + ".png", 300 );
-}
-*/
 
 }
 
