@@ -57,7 +57,7 @@ if __name__=="__main__":
     #show IC
     plotHandler = plotter(pFE.mesh)
     plt.figure(dpi=200)
-    plotHandler.plotProblem( pFE, label="FE" )
+    #plotHandler.plotProblem( pFE, label="FE" )
     plotHandler.plotProblem( pBE, label="BE" )
     plotHandler.plotProblem( pBE, label="BDFS2" )
     plt.pause( 0.25 );
@@ -67,7 +67,7 @@ if __name__=="__main__":
         pBE.iterate()
         pBDFS2.iterate()
         plotHandler.clf( pFE.mesh )
-        plotHandler.plotProblem( pFE, label="FE" )
+        #plotHandler.plotProblem( pFE, label="FE" )
         plotHandler.plotProblem( pBE, label="BE" )
         plotHandler.plotProblem( pBDFS2, label="BDFS2" )
         plt.pause( 0.25 );

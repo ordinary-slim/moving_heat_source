@@ -157,6 +157,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         .def(py::init<>())
         .def("initialize", &Problem::initialize)
+        .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("iterate", &Problem::iterate)
         .def_readonly("solution", &Problem::solution)
         .def_readonly("mesh", &Problem::mesh)

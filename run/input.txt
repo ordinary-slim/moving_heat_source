@@ -2,7 +2,7 @@
 Left 0.0
 Right 100.0
 radius		2.0
-power		1000.0
+power		2000.0
 initialPositionX		40.0
 initialPositionY		0.0
 initialPositionZ		0.0
@@ -10,7 +10,7 @@ speedX		10
 speedY		0
 speedZ		0
 dt	0.05
-nels		50
+nels		5
 t		0.0
 Tfinal		20.0
 maxIter		20
@@ -19,4 +19,4 @@ conductivity		10
 specific_heat		1.0
 environmentTemperature		25
 plot 1
-timeIntegration 0
+timeIntegration 1

@@ -24,6 +24,7 @@ class Problem {
     int nstepsStored   = 0;
 
     void initialize(map<string,double> &input);
+    void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     };
 #define PROBLEM
