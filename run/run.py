@@ -41,12 +41,16 @@ if __name__=="__main__":
     d = parseInput( d )
     dFE = dict(d)
     dBE = dict(d)
+    dBDFS2 = dict(d)
     dFE["timeIntegration"] = 0
     dBE["timeIntegration"] = 1
+    dBDFS2["timeIntegration"] = 2
     pFE = mhs.Problem()
     pFE.initialize( dFE )
     pBE = mhs.Problem()
     pBE.initialize( dBE )
+    pBDFS2 = mhs.Problem()
+    pBDFS2.initialize( dBDFS2 )
 
     nsteps=int(d["maxIter"])
 
@@ -55,12 +59,15 @@ if __name__=="__main__":
     plt.figure(dpi=200)
     plotHandler.plotProblem( pFE, label="FE" )
     plotHandler.plotProblem( pBE, label="BE" )
+    plotHandler.plotProblem( pBE, label="BDFS2" )
     plt.pause( 0.25 );
     #tstepping
     for istep in range(nsteps):
         pFE.iterate()
         pBE.iterate()
+        pBDFS2.iterate()
         plotHandler.clf( pFE.mesh )
         plotHandler.plotProblem( pFE, label="FE" )
         plotHandler.plotProblem( pBE, label="BE" )
+        plotHandler.plotProblem( pBDFS2, label="BDFS2" )
         plt.pause( 0.25 );

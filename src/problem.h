@@ -21,7 +21,7 @@ class Problem {
     int currentIntegrator = 1;
     int desiredIntegrator = 1;
     int nstepsRequired = 1;
-    int nstepsStored   = 1;
+    int nstepsStored   = 0;
 
     void initialize(map<string,double> &input);
     void iterate();

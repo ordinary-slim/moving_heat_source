@@ -38,14 +38,16 @@ void Problem::initialize(map<string,double> &input) {
 
   if (input["timeIntegration"] == 0) {//ForwardEuler
     desiredIntegrator = 0;
-    nstepsRequired = 2;
+    nstepsRequired = 1;
   } else if (input["timeIntegration"] == 1) {//BDF1
     desiredIntegrator = 1;
-    nstepsRequired = 2;
+    nstepsRequired = 1;
   } else if (input["timeIntegration"] == 2) {//BDF2
     desiredIntegrator = 2;
-    nstepsRequired = 3;
+    nstepsRequired = 2;
   }
   // allocate storage for previous solutions
   prevSolutions = Eigen::MatrixXd::Zero( mesh.nnodes, nstepsRequired );
+  prevSolutions.col( 0 ) << solution;
+  ++nstepsStored;
 }

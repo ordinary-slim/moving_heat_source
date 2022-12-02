@@ -70,25 +70,24 @@ void Problem::iterate() {
   M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
   K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
 
-
-  //slice
-  //node 0 and node nnodes-1 are dirichlet nodes at IC
-
-  //solve
+  //SOLVE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 
-  //load vector computation/assembly inside of time integration
-  pulse.setZero();
-
-  if (nstepsRequired < nstepsStored ) {
+  if (nstepsStored < nstepsRequired ) {
     currentIntegrator = 1;
   } else {
     currentIntegrator = desiredIntegrator;
   }
 
+  //load vector computation/assembly inside of time integration
+  pulse.setZero();
+
   Eigen::VectorXd rhs = Eigen::VectorXd::Zero( mesh.nnodes );
   SpMat lhs( mesh.nnodes, mesh.nnodes );
-
+  // general treatment implicit schemes
+  mhs.computePulse(pulse, time+dt, mesh);
+  lhs += K;
+  rhs += pulse;
   switch (currentIntegrator) {
     case 0:
       {//Forward Euler
@@ -96,6 +95,7 @@ void Problem::iterate() {
        //Undo computations for implicit scheme business
         lhs.setZero();
         rhs.setZero();
+        pulse.setZero();
         lhs += M;
         mhs.computePulse(pulse, time, mesh);
         rhs += pulse - K*solution;
@@ -105,22 +105,25 @@ void Problem::iterate() {
       }
     case 1:
       {//BE
-        mhs.computePulse(pulse, time+dt, mesh);
         double lhsCoeff = 1;
-        double rhsCoeff = 1;
-        lhs += K;
-        lhs += (lhsCoeff / dt) * M;
-        rhs += pulse;
-        rhs += (rhsCoeff / dt) * M * solution;
+        Eigen::VectorXd rhsCoeff(1);
+        rhsCoeff << 1;
+
+        lhs += lhsCoeff * M / dt;
+        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, rhsCoeff.size() - 1)) * rhsCoeff) / dt;
         solver.compute( lhs );
         solution = solver.solve(rhs);
         break;
       }
     case 2:
-      {//BDF2
-        solver.compute(M + dt * K);
-        mhs.computePulse(pulse, time+dt, mesh);
-        Eigen::VectorXd rhs = M * solution + dt * pulse; 
+      {//BDFS2
+        double lhsCoeff = 1.5;
+        Eigen::VectorXd rhsCoeff(2);
+        rhsCoeff << 2, -0.5;
+
+        lhs += lhsCoeff * M / dt;
+        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, rhsCoeff.size() - 1)) * rhsCoeff) / dt;
+        solver.compute( lhs );
         solution = solver.solve(rhs);
         break;
       }
@@ -162,5 +165,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Mesh>(m, "Mesh")
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)
+        .def_readonly("nels", &Mesh::nels)
         .def("initialize1DMesh", &Mesh::initialize1DMesh);
 }
