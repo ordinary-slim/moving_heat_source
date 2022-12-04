@@ -74,7 +74,15 @@ void Problem::iterate() {
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 
   if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
-    timeIntegrator.setCoeffs( 1 );
+    if (timeIntegrator.nstepsStored >= 4) {
+      timeIntegrator.setCoeffs( 4 );
+    } else if (timeIntegrator.nstepsStored >= 3) {
+      timeIntegrator.setCoeffs( 3 );
+    } else if (timeIntegrator.nstepsStored >= 2) {
+      timeIntegrator.setCoeffs( 2 );
+    } else {
+      timeIntegrator.setCoeffs( 1 );
+    }
   } else {
     timeIntegrator.setCoeffs( timeIntegrator.desiredIntegrator );
   }
@@ -109,7 +117,9 @@ void Problem::iterate() {
 
         lhs += timeIntegrator.lhsCoeff * M / dt;
         rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
-        cout << "timeIntegrator.rhsCoeff" << timeIntegrator.rhsCoeff << endl;
+        cout << "storedSteps=" << timeIntegrator.nstepsStored << endl;
+        cout << "desiredIntegrator=" << timeIntegrator.desiredIntegrator << endl;
+        cout << "timeIntegrator.rhsCoeff" << timeIntegrator.rhsCoeff << endl << endl;
         solver.compute( lhs );
         solution = solver.solve(rhs);
         break;

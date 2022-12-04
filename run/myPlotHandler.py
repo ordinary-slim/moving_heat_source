@@ -2,13 +2,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class myPlotHandler:
-    def __init__(self, m, Tmin=-1, Tmax=+1):
+    def __init__(self, m, Tmin=-1, Tmax=+1, 
+            pauseTime=0.25):
         self.left = min(m.pos)
         self.right = max(m.pos)
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.range = abs(self.Tmax - self.Tmin)
         self.figCleared = False
+        self.pauseTime = pauseTime
 
     def clf(self, mesh):
         plt.clf()
