@@ -3,7 +3,9 @@
 #include <string>
 #include "mesh.h"
 #include "heatSource.h"
+#include "timeIntegrator.h"
 #include <Eigen/Core>
+
 
 using namespace std;
 
@@ -18,10 +20,8 @@ class Problem {
     double dt;
     int iter;
 
-    int currentIntegrator = 1;
-    int desiredIntegrator = 1;
-    int nstepsRequired = 1;
-    int nstepsStored   = 0;
+    // integrator
+    TimeIntegratorHandler timeIntegrator;
 
     void initialize(map<string,double> &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);

@@ -73,10 +73,10 @@ void Problem::iterate() {
   //SOLVE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 
-  if (nstepsStored < nstepsRequired ) {
-    currentIntegrator = 1;
+  if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
+    timeIntegrator.setCoeffs( 1 );
   } else {
-    currentIntegrator = desiredIntegrator;
+    timeIntegrator.setCoeffs( timeIntegrator.desiredIntegrator );
   }
 
   //load vector computation/assembly inside of time integration
@@ -88,7 +88,7 @@ void Problem::iterate() {
   mhs.computePulse(pulse, time+dt, mesh);
   lhs += K;
   rhs += pulse;
-  switch (currentIntegrator) {
+  switch (timeIntegrator.currentIntegrator) {
     case 0:
       {//Forward Euler
        //Special treatment explicit scheme
@@ -103,34 +103,16 @@ void Problem::iterate() {
         solution += dt * solver.solve(rhs);
         break;
       }
-    case 1:
-      {//BE
-        double lhsCoeff = 1;
-        Eigen::VectorXd rhsCoeff(1);
-        rhsCoeff << 1;
-
-        lhs += lhsCoeff * M / dt;
-        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, rhsCoeff.size() - 1)) * rhsCoeff) / dt;
-        solver.compute( lhs );
-        solution = solver.solve(rhs);
-        break;
-      }
-    case 2:
-      {//BDFS2
-        double lhsCoeff = 1.5;
-        Eigen::VectorXd rhsCoeff(2);
-        rhsCoeff << 2, -0.5;
-
-        lhs += lhsCoeff * M / dt;
-        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, rhsCoeff.size() - 1)) * rhsCoeff) / dt;
-        solver.compute( lhs );
-        solution = solver.solve(rhs);
-        break;
-      }
     default:
-      {
-        std::cout << "Check time integration string" << std::endl;
-        std::exit(1);
+      {//Implicit scheme
+       //Generalized treatment
+
+        lhs += timeIntegrator.lhsCoeff * M / dt;
+        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
+        cout << "timeIntegrator.rhsCoeff" << timeIntegrator.rhsCoeff << endl;
+        solver.compute( lhs );
+        solution = solver.solve(rhs);
+        break;
       }
   }
 
@@ -138,8 +120,8 @@ void Problem::iterate() {
   // Overwrite last column of prevSolutions
   prevSolutions.col( prevSolutions.cols()-1 ) << solution;
   // Permutate N-1, 0, ..., N-2
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(nstepsRequired);
-  Eigen::VectorXi indices(nstepsRequired);
+  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(timeIntegrator.nstepsRequired);
+  Eigen::VectorXi indices(timeIntegrator.nstepsRequired);
   for (int i = 0; i < indices.size(); i++) {
     indices[i] = i-1;
   }
@@ -147,7 +129,7 @@ void Problem::iterate() {
   perm.indices() = indices;
   prevSolutions = prevSolutions * perm;
 
-  ++nstepsStored;
+  ++timeIntegrator.nstepsStored;
   time += dt;
   ++iter;
 
@@ -159,7 +141,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("initialize", &Problem::initialize)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("iterate", &Problem::iterate)
-        .def_readonly("solution", &Problem::solution)
+        .def_readwrite("solution", &Problem::solution)
+        .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
         .def_readonly("time", &Problem::time)
         .def_readonly("dt", &Problem::dt);
@@ -168,4 +151,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("pos", &Mesh::pos)
         .def_readonly("nels", &Mesh::nels)
         .def("initialize1DMesh", &Mesh::initialize1DMesh);
+    py::class_<HeatSource>(m, "HeatSource")
+        .def(py::init<>())
+        .def_readonly("currentPosition", &HeatSource::currentPosition);
 }

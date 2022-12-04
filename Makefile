@@ -20,7 +20,7 @@ debug: LFLAGS += -g
 debug: $(MODULE)
 
 run:
-	cd run && python3 readWriteSolution.py
+	cd run && python3 run.py
 
 $(MODULE): $(OBJS)
 	$(CXX) $(LFLAGS) -o $@ $^

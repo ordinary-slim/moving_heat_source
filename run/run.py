@@ -4,36 +4,9 @@ sys.path.insert(1, '..')
 import MovingHeatSource as mhs
 from readInput import *
 import matplotlib.pyplot as plt
-import numpy as np
+from myPlotHandler import myPlotHandler
 
-class plotter:
-    def __init__(self, m):
-        self.left = min(m.pos)
-        self.right = max(m.pos)
-        self.Tmin = -1
-        self.Tmax = 1
-        self.range = 0
-        self.figCleared = False
-
-    def clf(self, mesh):
-        plt.clf()
-        self.figCleared = True
-        plt.plot(mesh.pos, np.zeros( len(mesh.pos) ), '-o')
-
-    def plotProblem( self, p, label="solution" ):
-        plt.plot( p.mesh.pos, p.solution, label=label );
-        plt.xlim( self.left, self.right );
-        #get max min temperatures
-        Tmin = min( p.solution )
-        Tmax = max( p.solution )
-        if (self.Tmin > Tmin or self.Tmax < Tmax):
-            self.Tmin = Tmin
-            self.Tmax = Tmax
-            self.range = self.Tmax - self.Tmin
-        plt.ylim( self.Tmin - self.range*0.1, self.Tmax + self.range*0.1)
-
-        plt.annotate("time = " + str(round(p.time, 2)), (0.05, 0.95));
-        plt.legend();
+labelsMapping = {0: "FE", 1: "BE", 2:"BDFS2"}
 
 if __name__=="__main__":
     fileName = "input.txt"
@@ -45,29 +18,26 @@ if __name__=="__main__":
     dFE["timeIntegration"] = 0
     dBE["timeIntegration"] = 1
     dBDFS2["timeIntegration"] = 2
-    pFE = mhs.Problem()
-    pFE.initialize( dFE )
-    pBE = mhs.Problem()
-    pBE.initialize( dBE )
-    pBDFS2 = mhs.Problem()
-    pBDFS2.initialize( dBDFS2 )
+    #problemsDics = [dFE, dBE, dBDFS2]
+    problemsDics = [dBE, dBDFS2]
+    problems = []
+    for d in problemsDics:
+        p = mhs.Problem()
+        p.initialize( d )
+        problems.append( p )
+    problems = [ (problems[i], problemsDics[i]) for i in range(len(problems)) ]
 
     nsteps=int(d["maxIter"])
-
     #show IC
-    plotHandler = plotter(pFE.mesh)
+    plotHandler = myPlotHandler(problems[0][0].mesh)
     plt.figure(dpi=200)
-    #plotHandler.plotProblem( pFE, label="FE" )
-    plotHandler.plotProblem( pBE, label="BE" )
-    plotHandler.plotProblem( pBE, label="BDFS2" )
-    plt.pause( 0.25 );
+    for p, d in problems:
+        plotHandler.plotProblem( p, label=labelsMapping[d["timeIntegration"]] )
+    plt.pause( 0.5 );
     #tstepping
     for istep in range(nsteps):
-        pFE.iterate()
-        pBE.iterate()
-        pBDFS2.iterate()
-        plotHandler.clf( pFE.mesh )
-        #plotHandler.plotProblem( pFE, label="FE" )
-        plotHandler.plotProblem( pBE, label="BE" )
-        plotHandler.plotProblem( pBDFS2, label="BDFS2" )
-        plt.pause( 0.25 );
+        plotHandler.clf( problems[0][0].mesh )
+        for p, d in problems:
+            p.iterate()
+            plotHandler.plotProblem( p, label=labelsMapping[d["timeIntegration"]] )
+        plt.pause( 0.5 );
