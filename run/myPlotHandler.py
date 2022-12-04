@@ -1,15 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 class myPlotHandler:
     def __init__(self, m, Tmin=-1, Tmax=+1, 
-            pauseTime=0.25):
+            pauseTime=0.25,
+            shortDescription=""):
         self.left = min(m.pos)
         self.right = max(m.pos)
+        self.currentTime = -1
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.range = abs(self.Tmax - self.Tmin)
         self.figCleared = False
+        self.shortDescription = shortDescription
         self.pauseTime = pauseTime
 
     def clf(self, mesh):
@@ -34,6 +38,7 @@ class myPlotHandler:
         if plotMhs:
             plt.plot(p.mhs.currentPosition[0], self.Tmin, '-o',
                     color="red")
+        self.currentTime = p.time
 
 
         plt.ylim( self.Tmin - self.range*0.1, self.Tmax + self.range*0.1)
@@ -42,3 +47,13 @@ class myPlotHandler:
                 xycoords='figure fraction');
         plt.legend();
 
+    def pause( self ):
+        plt.pause( self.pauseTime )
+
+    def save( self, figureFolder="" ):
+        if not figureFolder:
+            figureFolder = "figures_" + self.shortDescription
+
+        os.makedirs( figureFolder, exist_ok=True )
+        figureName = figureFolder + "/" + "t_{}.png".format( str(self.currentTime).replace(".", "_") )
+        plt.savefig( figureName, dpi=150 )

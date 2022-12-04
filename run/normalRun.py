@@ -12,11 +12,15 @@ if __name__=="__main__":
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
+    dFine = dict(d)
     dFE = dict(d)
     dBE = dict(d)
     dBDF2 = dict(d)
     dBDF3 = dict(d)
     dBDF4 = dict(d)
+    dFine["timeIntegration"] = 1
+    ratioFine = 32
+    dFine["dt"] = dFine["dt"] / float( ratioFine )
     dFE["timeIntegration"] = 0
     dBE["timeIntegration"] = 1
     dBDF2["timeIntegration"] = 2
@@ -31,17 +35,28 @@ if __name__=="__main__":
         problems.append( p )
     problems = [ (problems[i], problemsDics[i]) for i in range(len(problems)) ]
 
+    pFine = mhs.Problem()
+    pFine.initialize( dFine )
+
     nsteps=int(d["maxIter"])
     #show IC
-    plotHandler = myPlotHandler(problems[0][0].mesh, pauseTime=2)
+    plotHandler = myPlotHandler(problems[0][0].mesh,
+                                pauseTime=2,
+                                shortDescription="unfedRun")
     plt.figure(dpi=200)
+    plotHandler.plotProblem( pFine, label="Fine dt" )
     for p, d in problems:
         plotHandler.plotProblem( p, label=labelsMapping[d["timeIntegration"]] )
-    plt.pause( plotHandler.pauseTime );
+    plotHandler.pause()
+    plotHandler.save()
     #tstepping
     for istep in range(nsteps):
         plotHandler.clf( problems[0][0].mesh )
+        for fineIstep in range(ratioFine):
+            pFine.iterate()
+        plotHandler.plotProblem( pFine, label="Fine dt" )
         for p, d in problems:
             p.iterate()
             plotHandler.plotProblem( p, label=labelsMapping[d["timeIntegration"]] )
-        plt.pause( plotHandler.pauseTime );
+        plotHandler.pause()
+        plotHandler.save()
