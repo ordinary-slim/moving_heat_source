@@ -6,7 +6,7 @@ from readInput import *
 import numpy as np
 import pandas as pd
 import os
-import shutil
+import re
 
 def writePost( p, fileName="", postFolder="" ):
     if not(fileName):
@@ -24,8 +24,25 @@ def writePost( p, fileName="", postFolder="" ):
 def initializeTimeIntegrator( p, postFiles ):
     prevSols = []
     counter = 1
+    # sort post files by time
+    times = []
     for postFile in postFiles:
-        prevSols.append( pd.read_csv( postFile )["T"].to_numpy() )
+        # get time
+        t = re.search(r"(\d+_\d+)", postFile)
+        if t:
+            t = t.group(0).replace("_", ".")
+        else:
+            exit("Error!")
+        times.append(float(t))
+    # sort time list and retrieve permutation
+    timesAndPermutation = [ (times[i], i) for i in range(len(times)) ]
+    timesAndPermutation.sort(reverse=True)
+    sortedTimes, permutation = zip(*timesAndPermutation)
+    # sort postFiles list
+    postFiles = [postFiles[i] for i in permutation]
+    # time contained either in dataclass or postFileName or header
+    for postFile in postFiles:
+        prevSols.append( pd.read_csv( postFile, dtype=np.float64 )["T"].to_numpy() )
         counter += 1
     # build np array
     prevSols = np.array( prevSols )
@@ -35,17 +52,19 @@ def test():
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
+    d["timeIntegration"] = 2
     p = mhs.Problem()
     p.initialize( d )
 
     # write postfiles
-    postFile1 = writePost( p )
-    for i in range(20):
+    postFiles = []
+    postFiles.append( writePost( p ) )
+    for i in range(3):
         p.iterate()
-    postFile2 = writePost( p )
+        postFiles.append( writePost( p ) )
 
     # read postfiles
-    initializeTimeIntegrator( p, [postFile1, postFile2] )
+    initializeTimeIntegrator( p, postFiles )
 
 
 if __name__=="__main__":
