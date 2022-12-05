@@ -99,21 +99,31 @@ def test():
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
-    d["timeIntegration"] = 2
+    d["timeIntegration"] = 3
+    d["nels"] = 5
+    d["power"] = 0.0
     p = mhs.Problem()
     p.initialize( d )
 
     # write postfiles
     postFiles = []
     postFiles.append( writePost( p ) )
-    for i in range(3):
-        p.iterate()
-        postFiles.append( writePost( p ) )
+
+    p.iterate()
+    p.solution = 26*np.ones( p.solution.size )
+    postFiles.append( writePost( p ) )
+    p.iterate()
+    p.solution = 27*np.ones( p.solution.size )
+    postFiles.append( writePost( p ) )
+    p.iterate()
+    p.solution = 28*np.ones( p.solution.size )
+    postFiles.append( writePost( p ) )
 
     # read postfiles
     initializeTimeIntegrator( p, postFiles )
-
+    p.iterate()
+    print(p.solution)
 
 if __name__=="__main__":
-    #test()
-    plot1DPostFolder("postFineReference")
+    test()
+    #plot1DPostFolder("postFineReference")

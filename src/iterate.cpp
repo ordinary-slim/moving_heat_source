@@ -35,8 +35,6 @@ void Problem::iterate() {
   M.setZero();
   K.setZero();
 
-  vector<int> boundaryNodes;
-
   for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
     l = mesh.getElement( ielem );
     for (int inode = 0; inode < l.nnodes; inode++) {
@@ -75,16 +73,16 @@ void Problem::iterate() {
 
   if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
     if (timeIntegrator.nstepsStored >= 4) {
-      timeIntegrator.setCoeffs( 4 );
+      timeIntegrator.setCurrentIntegrator( 4 );
     } else if (timeIntegrator.nstepsStored >= 3) {
-      timeIntegrator.setCoeffs( 3 );
+      timeIntegrator.setCurrentIntegrator( 3 );
     } else if (timeIntegrator.nstepsStored >= 2) {
-      timeIntegrator.setCoeffs( 2 );
+      timeIntegrator.setCurrentIntegrator( 2 );
     } else {
-      timeIntegrator.setCoeffs( 1 );
+      timeIntegrator.setCurrentIntegrator( 1 );
     }
   } else {
-    timeIntegrator.setCoeffs( timeIntegrator.desiredIntegrator );
+    timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
   }
 
   //load vector computation/assembly inside of time integration
@@ -117,9 +115,6 @@ void Problem::iterate() {
 
         lhs += timeIntegrator.lhsCoeff * M / dt;
         rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
-        cout << "storedSteps=" << timeIntegrator.nstepsStored << endl;
-        cout << "desiredIntegrator=" << timeIntegrator.desiredIntegrator << endl;
-        cout << "timeIntegrator.rhsCoeff" << timeIntegrator.rhsCoeff << endl << endl;
         solver.compute( lhs );
         solution = solver.solve(rhs);
         break;
@@ -154,7 +149,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readwrite("solution", &Problem::solution)
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
-        .def_readonly("time", &Problem::time)
+        .def_readwrite("time", &Problem::time)
         .def_readonly("dt", &Problem::dt);
     py::class_<Mesh>(m, "Mesh")
         .def(py::init<>())
@@ -163,5 +158,5 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("initialize1DMesh", &Mesh::initialize1DMesh);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
-        .def_readonly("currentPosition", &HeatSource::currentPosition);
+        .def_readwrite("currentPosition", &HeatSource::currentPosition);
 }

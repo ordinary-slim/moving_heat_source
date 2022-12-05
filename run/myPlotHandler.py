@@ -22,10 +22,11 @@ class myPlotHandler:
         #plt.plot(mesh.pos, np.zeros( len(mesh.pos) ), '-o')
 
     def plotProblem( self, p, label="solution",
+            linestyle='-',
             updateLims=True,
             plotMhs=True,
             ):
-        plt.plot( p.mesh.pos, p.solution, label=label );
+        plt.plot( p.mesh.pos, p.solution, linestyle=linestyle, label=label );
         plt.xlim( self.left, self.right );
         #get max min temperatures
         Tmin = min( p.solution )

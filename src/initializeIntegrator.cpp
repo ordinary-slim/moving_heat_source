@@ -8,6 +8,6 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
     exit(1);
   }
   prevSolutions = pSols(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.nstepsRequired - 1));
-  cout << "prevSolutions=" << prevSolutions;
+  solution = prevSolutions(Eigen::placeholders::all, 0);
   timeIntegrator.nstepsStored += pSols.cols();
 }

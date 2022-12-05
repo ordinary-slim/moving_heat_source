@@ -1,6 +1,6 @@
 1D 1.0
 Left 0.0
-Right 100.0
+Right 200.0
 radius		2.0
 power		2000.0
 initialPositionX		10.0
@@ -10,10 +10,10 @@ speedX		10
 speedY		0
 speedZ		0
 dt	1
-nels		500
+nels		1000
 t		0.0
 Tfinal		20.0
-maxIter		5
+maxIter		15
 rho		1.0
 conductivity		10
 specific_heat		1.0

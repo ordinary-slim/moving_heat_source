@@ -33,21 +33,26 @@ class TimeIntegratorHandler {
         }
       }
 
-      void setCoeffs(int icase) {
+      void setCurrentIntegrator(int icase) {
         if (icase == 0) {//ForwardEuler
+          currentIntegrator = 0;
         } else if (icase == 1) {//BDF1
+          currentIntegrator = 1;
           lhsCoeff = 1;
           rhsCoeff.resize(1);
           rhsCoeff << 1;
         } else if (icase == 2) {//BDF2
+          currentIntegrator = 2;
           lhsCoeff = 1.5;
           rhsCoeff.resize(2);
           rhsCoeff << 2, -0.5;
         } else if (icase == 3) {//BDF3
+          currentIntegrator = 3;
           lhsCoeff = 11.0/6.0;
           rhsCoeff.resize(3);
           rhsCoeff << 3.0, -1.5, 1.0/3.0;
         } else if (icase == 4) {//BDF4
+          currentIntegrator = 4;
           lhsCoeff = 25.0/12.0;
           rhsCoeff.resize(4);
           rhsCoeff << 4.0, -3.0, 4.0/3.0, -1.0/4.0;
