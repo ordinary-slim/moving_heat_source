@@ -23,9 +23,9 @@ def writePost( p, fileName="", postFolder="post" ):
 
 def getTimeFromFilename(postFile):
     # get time
-    t = re.search(r"(\d+_\d+)", postFile)
+    t = re.search(r"T(\d+_\d+)", postFile)
     if t:
-        t = t.group(0).replace("_", ".")
+        t = t.group(1).replace("_", ".")
     else:
         exit("Error!")
     return float(t)
@@ -57,19 +57,16 @@ def sortPostFiles(postFiles,reverse=False):
     return postFiles, sortedTimes
 
 def plot1DPostFolder(postFolder="post"):
-    class Bunch:
-        def __init__(self, **kwds):
-            self.__dict__.update(kwds)
     import matplotlib.pyplot as plt
     times = []
     postFiles = list(os.listdir(postFolder))
     postFiles, times = sortPostFiles( postFiles )
-    dfs = []
+    problems = []
     for pf in postFiles:
-        dfs.append( pd.read_csv( "{}/{}".format(postFolder, pf) ) )
+        problems.append( loadProblem(pf) )
 
     #grab mesh from first df
-    mesh = Bunch(pos=dfs[0]["X"])
+    mesh = p.mesh
 
     # get range for figure
     Tmin = +1e12
@@ -84,9 +81,7 @@ def plot1DPostFolder(postFolder="post"):
 
     plotHandler = myPlotHandler(mesh, Tmin=Tmin, Tmax=Tmax)
     plt.figure(dpi=200)
-    for df, t in zip(dfs, times):
-        # build problem
-        p = Bunch( mesh=mesh, solution=df["T"], time=t )
+    for p, t in zip(problems, times):
         # plot
         plotHandler.clf( mesh )
         plotHandler.plotProblem( p, label=postFolder,
@@ -94,6 +89,17 @@ def plot1DPostFolder(postFolder="post"):
                 plotMhs=False
                 )
         plt.pause( 0.25 );
+
+def loadProblem( postFile ):
+    class Bunch:
+        def __init__(self, **kwds):
+            self.__dict__.update(kwds)
+    time = getTimeFromFilename(postFile)
+    # build problem
+    df = pd.read_csv( postFile )
+    mesh = Bunch( pos=df["X"] )
+    p = Bunch( mesh=mesh, solution=df["T"], time=time )
+    return p
 
 def test():
     fileName = "input.txt"
