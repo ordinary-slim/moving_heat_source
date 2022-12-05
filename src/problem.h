@@ -5,10 +5,13 @@
 #include "heatSource.h"
 #include "timeIntegrator.h"
 #include <Eigen/Core>
+#include <Eigen/Sparse>
 
 
 using namespace std;
 
+typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
+                                           //
 class Problem {
   public:
     Mesh mesh;
@@ -19,6 +22,11 @@ class Problem {
     double time = 0.0;
     double dt;
     int iter;
+
+    bool isAssembled = false;
+    SpMat M; // mass mat
+    SpMat K; // stiffness mat
+    Eigen::VectorXd pulse; // source term
 
     // integrator
     TimeIntegratorHandler timeIntegrator;

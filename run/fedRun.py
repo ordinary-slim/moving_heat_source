@@ -59,7 +59,7 @@ if __name__=="__main__":
 
     #show IC
     plotHandler = myPlotHandler(problems[0][0].mesh,
-                                pauseTime=2,
+                                pauseTime=0.25,
                                 shortDescription="fedRun")
     plt.figure(dpi=200)
     plotHandler.plotProblem( pFine, linestyle="--",  label="Fine dt" )
