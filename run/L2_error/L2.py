@@ -23,7 +23,7 @@ def computeL2Error( p1, p2 ):
     if (p1.time != p2.time):
         print("Something wrong!")
         exit()
-    return np.trapz( np.square( p1.solution - p2.solution ), p1.mesh.pos )
+    return np.sqrt( np.trapz( np.square( p1.solution - p2.solution ), p1.mesh.pos ) )
 
 def advanceUntilTfinal( p, Tfinal ):
     tol = 1e-4
@@ -71,17 +71,18 @@ def writeReferenceSolution(referenceCFL=1e-2):
     return pf
 
 
-def computeDataSets():
+def computeDataSets(computeRefSolution=False):
     fileName = "input.txt"
     postFolder = "data"
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    CFLs = [80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 1.0, 0.5, 0.1, 0.01]
+    CFLs = [100, 80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 4.0, 2.5, 2, 1.0, 0.5, 0.1, 0.01]
     #CFLs = [40.0, 20, 10, 5, 1]
     p = mhs.Problem()
 
-    refSoluton = writeReferenceSolution(referenceCFL=0.001)
+    if computeRefSolution:
+        refSoluton = writeReferenceSolution(referenceCFL=0.001)
 
     for timeIntegration in [1, 2, 3, 4]:
         d["timeIntegration"] = timeIntegration
@@ -102,57 +103,73 @@ def computeDataSets():
             pf = writePost( p, fileName, postFolder )
             print("Wrote reference solution to " + pf + ".")
 
-if __name__=="__main__":
-    #compute data
-    computeDataSets()
-    #process it
+def retrieveDataSets():
     ##get it
     dataFolder = "data"
     dataFiles = os.listdir( "data" )
     ##organize it
-    reference = []
-    BE = []
+    output = {"reference" : {},
+              "BE" : {},
+              "BDF2" : {},
+              "BDF3" : {},
+              "BDF4" : {}}
+
     for f in dataFiles:
         fileName = dataFolder + "/" + f
+        f = f.replace("_", ".")
         CFL = re.search(r"CFL(\d+(\.\d+)?)", f )
         if CFL:
             CFL = float(CFL.group(1))
         else:
             print("Wrong file formatting for file {}".format(
                 f))
-            continue
+            exit()
         p = loadProblem( fileName )
         p.CFL = CFL
-        if re.search(r"refer", f):
-            reference = p
-        if re.search(r"BE", f):
-            BE.append( p )
-    ##compare it
-    CFLs = []
-    L2Errors = []
-    for p in BE:
-        CFLs.append( p.CFL )
-        L2Errors.append( computeL2Error(p, reference) )
-    CFLs = np.array( CFLs )
-    L2Errors = np.array( L2Errors )
-    p = np.argsort( CFLs )
-    CFLs = CFLs[p]
-    L2Errors = L2Errors[p]
+        for key in output.keys():
+            if f.startswith(key):
+                print(f)
+                output[key][CFL] = p
+    return output
 
-    ## plot
+if __name__=="__main__":
+    #compute data
+    computeDataSets()
+    # get it
+    output = retrieveDataSets()
+    # retrieve reference solution
+    referenceProblem = output.pop("reference", None)
+    if referenceProblem:
+        referenceProblem = referenceProblem[list(referenceProblem.keys())[0]]
+    #process it
+    L2Errors = dict( output )
+    for TIlabel, TI in output.items():
+        for CFL, p in TI.items():
+            L2Errors[TIlabel][CFL] = computeL2Error( p, referenceProblem )
+#
+    ### plot
     plt.figure(dpi=200)
-    plt.loglog( CFLs, L2Errors,
-            linestyle='None',
-            marker="o",
-            label="BE")
+    for TIlabel, TI in L2Errors.items():
+        CFLs = np.array( list(TI.keys()) )
+        L2Errors = np.array( list(TI.values()) )
+        #sort
+        p = np.argsort( CFLs )
+        CFLs = CFLs[p]
+        L2Errors = L2Errors[p]
+
+
+        plt.loglog( CFLs, L2Errors,
+                linestyle='None',
+                marker="o",
+                label=TIlabel)
+        plt.grid()
+        plt.ylabel("L2")
+        plt.xlabel("CFL")
+        plt.legend()
     powers = [4, 3, 2, 1]
     for power in powers:
         alpha = L2Errors[-1] / pow( CFLs[-1], power )
         plt.loglog( CFLs, alpha*np.power(CFLs, power),
                 linestyle='--',
                 label="Order {}".format( power ))
-    plt.grid()
-    plt.ylabel("L2")
-    plt.xlabel("CFL")
-    plt.legend()
     plt.show()
