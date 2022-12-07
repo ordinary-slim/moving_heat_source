@@ -12,7 +12,7 @@ speedZ		0
 dt    1
 nels		800
 t		0.0
-Tfinal	1.0
+Tfinal	10.0
 maxIter		15
 rho		1.0
 conductivity		10

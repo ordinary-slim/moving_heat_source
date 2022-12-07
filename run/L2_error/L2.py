@@ -77,11 +77,11 @@ def computeDataSets():
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    CFLs = [50.0, 25.0, 10.0, 5.0, 1.0, 0.5, 0.1]
-    CFLs = [40.0, 20, 10, 5, 1]
+    CFLs = [80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 1.0, 0.5, 0.1, 0.01]
+    #CFLs = [40.0, 20, 10, 5, 1]
     p = mhs.Problem()
 
-    refSoluton = writeReferenceSolution(referenceCFL=0.01)
+    refSoluton = writeReferenceSolution(referenceCFL=0.001)
 
     for timeIntegration in [1, 2, 3, 4]:
         d["timeIntegration"] = timeIntegration
