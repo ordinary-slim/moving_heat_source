@@ -48,16 +48,18 @@ def set_dt( d, CFL ):
     print( "CFL = {}, dt = {}".format( CFL, d["dt"] ) )
     return d
 
-def writeReferenceSolution(referenceCFL=1e-2):
+def writeReferenceSolution(postFolder, referenceCFL=1e-2):
     CFL = referenceCFL
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    fileName = "referenceSolution_CFL{}_T{}.csv".format(
-            formatFloat( CFL ),
-            formatFloat( Tfinal ))
-    postFolder="data"
+    fileName = "{}_CFL{}_T{}.csv".format(
+            labelsMapping[d["timeIntegration"]],
+            formatFloat(CFL),
+            formatFloat( Tfinal ),
+            )
+    fileName = "reference_" + fileName
     # check for file existence
     if os.path.isfile( "./" + postFolder + "/" + fileName ):
         return
@@ -71,18 +73,17 @@ def writeReferenceSolution(referenceCFL=1e-2):
     return pf
 
 
-def computeDataSets(computeRefSolution=False):
+def computeDataSets(postFolder, computeRefSolution=False):
     fileName = "input.txt"
-    postFolder = "data"
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    CFLs = [100, 80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 4.0, 2.5, 2, 1.0, 0.5, 0.1, 0.01]
+    CFLs = [100, 80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 4.0, 2.5, 2, 1.0, 0.5, 0.1]
     #CFLs = [40.0, 20, 10, 5, 1]
     p = mhs.Problem()
 
     if computeRefSolution:
-        refSoluton = writeReferenceSolution(referenceCFL=0.001)
+        refSoluton = writeReferenceSolution(postFolder, referenceCFL=0.01)
 
     for timeIntegration in [1, 2, 3, 4]:
         d["timeIntegration"] = timeIntegration
@@ -103,10 +104,9 @@ def computeDataSets(computeRefSolution=False):
             pf = writePost( p, fileName, postFolder )
             print("Wrote reference solution to " + pf + ".")
 
-def retrieveDataSets():
+def retrieveDataSets(dataFolder):
     ##get it
-    dataFolder = "data"
-    dataFiles = os.listdir( "data" )
+    dataFiles = os.listdir( dataFolder )
     ##organize it
     output = {"reference" : {},
               "BE" : {},
@@ -134,9 +134,11 @@ def retrieveDataSets():
 
 if __name__=="__main__":
     #compute data
-    computeDataSets()
+    dataFolder="data/K_0R20_0T10_0"
+    os.makedirs( dataFolder, exist_ok=True )
+    computeDataSets(dataFolder, computeRefSolution=True)
     # get it
-    output = retrieveDataSets()
+    output = retrieveDataSets(dataFolder)
     # retrieve reference solution
     referenceProblem = output.pop("reference", None)
     if referenceProblem:
