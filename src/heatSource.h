@@ -20,6 +20,7 @@ class HeatSource {
 
       void computePulse( Eigen::VectorXd &pulse, double t, Mesh &m );
       double powerDensity(double x);
+      double ctePowerDensity(double t);
     };
 #define HEATSOURCE
 #endif

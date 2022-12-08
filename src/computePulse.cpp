@@ -12,6 +12,10 @@ double HeatSource::powerDensity(double x) {
   return pd;
 }
 
+double HeatSource::ctePowerDensity(double t) {
+  return (power*efficiency)*exp(-t);
+}
+
 void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
   double x_gp, r_i;
   updatePosition( t );
@@ -24,7 +28,7 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
       r_i = 0;
       for (int igp = 0; igp < l.nnodes; ++igp) {
         x_gp = l.gpos[ igp ];
-        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * powerDensity(x_gp);
+        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * ctePowerDensity(t);
       }
       pulse[l.con[inode]] += r_i;
     }

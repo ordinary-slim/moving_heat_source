@@ -18,12 +18,16 @@ labelsMapping = {0: "FE", 1: "BE", 2:"BDF2", 3:"BDF3", 4:"BDF4"}
 def formatFloat( fl ):
     return str(round(fl, 4)).replace(".", "_")
 
-def computeL2Error( p1, p2 ):
-    # safety check
-    if (p1.time != p2.time):
-        print("Something wrong!")
-        exit()
-    return np.sqrt( np.trapz( np.square( p1.solution - p2.solution ), p1.mesh.pos ) )
+def computeAnalyticalSolution():
+    fileName = "ode.txt"
+    d = formatInputFile( fileName )
+    d = parseInput( d )
+    T_0 = d["environmentTemperature"]
+    cte = d["power"] / d["rho"] / d["specific_heat"]
+    return (lambda t : T_0 + cte*(1 - np.exp(-t)))
+
+def computeError( p, f ):
+    return abs( p.solution[0] - f(p.time) )
 
 def advanceUntilTfinal( p, Tfinal ):
     tol = 1e-4
@@ -48,42 +52,14 @@ def set_dt( d, CFL ):
     print( "CFL = {}, dt = {}".format( CFL, d["dt"] ) )
     return d
 
-def writeReferenceSolution(postFolder, referenceCFL=1e-2):
-    CFL = referenceCFL
-    fileName = "input.txt"
-    d = formatInputFile( fileName )
-    d = parseInput( d )
-    Tfinal = d["Tfinal"]
-    fileName = "{}_CFL{}_T{}.csv".format(
-            labelsMapping[d["timeIntegration"]],
-            formatFloat(CFL),
-            formatFloat( Tfinal ),
-            )
-    fileName = "reference_" + fileName
-    # check for file existence
-    if os.path.isfile( "./" + postFolder + "/" + fileName ):
-        return
-
-    d = set_dt( d, CFL )
-    p = mhs.Problem()
-    p.initialize( d )
-    advanceUntilTfinal( p, Tfinal )
-    pf = writePost( p, fileName, postFolder )
-    print("Wrote reference solution to " + pf + ".")
-    return pf
-
-
 def computeDataSets(postFolder, computeRefSolution=False):
-    fileName = "input.txt"
+    fileName = "ode.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
     CFLs = [100, 80, 60, 50, 40.0, 25, 20.0, 10.0, 5.0, 4.0, 2.5, 2, 1.0, 0.5, 0.1]
     #CFLs = [40.0, 20, 10, 5, 1]
     p = mhs.Problem()
-
-    if computeRefSolution:
-        refSoluton = writeReferenceSolution(postFolder, referenceCFL=0.01)
 
     for timeIntegration in [1, 2, 3, 4]:
         d["timeIntegration"] = timeIntegration
@@ -145,9 +121,10 @@ if __name__=="__main__":
         referenceProblem = referenceProblem[list(referenceProblem.keys())[0]]
     #process it
     L2Errors = dict( output )
+    analyticalSol = computeAnalyticalSolution()
     for TIlabel, TI in output.items():
         for CFL, p in TI.items():
-            L2Errors[TIlabel][CFL] = computeL2Error( p, referenceProblem )
+            L2Errors[TIlabel][CFL] = computeError( p, analyticalSol )
 #
     ### plot
     plt.figure(dpi=200)
