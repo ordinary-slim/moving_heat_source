@@ -25,6 +25,10 @@ void Problem::iterate() {
     // initialize data structures
     M.resize(mesh.nnodes, mesh.nnodes); // mass mat
     K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
+    lhs.resize( mesh.nnodes, mesh.nnodes );
+    rhs.resize( mesh.nnodes );
+    pulse.resize( mesh.nnodes ); // source term
+
     vector<T> M_coeffs;
     M_coeffs.reserve( 3*mesh.nnodes );
     vector<T> K_coeffs;
@@ -87,13 +91,11 @@ void Problem::iterate() {
     timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
   }
 
-  pulse.resize( mesh.nnodes ); // source term
-  pulse.setZero();
-
-  Eigen::VectorXd rhs = Eigen::VectorXd::Zero( mesh.nnodes );
-  SpMat lhs( mesh.nnodes, mesh.nnodes );
-  // general treatment implicit schemes
+  lhs.setZero();
+  rhs.setZero();
   mhs.computePulse(pulse, time+dt, mesh);
+
+  // general treatment implicit schemes
   lhs += K;
   rhs += pulse;
   switch (timeIntegrator.currentIntegrator) {
@@ -112,8 +114,7 @@ void Problem::iterate() {
         break;
       }
     default:
-      {//Implicit scheme
-       //Generalized treatment
+      {//Implicit scheme: Generalized treatment
 
         lhs += timeIntegrator.lhsCoeff * M / dt;
         rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
@@ -124,21 +125,7 @@ void Problem::iterate() {
   }
 
   // End iteration operations
-  // Overwrite last column of prevSolutions
-  prevSolutions.col( prevSolutions.cols()-1 ) << solution;
-  // Permutate N-1, 0, ..., N-2
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(timeIntegrator.nstepsRequired);
-  Eigen::VectorXi indices(timeIntegrator.nstepsRequired);
-  for (int i = 0; i < indices.size(); i++) {
-    indices[i] = i-1;
-  }
-  indices[0] = indices.size() -  1 ;
-  perm.indices() = indices;
-  prevSolutions = prevSolutions * perm;
-
-  ++timeIntegrator.nstepsStored;
-  time += dt;
-  ++iter;
+  postIterate();
 
 }
 
@@ -148,6 +135,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("initialize", &Problem::initialize)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("iterate", &Problem::iterate)
+        .def("setTime", &Problem::setTime)
         .def_readwrite("solution", &Problem::solution)
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)

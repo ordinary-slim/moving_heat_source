@@ -13,12 +13,15 @@ double HeatSource::powerDensity(double x) {
 }
 
 double HeatSource::ctePowerDensity(double t) {
+  // For debugging purposes
   return (power*efficiency)*exp(-t);
 }
 
 void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
   double x_gp, r_i;
   updatePosition( t );
+
+  pulse.setZero();
 
   Line l;
   // assemble

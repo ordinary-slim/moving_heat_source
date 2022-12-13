@@ -13,6 +13,7 @@ class HeatSource {
       double power;
       double efficiency = 1.0;
       double radius = 2.0;
+      double time = 0.0;
 
       void updatePosition( double t ) {
         currentPosition = initialPosition + speed * t;

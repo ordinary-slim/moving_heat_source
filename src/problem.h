@@ -24,16 +24,24 @@ class Problem {
     int iter;
 
     bool isAssembled = false;
+    Eigen::VectorXd rhs;
+    SpMat lhs;
     SpMat M; // mass mat
     SpMat K; // stiffness mat
     Eigen::VectorXd pulse; // source term
 
+
     // integrator
     TimeIntegratorHandler timeIntegrator;
 
+    void setTime(double newTime) {
+      time = newTime;
+      mhs.time = newTime;
+    }
     void initialize(map<string,double> &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
+    void postIterate();
     };
 #define PROBLEM
 #endif

@@ -43,7 +43,7 @@ def printFigures(figureFolder):
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    adimR = 1
+    adimR = 2
     dt = set_dt( d, adimR )
     if not figureFolder:
         figureFolder = "figures/adimR{}".format( formatFloat( adimR ) )
@@ -76,7 +76,7 @@ def printFigures(figureFolder):
     arrPrevSols = np.transpose(np.stack( prevSols ))
 
     problems = []
-    for timeIntegration in [1, 2, 3, 4]:
+    for timeIntegration in [1]:
         d["timeIntegration"] = timeIntegration
         ##initialize time integrator for actual problem
         p = mhs.Problem()
@@ -88,21 +88,28 @@ def printFigures(figureFolder):
         p.initializeIntegrator( arrPrevSols )
         problems.append( p )
 
+    plt.figure(dpi=200)
     plotHandler = myPlotHandler(problems[0].mesh,
                                 pauseTime=0.1,
-                                figureFolder=figureFolder)
+                                figureFolder=figureFolder,
+                                Tmin=d["environmentTemperature"])
 
     promptFreq = 100
     counter = 0
     print( "Run: t0={}, dt={}, Tf={}".format( problems[0].time, problems[0].dt, Tfinal) )
     if plotHandler:
-        for p in [*problems, pFine]:
+        plotHandler.plotProblem( pFine, label=pFine.label, linestyle='--');#debug
+        for p in problems:
             plotHandler.plotProblem( p, label=p.label);#debug
         plotHandler.pause()
         plotHandler.save()
         plotHandler.clf( problems[0].mesh )
 
     while( round(problems[0].time, 4) < Tfinal ):
+        for istep in range(fineStepsPerStep):
+            pFine.iterate()
+        plotHandler.plotProblem( pFine, linestyle="--", label=pFine.label, updateLims=False);#debug
+
         for p in problems:
             counter += 1
             if counter%promptFreq==0:
@@ -110,15 +117,11 @@ def printFigures(figureFolder):
             p.iterate()
 
             if plotHandler:
-                plotHandler.plotProblem( p, label=p.label);#debug
+                plotHandler.plotProblem( p, label=p.label, updateLims=False);#debug
 
-        for istep in range(fineStepsPerStep):
-            pFine.iterate()
-        plotHandler.plotProblem( pFine, linestyle="--", label=pFine.label);#debug
 
         if plotHandler:
             plotHandler.pause()
-            plt.show()
             plotHandler.save()
             plotHandler.clf( problems[0].mesh )
 
