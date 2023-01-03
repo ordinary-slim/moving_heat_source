@@ -1,4 +1,4 @@
-#include "problem.h"
+#include "includes/problem.h"
 #include <map>
 #include <string>
 
@@ -20,6 +20,19 @@ void Problem::initialize(map<string,double> &input) {
   mhs.initialPosition[0] = input["initialPositionX"];
   mhs.initialPosition[1] = input["initialPositionY"];
   mhs.initialPosition[2] = input["initialPositionZ"];
+  // set type of source term
+  switch (int(input["sourceTerm"])) {
+    case 1:
+      {
+        mhs.powerDensity = &gaussianPowerDensityMRF;
+        break;
+      }
+    default:
+      {
+        mhs.powerDensity = &gaussianPowerDensity;
+        break;
+      }
+  }
 
   // initialize solution and increment
   double environmentTemperature = input["environmentTemperature"];

@@ -20,3 +20,4 @@ specific_heat		500
 environmentTemperature		25
 plot 1
 timeIntegration 1
+sourceTerm 0

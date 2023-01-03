@@ -2,19 +2,18 @@
 #include <Eigen/Core>
 #include <cmath>
 #include <vector>
-#include "mesh.h"
-#include "line.h"
-#include "heatSource.h"
+#include "includes/mesh.h"
+#include "includes/line.h"
+#include "includes/heatSource.h"
 
-double HeatSource::powerDensity(double x) {
-  double x0 = currentPosition[0];
+double gaussianPowerDensity(double x, double x0, double power, double efficiency, double radius) {
   double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x - x0, 2)/pow(radius, 2));
   return pd;
 }
 
-double HeatSource::ctePowerDensity(double t) {
-  // For debugging purposes
-  return (power*efficiency)*exp(-t);
+double gaussianPowerDensityMRF(double x, double x0, double power, double efficiency, double radius) {
+  double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x, 2)/pow(radius, 2));
+  return pd;
 }
 
 void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
@@ -31,7 +30,7 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
       r_i = 0;
       for (int igp = 0; igp < l.nnodes; ++igp) {
         x_gp = l.gpos[ igp ];
-        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * powerDensity(x_gp);
+        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * powerDensity(x_gp, currentPosition[0], power, efficiency, radius);
       }
       pulse[l.con[inode]] += r_i;
     }

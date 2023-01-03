@@ -22,7 +22,7 @@ class Mesh {
       pos.resize( nnodes );
 
       for (int i = 0; i < nnodes; i++) {
-        pos[i] = i*h;
+        pos[i] = A + i*h;
       }
 
       // build connectivity; inneficient but clear

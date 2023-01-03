@@ -1,4 +1,4 @@
-#include "problem.h"
+#include "includes/problem.h"
 #include <Eigen/Core>
 #include "../external/pybind11/include/pybind11/eigen.h"
 
