@@ -16,7 +16,7 @@ class Problem {
   public:
     Mesh mesh;
     HeatSource mhs;
-    map<string,float> material;
+    map<string,double> material;
     Eigen::VectorXd solution;
     Eigen::MatrixXd prevSolutions;
     double time = 0.0;
@@ -24,10 +24,12 @@ class Problem {
     int iter;
 
     bool isAssembled = false;
+    bool isAdvection = false;
     Eigen::VectorXd rhs;
     SpMat lhs;
     SpMat M; // mass mat
     SpMat K; // stiffness mat
+    SpMat A; // advection mat
     Eigen::VectorXd pulse; // source term
 
 

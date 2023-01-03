@@ -49,6 +49,11 @@ void Problem::initialize(map<string,double> &input) {
   material["k"] = input["conductivity"];
   material["cp"] = input["specific_heat"];
 
+  // check for advection term
+  if (input.count("movingReferenceFrame")==1) {
+    isAdvection = (input["movingReferenceFrame"]==1);
+  }
+
   // timeIntegrator
   timeIntegrator.setRequiredSteps( input["timeIntegration"] );
 

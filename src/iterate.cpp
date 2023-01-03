@@ -19,12 +19,13 @@ typedef Eigen::Triplet<double> T;
 
 void Problem::iterate() {
   // numerical params
-  double m_ij, k_ij, ip;
+  double m_ij, k_ij, a_ij, ip;
 
   if (!isAssembled) {
     // initialize data structures
     M.resize(mesh.nnodes, mesh.nnodes); // mass mat
     K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
+    A.resize(mesh.nnodes, mesh.nnodes); // advection mat
     lhs.resize( mesh.nnodes, mesh.nnodes );
     rhs.resize( mesh.nnodes );
     pulse.resize( mesh.nnodes ); // source term
@@ -33,6 +34,8 @@ void Problem::iterate() {
     M_coeffs.reserve( 3*mesh.nnodes );
     vector<T> K_coeffs;
     K_coeffs.reserve( 3*mesh.nnodes );
+    vector<T> A_coeffs;
+    A_coeffs.reserve( 3*mesh.nnodes );
 
     Line l;
     // matrices assembly
@@ -45,6 +48,7 @@ void Problem::iterate() {
         for (int jnode = 0; jnode < l.nnodes; jnode++) {
           m_ij = 0;
           k_ij = 0;
+          a_ij = 0;
           for (int igp = 0; igp < l.nnodes; igp++) {
             // mass matrix
             m_ij += l.gpweight[igp] * l.baseFunGpVals[inode][igp]*l.baseFunGpVals[jnode][igp]*l.vol;
@@ -54,9 +58,16 @@ void Problem::iterate() {
                   l.baseFunGradGpVals[jnode][igp].begin(),
                   0.0);
             k_ij += l.gpweight[igp] * ip * l.vol;
+            // advection matrix
+            ip = inner_product(l.baseFunGradGpVals[jnode][igp].begin(),
+                  l.baseFunGradGpVals[jnode][igp].end(),
+                  mhs.speed.begin(),
+                  0.0);
+            a_ij += l.gpweight[igp] * (ip * l.baseFunGpVals[inode][igp]) * l.vol;
           }
           m_ij *= material["rho"]*material["cp"];
           k_ij *= material["k"];
+          a_ij *= material["rho"]*material["cp"];
 
           // lookup i or j belong to fixed nodes
           //
@@ -66,11 +77,13 @@ void Problem::iterate() {
 
           M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
           K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
+          A_coeffs.push_back( T( l.con[inode], l.con[jnode], a_ij ) );
         }
       }
     }
     M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
     K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
+    A.setFromTriplets( A_coeffs.begin(), A_coeffs.end() );
     isAssembled = true;
   }
 
@@ -97,6 +110,7 @@ void Problem::iterate() {
 
   // general treatment implicit schemes
   lhs += K;
+  if (isAdvection) lhs += -A;
   rhs += pulse;
   switch (timeIntegrator.currentIntegrator) {
     case 0:
@@ -109,6 +123,7 @@ void Problem::iterate() {
         lhs += M;
         mhs.computePulse(pulse, time, mesh);
         rhs += pulse - K*solution;
+        if (isAdvection) rhs += A*solution;
         solver.compute(lhs);//overkill
         solution += dt * solver.solve(rhs);
         break;

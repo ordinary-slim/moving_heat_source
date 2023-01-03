@@ -30,9 +30,8 @@ class myPlotHandler:
             linestyle='-',
             updateLims=True,
             plotMhs=True,
+            advectSolution=False,
             ):
-        plt.plot( p.mesh.pos, p.solution, linestyle=linestyle, label=label );
-        plt.xlim( self.left, self.right );
         #get max min temperatures
         Tmin = min( p.solution )
         Tmax = max( p.solution )
@@ -41,18 +40,28 @@ class myPlotHandler:
             self.Tmin  = min(self.Tmin, Tmin)
             self.Tmax  = max(self.Tmax, Tmax)
             self.range = max((self.Tmax-self.Tmin), self.range)
+        x0 = p.mhs.currentPosition[0]
         if plotMhs and not(self.mhsPlotted):
-            x0 = p.mhs.currentPosition[0]
             plt.plot(x0, self.Tmin, '-o',
                     color="red", label="$x_0$")
             plt.axvline(x=x0, linestyle='--', linewidth=0.5, color="red")
             self.mhsPlotted = True
+
+        mesh = p.mesh.pos
+        if advectSolution:
+            mesh += x0
+
+        plt.plot( mesh, p.solution, linestyle=linestyle, label=label );
+        #plt.xlim( self.left, self.right );
+
         self.currentTime = p.time
 
 
         plt.ylim( self.Tmin - self.range*0.1, self.Tmax + self.range*0.2)
 
-        plt.annotate("$t = {}$".format(str(round(p.time, 2))), (self.left+0.5*self.L, self.Tmin+0.05*self.range),
+        plt.annotate("$t = {}$".format(str(round(p.time, 2))),
+                (0.45, 0.2),
+                xycoords="figure fraction",
                 );
         plt.xlabel(r"x $[mm]$")
         plt.ylabel(r"T $[{}^\circ C]$")

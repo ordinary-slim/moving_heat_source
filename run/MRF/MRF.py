@@ -38,7 +38,7 @@ def set_dt( d, adimR ):
     print( "adimR = {}, dt = {}".format( adimR, dt ) )
     return dt
 
-def printFigures(figureFolder):
+def main(figureFolder):
     fileName = "mrf.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
@@ -58,35 +58,28 @@ def printFigures(figureFolder):
     fineStepsPerStep = int( np.ceil( dt / approxFine_dt ) )
     fine_dt = d["dt"] / float( fineStepsPerStep )
     print( "Time step = {}, fine time step = {}".format( dt, fine_dt ) )
-    # initialize fine iterator
-    dFine = dict( d )
+
+    problems = []
+    #MRF
+    pMRF = mhs.Problem()
+    pMRF.initialize( d )
+    pMRF.label = "MRF"
+    problems.append( pMRF )
+    #FRF
+    pFRF = mhs.Problem()
+    dFRF = dict(d)
+    dFRF["sourceTerm"] = 0
+    dFRF["movingReferenceFrame"] = 1
+    pFRF.initialize( dFRF )
+    pFRF.label = "FRF"
+    problems.append( pFRF )
+    #Fine
+    dFine = dict( dFRF )
     dFine["dt"] = fine_dt
     dFine["timeIntegration"] = 2
     pFine = mhs.Problem()
     pFine.initialize( dFine )
     pFine.label = "Fine"
-    ##do N blocks of fine time steps storing
-    prevSols = [np.array(pFine.solution)]
-    timesPrevSols  = [pFine.time]
-    for istep in range( maxNstepsRequired ) :
-        for fineIstep in range(fineStepsPerStep):
-            pFine.iterate()
-        prevSols.insert( 0, np.array(pFine.solution) )
-        timesPrevSols.insert( 0, pFine.time )
-    arrPrevSols = np.transpose(np.stack( prevSols ))
-
-    problems = []
-    for timeIntegration in [1]:
-        d["timeIntegration"] = timeIntegration
-        ##initialize time integrator for actual problem
-        p = mhs.Problem()
-        p.initialize( d )
-        p.timeIntegration = timeIntegration
-        p.label = labelsMapping[timeIntegration]
-        p.time = pFine.time
-        p.currentPosition = pFine.mhs.currentPosition
-        p.initializeIntegrator( arrPrevSols )
-        problems.append( p )
 
     plt.figure(dpi=200)
     plotHandler = myPlotHandler(problems[0].mesh,
@@ -100,12 +93,17 @@ def printFigures(figureFolder):
     if plotHandler:
         plotHandler.plotProblem( pFine, label=pFine.label, linestyle='--')
         for p in problems:
-            plotHandler.plotProblem( p, label=p.label);#debug
+            advectSolution = False
+            if ("MRF" in p.label): advectSolution = True
+            plotHandler.plotProblem( p, label=p.label, advectSolution=advectSolution)
         plotHandler.pause()
         plotHandler.save()
         plotHandler.clf( problems[0].mesh )
 
-    while( round(problems[0].time, 4) < Tfinal ):
+    iteration = 0
+    maxIter = d["maxIter"]
+    while( round(problems[0].time, 4) < Tfinal and iteration<maxIter ):
+        iteration += 1
         for istep in range(fineStepsPerStep):
             pFine.iterate()
         plotHandler.plotProblem( pFine, linestyle="--", label=pFine.label, updateLims=True)
@@ -117,15 +115,16 @@ def printFigures(figureFolder):
             p.iterate()
 
             if plotHandler:
-                plotHandler.plotProblem( p, label=p.label, updateLims=True)
-
+                advectSolution = False
+                if p.label=="MRF": advectSolution = True
+                plotHandler.plotProblem( p, label=p.label, advectSolution=advectSolution)
 
         if plotHandler:
             plotHandler.pause()
             plotHandler.save()
             plotHandler.clf( problems[0].mesh )
 
-
 if __name__=="__main__":
     #compute data
-    printFigures("")
+    main("")
+    #debug()
