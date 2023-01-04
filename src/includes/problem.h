@@ -25,6 +25,7 @@ class Problem {
 
     bool isAssembled = false;
     bool isAdvection = false;
+    bool isSteady    = false;
     Eigen::VectorXd rhs;
     SpMat lhs;
     SpMat M; // mass mat

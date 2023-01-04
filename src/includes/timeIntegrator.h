@@ -15,10 +15,7 @@ class TimeIntegratorHandler {
       int nstepsStored   = 0;
 
       void setRequiredSteps(int icase) {
-        if (icase == 0) {//ForwardEuler
-          desiredIntegrator = 0;
-          nstepsRequired = 1;
-        } else if (icase == 1) {//BDF1
+        if (icase == 1) {//BDF1
           desiredIntegrator = 1;
           nstepsRequired = 1;
         } else if (icase == 2) {//BDF2
@@ -34,9 +31,7 @@ class TimeIntegratorHandler {
       }
 
       void setCurrentIntegrator(int icase) {
-        if (icase == 0) {//ForwardEuler
-          currentIntegrator = 0;
-        } else if (icase == 1) {//BDF1
+        if (icase == 1) {//BDF1
           currentIntegrator = 1;
           lhsCoeff = 1;
           rhsCoeff.resize(1);

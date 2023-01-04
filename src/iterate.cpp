@@ -90,57 +90,41 @@ void Problem::iterate() {
 
   //SOLVE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-
-  if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
-    if (timeIntegrator.nstepsStored >= 4) {
-      timeIntegrator.setCurrentIntegrator( 4 );
-    } else if (timeIntegrator.nstepsStored >= 3) {
-      timeIntegrator.setCurrentIntegrator( 3 );
-    } else if (timeIntegrator.nstepsStored >= 2) {
-      timeIntegrator.setCurrentIntegrator( 2 );
-    } else {
-      timeIntegrator.setCurrentIntegrator( 1 );
-    }
-  } else {
-    timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
-  }
-
   lhs.setZero();
   rhs.setZero();
-  mhs.computePulse(pulse, time+dt, mesh);
 
   // general treatment implicit schemes
+  mhs.computePulse(pulse, time+dt, mesh);
   lhs += K;
   if (isAdvection) lhs += -A;
   rhs += pulse;
-  switch (timeIntegrator.currentIntegrator) {
-    case 0:
-      {//Forward Euler
-       //Special treatment explicit scheme
-       //Undo computations for implicit scheme business
-        lhs.setZero();
-        rhs.setZero();
-        pulse.setZero();
-        lhs += M;
-        mhs.computePulse(pulse, time, mesh);
-        rhs += pulse - K*solution;
-        if (isAdvection) rhs += A*solution;
-        solver.compute(lhs);//overkill
-        solution += dt * solver.solve(rhs);
-        break;
-      }
-    default:
-      {//Implicit scheme: Generalized treatment
 
-        lhs += timeIntegrator.lhsCoeff * M / dt;
-        rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
-        solver.compute( lhs );
-        solution = solver.solve(rhs);
-        break;
+  if (not isSteady) {
+    //Set time integration
+    if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
+      if (timeIntegrator.nstepsStored >= 4) {
+        timeIntegrator.setCurrentIntegrator( 4 );
+      } else if (timeIntegrator.nstepsStored >= 3) {
+        timeIntegrator.setCurrentIntegrator( 3 );
+      } else if (timeIntegrator.nstepsStored >= 2) {
+        timeIntegrator.setCurrentIntegrator( 2 );
+      } else {
+        timeIntegrator.setCurrentIntegrator( 1 );
       }
+    } else {
+      timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
+    }
+    //Add time dependency
+    lhs += timeIntegrator.lhsCoeff * M / dt;
+    rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
   }
 
-  // End iteration operations
+  //Solve linear system
+  solver.compute( lhs );
+  cout << "Factorization successful: " << (solver.info() == Eigen::Success) << endl;
+  solution = solver.solve(rhs);
+
+  //END ITERATION
   postIterate();
 
 }

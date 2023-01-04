@@ -54,6 +54,11 @@ void Problem::initialize(map<string,double> &input) {
     isAdvection = (input["movingReferenceFrame"]==1);
   }
 
+  // check for time dependency
+  if (input.count("steadyState")==1) {
+    isSteady = (input["steadyState"]==1);
+  }
+
   // timeIntegrator
   timeIntegrator.setRequiredSteps( input["timeIntegration"] );
 
