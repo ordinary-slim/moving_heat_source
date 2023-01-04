@@ -41,6 +41,7 @@ void Problem::iterate() {
     // matrices assembly
     M.setZero();
     K.setZero();
+    A.setZero();
 
     for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
       l = mesh.getElement( ielem );
@@ -152,10 +153,12 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("iterate", &Problem::iterate)
         .def("setTime", &Problem::setTime)
         .def_readwrite("solution", &Problem::solution)
+        .def_readwrite("pulse", &Problem::pulse)//debugging
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
         .def_readwrite("time", &Problem::time)
-        .def_readonly("dt", &Problem::dt);
+        .def_readonly("dt", &Problem::dt)
+        .def_readonly("isAdvection", &Problem::isAdvection);
     py::class_<Mesh>(m, "Mesh")
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)

@@ -12,8 +12,7 @@ double gaussianPowerDensity(double x, double x0, double power, double efficiency
 }
 
 double gaussianPowerDensityMRF(double x, double x0, double power, double efficiency, double radius) {
-  double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x, 2)/pow(radius, 2));
-  return pd;
+  return gaussianPowerDensity(x, 0.0, power, efficiency, radius);
 }
 
 void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {

@@ -6,7 +6,7 @@ power		10000.0
 initialPositionX		0.0
 initialPositionY		0.0
 initialPositionZ		0.0
-speedX		10
+speedX		5.0
 speedY		0
 speedZ		0
 dt    1
