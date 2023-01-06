@@ -62,7 +62,7 @@ void Problem::iterate() {
             // advection matrix
             ip = inner_product(l.baseFunGradGpVals[jnode][igp].begin(),
                   l.baseFunGradGpVals[jnode][igp].end(),
-                  mhs.speed.begin(),
+                  advectionSpeed.begin(),
                   0.0);
             a_ij += l.gpweight[igp] * (ip * l.baseFunGpVals[inode][igp]) * l.vol;
           }
@@ -94,9 +94,9 @@ void Problem::iterate() {
   rhs.setZero();
 
   // general treatment implicit schemes
-  mhs.computePulse(pulse, time+dt, mesh);
+  mhs.computePulse(pulse, mesh, time+dt, dt);
   lhs += K;
-  if (isAdvection) lhs += -A;
+  if (isAdvection) lhs += A;
   rhs += pulse;
 
   if (not isSteady) {
@@ -121,7 +121,9 @@ void Problem::iterate() {
 
   //Solve linear system
   solver.compute( lhs );
-  cout << "Factorization successful: " << (solver.info() == Eigen::Success) << endl;
+  if (not(solver.info() == Eigen::Success)) {
+    cout << "Singular matrix!" << endl;
+  }
   solution = solver.solve(rhs);
 
   //END ITERATION
@@ -142,7 +144,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("mesh", &Problem::mesh)
         .def_readwrite("time", &Problem::time)
         .def_readonly("dt", &Problem::dt)
-        .def_readonly("isAdvection", &Problem::isAdvection);
+        .def_readonly("isAdvection", &Problem::isAdvection)
+        .def_readonly("advectionSpeed", &Problem::advectionSpeed);
     py::class_<Mesh>(m, "Mesh")
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)

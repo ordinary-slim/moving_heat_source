@@ -1,5 +1,4 @@
-import sys
-# caution: path[0] is reserved for script path (or '' in REPL)
+import sys # caution: path[0] is reserved for script path (or '' in REPL)
 sys.path.insert(1, '..')
 import MovingHeatSource as mhs
 from readInput import *
@@ -11,7 +10,7 @@ import re
 
 def writePost( p, fileName="", postFolder="post" ):
     if not(fileName):
-        fileName = "post{}.csv".format( str(round(p.time, 4)).replace(".", "_") )
+        fileName = "postT{}.csv".format( str(round(p.time, 4)).replace(".", "_") )
 
     os.makedirs( postFolder, exist_ok=True )
     postFile = postFolder + "/" + fileName
@@ -98,10 +97,11 @@ def loadProblem( postFile ):
     # build problem
     df = pd.read_csv( postFile )
     mesh = Bunch( pos=df["X"] )
-    p = Bunch( mesh=mesh, solution=df["T"], time=time )
+    mhs = Bunch()
+    p = Bunch( mesh=mesh, solution=df["T"], time=time, mhs=mhs )
     return p
 
-def test():
+def testBDF3():
     fileName = "input.txt"
     d = formatInputFile( fileName )
     d = parseInput( d )
@@ -131,5 +131,5 @@ def test():
     print(p.solution)
 
 if __name__=="__main__":
-    test()
-    #plot1DPostFolder("postFineReference")
+    #test()
+    plot1DPostFolder("post")

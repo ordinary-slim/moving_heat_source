@@ -14,6 +14,8 @@ void Problem::initialize(map<string,double> &input) {
   // heat source
   mhs.radius = input["radius"];
   mhs.power = input["power"];
+  if (input.count("efficiency")==1) mhs.efficiency = input["efficiency"];
+
   mhs.speed[0] = input["speedX"];
   mhs.speed[1] = input["speedY"];
   mhs.speed[2] = input["speedZ"];
@@ -22,16 +24,12 @@ void Problem::initialize(map<string,double> &input) {
   mhs.initialPosition[2] = input["initialPositionZ"];
   // set type of source term
   switch (int(input["sourceTerm"])) {
-    case 1:
-      {
-        mhs.powerDensity = &gaussianPowerDensityMRF;
-        break;
-      }
+    case 91:
+      { mhs.powerDensity = &forcedSolutionSource91;
+        break; }
     default:
-      {
-        mhs.powerDensity = &gaussianPowerDensity;
-        break;
-      }
+      { mhs.powerDensity = &gaussianPowerDensity;
+        break; }
   }
 
   // initialize solution and increment
@@ -50,8 +48,14 @@ void Problem::initialize(map<string,double> &input) {
   material["cp"] = input["specific_heat"];
 
   // check for advection term
-  if (input.count("movingReferenceFrame")==1) {
-    isAdvection = (input["movingReferenceFrame"]==1);
+  if (input.count("isAdvection")==1) {
+    isAdvection = (input["isAdvection"]==1);
+    if (isAdvection) {
+      advectionSpeed[0] = input["advectionSpeedX"];
+      advectionSpeed[1] = input["advectionSpeedY"];
+      advectionSpeed[2] = input["advectionSpeedZ"];
+      cout << "advectionSpeed= " << advectionSpeed << endl;
+    }
   }
 
   // check for time dependency

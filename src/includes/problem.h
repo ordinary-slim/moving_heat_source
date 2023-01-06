@@ -25,6 +25,7 @@ class Problem {
 
     bool isAssembled = false;
     bool isAdvection = false;
+    Eigen::Vector3d advectionSpeed;
     bool isSteady    = false;
     Eigen::VectorXd rhs;
     SpMat lhs;

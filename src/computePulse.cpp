@@ -6,18 +6,21 @@
 #include "includes/line.h"
 #include "includes/heatSource.h"
 
-double gaussianPowerDensity(double x, double x0, double power, double efficiency, double radius) {
+double gaussianPowerDensity(double x, double t, double x0, double power, double efficiency, double radius) {
   double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x - x0, 2)/pow(radius, 2));
   return pd;
 }
 
-double gaussianPowerDensityMRF(double x, double x0, double power, double efficiency, double radius) {
-  return gaussianPowerDensity(x, 0.0, power, efficiency, radius);
+double forcedSolutionSource91(double x, double t, double x0, double cte, double gamma, double beta) {
+  double alpha = 1;
+  double pd = cte * exp( - gamma * t ) * exp( - beta * pow( x - x0, 2 ) );
+  pd *= ( -pow(2 * beta * (x - x0), 2) + 2 * beta - gamma * alpha);
+  return pd;
 }
 
-void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
+void HeatSource::computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double dt ) {
   double x_gp, r_i;
-  updatePosition( t );
+  updatePosition( dt );
 
   pulse.setZero();
 
@@ -29,7 +32,7 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, double t, Mesh &m ) {
       r_i = 0;
       for (int igp = 0; igp < l.nnodes; ++igp) {
         x_gp = l.gpos[ igp ];
-        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * powerDensity(x_gp, currentPosition[0], power, efficiency, radius);
+        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * powerDensity(x_gp, time, currentPosition[0], power, efficiency, radius);
       }
       pulse[l.con[inode]] += r_i;
     }

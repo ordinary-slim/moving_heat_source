@@ -43,7 +43,7 @@ def printFigures(figureFolder):
     d = formatInputFile( fileName )
     d = parseInput( d )
     Tfinal = d["Tfinal"]
-    adimR = 2
+    adimR = 0.5
     dt = set_dt( d, adimR )
     if not figureFolder:
         figureFolder = "figures/adimR{}".format( formatFloat( adimR ) )
@@ -82,11 +82,25 @@ def printFigures(figureFolder):
         p = mhs.Problem()
         p.initialize( d )
         p.timeIntegration = timeIntegration
-        p.label = labelsMapping[timeIntegration]
+        p.label = "FRF, " + labelsMapping[timeIntegration]
         p.time = pFine.time
-        p.currentPosition = pFine.mhs.currentPosition
+        p.mhs.currentPosition = pFine.mhs.currentPosition
         p.initializeIntegrator( arrPrevSols )
         problems.append( p )
+
+    #MRF
+    pMRF = mhs.Problem()
+    dMRF = dict(d)
+    dMRF["isAdvection"] = 1
+    dMRF["advectionSpeedX"] = -d["speedX"]
+    dMRF["speedX"] = 0.0
+    dMRF["timeIntegration"] = 1
+    pMRF.initialize( dMRF )
+    pMRF.time = pFine.time
+    pMRF.mhs.currentPosition = pFine.mhs.currentPosition
+    pMRF.initializeIntegrator( arrPrevSols )
+    pMRF.label = "MRF, " + labelsMapping[d["timeIntegration"]]
+    problems.append( pMRF )
 
     plt.figure(dpi=200)
     plotHandler = myPlotHandler(problems[0].mesh,
@@ -94,6 +108,7 @@ def printFigures(figureFolder):
                                 figureFolder=figureFolder,
                                 Tmin=d["environmentTemperature"])
 
+    plt.title(r"$\mathcal{R}=" + str(adimR) + r"$")
     promptFreq = 100
     counter = 0
     print( "Run: t0={}, dt={}, Tf={}".format( problems[0].time, problems[0].dt, Tfinal) )
@@ -108,7 +123,7 @@ def printFigures(figureFolder):
     while( round(problems[0].time, 4) < Tfinal ):
         for istep in range(fineStepsPerStep):
             pFine.iterate()
-        plotHandler.plotProblem( pFine, linestyle="--", label=pFine.label, updateLims=False);#debug
+        plotHandler.plotProblem( pFine, linestyle="--", label=pFine.label, updateLims=True);#debug
 
         for p in problems:
             counter += 1
@@ -117,10 +132,11 @@ def printFigures(figureFolder):
             p.iterate()
 
             if plotHandler:
-                plotHandler.plotProblem( p, label=p.label, updateLims=False);#debug
+                plotHandler.plotProblem( p, label=p.label, updateLims=True);#debug
 
 
         if plotHandler:
+            plt.title(r"$\mathcal{R}=" + str(adimR) + r"$")
             plotHandler.pause()
             plotHandler.save()
             plotHandler.clf( problems[0].mesh )

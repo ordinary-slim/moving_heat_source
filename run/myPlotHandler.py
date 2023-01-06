@@ -48,11 +48,11 @@ class myPlotHandler:
             self.mhsPlotted = True
 
         mesh = p.mesh.pos
-        if advectSolution:
-            mesh += x0
+        if p.isAdvection:
+            mesh += -(x0 + p.advectionSpeed[0] * p.time)
 
         plt.plot( mesh, p.solution, linestyle=linestyle, label=label );
-        #plt.xlim( self.left, self.right );
+        plt.xlim( self.left, self.right );
 
         self.currentTime = p.time
 

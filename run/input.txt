@@ -1,6 +1,6 @@
 1D 1.0
 Left 0.0
-Right 100.0
+Right 20.0
 radius		2.0
 power		300.0
 initialPositionX		0.0
@@ -12,7 +12,7 @@ speedZ		0
 dt	1
 nels		1000
 t		0.0
-Tfinal		10.0
+Tfinal		20.0
 maxIter		15
 rho		4e-06
 conductivity		1e-02
@@ -21,3 +21,7 @@ environmentTemperature		25
 plot 1
 timeIntegration 1
 sourceTerm 0
+isAdvection 0
+advectionSpeedX 0.0
+advectionSpeedY 0.0
+advectionSpeedZ 0.0

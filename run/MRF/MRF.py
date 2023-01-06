@@ -26,13 +26,13 @@ def getadimR( d ):
     nels = d["nels"]
     h = L/float(nels)
     dt = d["dt"]
-    speed = d["speedX"]
+    speed = max(abs(d["speedX"]), abs(d["advectionSpeedX"]))
     return (speed * dt) / h
 
 def set_dt( d, adimR ):
     L = d["Right"] - d["Left"]
     r = d["radius"]
-    speed = d["speedX"]
+    speed = max(abs(d["speedX"]), abs(d["advectionSpeedX"]))
     dt = (adimR * r) / float(speed)
     d["dt"] = dt
     print( "adimR = {}, dt = {}".format( adimR, dt ) )
@@ -69,7 +69,8 @@ def main(figureFolder):
     pFRF = mhs.Problem()
     dFRF = dict(d)
     dFRF["sourceTerm"] = 0
-    dFRF["movingReferenceFrame"] = 1
+    dFRF["speedX"] = -d["advectionSpeedX"]
+    dFRF["isAdvection"] = 0
     pFRF.initialize( dFRF )
     pFRF.label = "FRF"
     problems.append( pFRF )
@@ -86,7 +87,7 @@ def main(figureFolder):
                                 pauseTime=0.1,
                                 figureFolder=figureFolder,
                                 Tmin=d["environmentTemperature"])
-
+    plotHandler.left = -100.0
     promptFreq = 100
     counter = 0
     print( "Run: t0={}, dt={}, Tf={}".format( problems[0].time, problems[0].dt, Tfinal) )
@@ -120,6 +121,7 @@ def main(figureFolder):
                 plotHandler.plotProblem( p, label=p.label, advectSolution=advectSolution)
 
         if plotHandler:
+            plt.title(r"$\mathcal{R}=" + str(adimR) + r"$")
             plotHandler.pause()
             plotHandler.save()
             plotHandler.clf( problems[0].mesh )

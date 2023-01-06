@@ -15,15 +15,15 @@ class HeatSource {
       double radius = 2.0;
       double time = 0.0;
 
-      void updatePosition( double t ) {
-        currentPosition = initialPosition + speed * t;
+      void updatePosition( double dt ) {
+        currentPosition += speed * dt;
       }
 
-      void computePulse( Eigen::VectorXd &pulse, double t, Mesh &m );
-      double (*powerDensity)(double x, double x0, double power, double efficiency, double radius);
+      void computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double dt );
+      double (*powerDensity)(double x, double t, double x0, double power, double efficiency, double radius);
     };
 
-double gaussianPowerDensity(double x, double x0, double power, double efficiency, double radius);
-double gaussianPowerDensityMRF(double x, double x0, double power, double efficiency, double radius);
+double gaussianPowerDensity(double x, double t, double x0, double power, double efficiency, double radius);
+double forcedSolutionSource91(double x, double t, double x0, double power, double efficiency, double radius);
 #define HEATSOURCE
 #endif
