@@ -6,7 +6,10 @@
 #include "timeIntegrator.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include "../../external/pybind11/include/pybind11/pybind11.h"
+#include "../../external/pybind11/include/pybind11/stl.h"
 
+namespace py = pybind11;
 
 using namespace std;
 
@@ -42,7 +45,7 @@ class Problem {
       time = newTime;
       mhs.time = newTime;
     }
-    void initialize(map<string,double> &input);
+    void initialize(py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void postIterate();

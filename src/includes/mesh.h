@@ -1,7 +1,7 @@
 #ifndef MESH
 #include <iostream>
 #include <vector>
-#include "line.h"
+#include "element.h"
 
 using namespace std;
 
@@ -10,39 +10,42 @@ class Mesh {
     int nels, nnodes, nnodes_per_el;
     vector<double> pos;// node positions
     vector<vector<int>> con;// connectivy
+    vector<int> elementTypes;
     
-    void initialize1DMesh( double A, double B, int numberOfEls ){
-      nels = numberOfEls;
-      nnodes = nels + 1;
-      double L = (B - A);
-      double h = L / nels;
-      cout << "h = " << h << endl;
+    void initialize1DMesh( double A, double B, int numberOfEls );
 
-      con.resize( nels );
-      pos.resize( nnodes );
-
-      for (int i = 0; i < nnodes; i++) {
-        pos[i] = A + i*h;
+    Element getElement(int ielem) {
+      Element e;
+      e.elementType = elementTypes[ielem];
+      switch (e.elementType) {
+        case 0: {//P0-line
+            e.dimension = 1;
+            e.nnodes = 2;
+            break;
+          }
+        default: {
+          break;}
       }
 
-      // build connectivity; inneficient but clear
-      nnodes_per_el = 2;
-      for (int i = 0; i < nels; i++) {
-        con[i].push_back( i );
-        con[i].push_back( i+1 );
+      // allocs
+      e.pos.reserve( e.nnodes );
+      e.gpos.reserve( e.nnodes );
+      e.baseFunGpVals.resize( nnodes );
+      e.gpweight.resize( nnodes );
+      e.allocateBaseFunGradGpVals();
+
+      // set pos
+      for (int inode=0; inode < e.nnodes; inode++) {
+        e.pos[inode] = pos[ con[ielem][inode] ];
       }
+      // set connectivity
+      e.con = con[ielem];
+
+      e.setClosedIntegration();//derivatives etc
+      return e;
     }
 
-    Line getElement(int ielem) {
-      Line l;
-      l.pos[0] = pos[ con[ielem][0] ];
-      l.pos[1] = pos[ con[ielem][1] ];
-      l.vol = pos[ con[ielem][1] ] - pos[ con[ielem][0] ];
-      l.con = con[ielem];
-      l.setClosedIntegration();
-      return l;
-    }
-
+    // DEBUG
     void print() {
       cout << "Nodal pos:" << endl;
       for (int i = 0; i<nnodes; i++) {

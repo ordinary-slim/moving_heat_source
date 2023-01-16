@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "includes/line.h"
+#include "includes/element.h"
 #include "includes/problem.h"
 #include <numeric>
 #include <algorithm>
@@ -37,34 +37,34 @@ void Problem::iterate() {
     vector<T> A_coeffs;
     A_coeffs.reserve( 3*mesh.nnodes );
 
-    Line l;
     // matrices assembly
     M.setZero();
     K.setZero();
     A.setZero();
 
+    Element e;
     for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
-      l = mesh.getElement( ielem );
-      for (int inode = 0; inode < l.nnodes; inode++) {
-        for (int jnode = 0; jnode < l.nnodes; jnode++) {
+      e = mesh.getElement( ielem );
+      for (int inode = 0; inode < e.nnodes; inode++) {
+        for (int jnode = 0; jnode < e.nnodes; jnode++) {
           m_ij = 0;
           k_ij = 0;
           a_ij = 0;
-          for (int igp = 0; igp < l.nnodes; igp++) {
+          for (int igp = 0; igp < e.nnodes; igp++) {
             // mass matrix
-            m_ij += l.gpweight[igp] * l.baseFunGpVals[inode][igp]*l.baseFunGpVals[jnode][igp]*l.vol;
+            m_ij += e.gpweight[igp] * e.baseFunGpVals[inode][igp]*e.baseFunGpVals[jnode][igp]*e.vol;
             // stiffness matrix
-            ip = inner_product(l.baseFunGradGpVals[inode][igp].begin(),
-                  l.baseFunGradGpVals[inode][igp].end(),
-                  l.baseFunGradGpVals[jnode][igp].begin(),
+            ip = inner_product(e.baseFunGradGpVals[inode][igp].begin(),
+                  e.baseFunGradGpVals[inode][igp].end(),
+                  e.baseFunGradGpVals[jnode][igp].begin(),
                   0.0);
-            k_ij += l.gpweight[igp] * ip * l.vol;
+            k_ij += e.gpweight[igp] * ip * e.vol;
             // advection matrix
-            ip = inner_product(l.baseFunGradGpVals[jnode][igp].begin(),
-                  l.baseFunGradGpVals[jnode][igp].end(),
+            ip = inner_product(e.baseFunGradGpVals[jnode][igp].begin(),
+                  e.baseFunGradGpVals[jnode][igp].end(),
                   advectionSpeed.begin(),
                   0.0);
-            a_ij += l.gpweight[igp] * (ip * l.baseFunGpVals[inode][igp]) * l.vol;
+            a_ij += e.gpweight[igp] * (ip * e.baseFunGpVals[inode][igp]) * e.vol;
           }
           m_ij *= material["rho"]*material["cp"];
           k_ij *= material["k"];
@@ -76,9 +76,9 @@ void Problem::iterate() {
           // send it to rhs multiplying dirichlet
 
 
-          M_coeffs.push_back( T( l.con[inode], l.con[jnode], m_ij ) );
-          K_coeffs.push_back( T( l.con[inode], l.con[jnode], k_ij ) );
-          A_coeffs.push_back( T( l.con[inode], l.con[jnode], a_ij ) );
+          M_coeffs.push_back( T( e.con[inode], e.con[jnode], m_ij ) );
+          K_coeffs.push_back( T( e.con[inode], e.con[jnode], k_ij ) );
+          A_coeffs.push_back( T( e.con[inode], e.con[jnode], a_ij ) );
         }
       }
     }

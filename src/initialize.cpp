@@ -1,29 +1,35 @@
 #include "includes/problem.h"
 #include <map>
 #include <string>
+#include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/stl.h"
 
-void Problem::initialize(map<string,double> &input) {
+namespace py = pybind11;
+
+void Problem::initialize(py::dict &input) {
   // tstepping
-  dt = input["dt"];
+  dt = py::cast<double>(input["dt"]);
   // discrete mesh
-  float a = input["Left"];
-  float b = input["Right"];
-  int nels = int( input["nels"] );
-  mesh.initialize1DMesh( a, b, nels );
+  if (input.contains("1D")) {
+    double a = py::cast<double>(input["Left"]);
+    double b = py::cast<double>(input["Right"]);
+    int nels = py::cast<int>( input["nels"] );
+    mesh.initialize1DMesh( a, b, nels );
+  }
 
   // heat source
-  mhs.radius = input["radius"];
-  mhs.power = input["power"];
-  if (input.count("efficiency")==1) mhs.efficiency = input["efficiency"];
+  mhs.radius = py::cast<double>(input["radius"]);
+  mhs.power = py::cast<double>(input["power"]);
+  if (input.contains("efficiency")) mhs.efficiency = py::cast<double>(input["efficiency"]);
 
-  mhs.speed[0] = input["speedX"];
-  mhs.speed[1] = input["speedY"];
-  mhs.speed[2] = input["speedZ"];
-  mhs.initialPosition[0] = input["initialPositionX"];
-  mhs.initialPosition[1] = input["initialPositionY"];
-  mhs.initialPosition[2] = input["initialPositionZ"];
+  mhs.speed[0] = py::cast<double>(input["speedX"]);
+  mhs.speed[1] = py::cast<double>(input["speedY"]);
+  mhs.speed[2] = py::cast<double>(input["speedZ"]);
+  mhs.initialPosition[0] = py::cast<double>(input["initialPositionX"]);
+  mhs.initialPosition[1] = py::cast<double>(input["initialPositionY"]);
+  mhs.initialPosition[2] = py::cast<double>(input["initialPositionZ"]);
   // set type of source term
-  switch (int(input["sourceTerm"])) {
+  switch (int(py::cast<int>( input["sourceTerm"] ))) {
     case 91:
       { mhs.powerDensity = &forcedSolutionSource91;
         break; }
@@ -33,38 +39,37 @@ void Problem::initialize(map<string,double> &input) {
   }
 
   // initialize solution and increment
-  double environmentTemperature = input["environmentTemperature"];
+  double environmentTemperature = py::cast<double>(input["environmentTemperature"]);
   solution = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
-  // gaussian IC
-  //mhs.computePulse( solution, time, mesh );
 
   // dirichlet BC
   vector<int> freeNodes(mesh.nnodes);
 
 
   // material. dictionnary is not efficient + involved in assembly
-  material["rho"] = input["rho"];
-  material["k"] = input["conductivity"];
-  material["cp"] = input["specific_heat"];
+  material["rho"] = py::cast<double>(input["rho"]);
+  material["k"] = py::cast<double>(input["conductivity"]);
+  material["cp"] = py::cast<double>(input["specific_heat"]);
 
   // check for advection term
-  if (input.count("isAdvection")==1) {
-    isAdvection = (input["isAdvection"]==1);
+  if (input.contains("isAdvection")) {
+    isAdvection = py::cast<bool>(input["isAdvection"]);
     if (isAdvection) {
-      advectionSpeed[0] = input["advectionSpeedX"];
-      advectionSpeed[1] = input["advectionSpeedY"];
-      advectionSpeed[2] = input["advectionSpeedZ"];
+      advectionSpeed[0] = py::cast<double>(input["advectionSpeedX"]);
+      advectionSpeed[1] = py::cast<double>(input["advectionSpeedY"]);
+      advectionSpeed[2] = py::cast<double>(input["advectionSpeedZ"]);
       cout << "advectionSpeed= " << advectionSpeed << endl;
     }
   }
 
   // check for time dependency
-  if (input.count("steadyState")==1) {
-    isSteady = (input["steadyState"]==1);
+  if (input.contains("steadyState")) {
+    isSteady = py::cast<bool>(input["steadyState"]);
   }
 
+
   // timeIntegrator
-  timeIntegrator.setRequiredSteps( input["timeIntegration"] );
+  timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
 
   // allocate storage for previous solutions
   prevSolutions = Eigen::MatrixXd::Zero( mesh.nnodes, timeIntegrator.nstepsRequired );

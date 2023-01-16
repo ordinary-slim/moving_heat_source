@@ -7,20 +7,16 @@ using namespace std;
 class Element {
   public:
     int nnodes;
-    vector<double> rpos, rgpos;
     vector<double> pos, gpos;
     vector<double> gpweight;
     vector<int> con;
     double vol;
-    int dimension;
+    int dimension, elementType;
     vector<vector<double>> baseFunGpVals;
     vector<vector<vector<double>>> baseFunGradGpVals;
 
     void setClosedIntegration(){
-      // common for all elements
-      gpos.reserve( nnodes );
-      baseFunGpVals.resize( nnodes );
-      gpweight.resize( nnodes );
+      //COMMON
       // gauss point positions
       for (int inode = 0; inode < nnodes; inode++) {
         gpos[inode] = pos[inode];
@@ -28,10 +24,9 @@ class Element {
         fill( baseFunGpVals[inode].begin(), baseFunGpVals[inode].end(), 0.0);
         baseFunGpVals[inode][inode] = 1.0;
       }
-
       fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
 
-      allocateBaseFunGradGpVals();
+      //UNCOMMON
       setBaseFunGradGpVals();
     }
 
@@ -47,6 +42,22 @@ class Element {
       }
     }
 
+    void setBaseFunGradGpVals() {
+      switch (elementType) {
+        case 0: {//P0-line
+          for (int jgp=0; jgp<nnodes; jgp++) {
+            // compute vol
+            vol = pos[ 1 ] - pos[ 0 ];
+            baseFunGradGpVals[0][jgp][0] = -1.0 / vol ;
+            baseFunGradGpVals[1][jgp][0] = +1.0 / vol ;
+          }
+          break;}
+        default: {
+          break;}
+      }
+    }
+
+    // DEBUGGING FUNCS
     void printBaseFunGradGpVals() {
       for (int igp = 0; igp < nnodes; igp++) {
         for (int jgp = 0; jgp < nnodes; jgp++) {
@@ -60,8 +71,6 @@ class Element {
       }
       cout << "-------------\n";
     }
-
-    virtual void setBaseFunGradGpVals() = 0;
 
     void print() {
       for (int i = 0; i < nnodes; i++) {

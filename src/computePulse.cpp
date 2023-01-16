@@ -3,9 +3,10 @@
 #include <cmath>
 #include <vector>
 #include "includes/mesh.h"
-#include "includes/line.h"
+#include "includes/element.h"
 #include "includes/heatSource.h"
 
+//1D heat sources
 double gaussianPowerDensity(double x, double t, double x0, double power, double efficiency, double radius) {
   double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x - x0, 2)/pow(radius, 2));
   return pd;
@@ -24,17 +25,17 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double
 
   pulse.setZero();
 
-  Line l;
+  Element e;
   // assemble
   for (int ielem = 0; ielem < m.nels; ++ielem) {
-    l = m.getElement( ielem );
-    for (int inode = 0; inode < l.nnodes; ++inode) {
+    e = m.getElement( ielem );
+    for (int inode = 0; inode < e.nnodes; ++inode) {
       r_i = 0;
-      for (int igp = 0; igp < l.nnodes; ++igp) {
-        x_gp = l.gpos[ igp ];
-        r_i += l.gpweight[igp] * l.baseFunGpVals[inode][igp] * l.vol * powerDensity(x_gp, time, currentPosition[0], power, efficiency, radius);
+      for (int igp = 0; igp < e.nnodes; ++igp) {
+        x_gp = e.gpos[ igp ];
+        r_i += e.gpweight[igp] * e.baseFunGpVals[inode][igp] * e.vol * powerDensity(x_gp, time, currentPosition[0], power, efficiency, radius);
       }
-      pulse[l.con[inode]] += r_i;
+      pulse[e.con[inode]] += r_i;
     }
   }
 }
