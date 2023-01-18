@@ -146,7 +146,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed);
-    py::class_<Mesh>(m, "Mesh")
+    py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)
         .def_readonly("nels", &Mesh::nels)
