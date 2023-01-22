@@ -1,6 +1,7 @@
 import sys
 # caution: path[0] is reserved for script path (or '' in REPL)
 sys.path.insert(1, '..')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 from readInput import *
 from prepos import *

@@ -8,12 +8,10 @@ using namespace std;
 class Mesh {
   public:
     int nels, nnodes, nnodes_per_el;
-    vector<double> pos;// node positions
+    vector<Eigen::Vector3d> pos;// node positions
     vector<vector<int>> con;// connectivy
     vector<int> elementTypes;
     
-    void initialize1DMesh( double A, double B, int numberOfEls );
-
     Element getElement(int ielem) {
       Element e;
       e.elementType = elementTypes[ielem];
@@ -27,12 +25,21 @@ class Mesh {
           break;}
       }
 
-      // allocs
+      // ALLOCATIONS
       e.pos.reserve( e.nnodes );
       e.gpos.reserve( e.nnodes );
+      // BaseFun
       e.baseFunGpVals.resize( nnodes );
+      // Quadrature weights
       e.gpweight.resize( nnodes );
-      e.allocateBaseFunGradGpVals();
+      // GradBaseFun
+      e.baseFunGradGpVals.resize( e.nnodes );
+      for (int igp = 0; igp < e.nnodes; igp++) {
+        e.baseFunGradGpVals[igp].resize( e.nnodes );
+        for (int jgp = 0; jgp < e.nnodes; jgp++) {
+          e.baseFunGradGpVals[igp][jgp].resize( e.dimension );
+        }
+      }
 
       // set pos
       for (int inode=0; inode < e.nnodes; inode++) {
@@ -41,9 +48,13 @@ class Mesh {
       // set connectivity
       e.con = con[ielem];
 
-      e.setClosedIntegration();//derivatives etc
+      // COMPUTATIONS
+      e.computeNodalValues_Base();//COMMON BETWEEN ELS
+      e.computeNodalValues_GradBase();//UNCOMMON
       return e;
     }
+
+    void initialize1DMesh( double A, double B, int numberOfEls );
 
     // DEBUG
     void print() {

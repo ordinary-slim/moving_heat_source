@@ -1,13 +1,14 @@
 #ifndef ELEMENT
 #include <iostream>
 #include <vector>
+#include <Eigen/Core>
 #include <algorithm>
 using namespace std;
 
 class Element {
   public:
     int nnodes;
-    vector<double> pos, gpos;
+    vector<Eigen::Vector3d> pos, gpos;
     vector<double> gpweight;
     vector<int> con;
     double vol;
@@ -15,9 +16,9 @@ class Element {
     vector<vector<double>> baseFunGpVals;
     vector<vector<vector<double>>> baseFunGradGpVals;
 
-    void setClosedIntegration(){
+    void computeNodalValues_Base(){
       //COMMON
-      // gauss point positions
+      //Closed integration
       for (int inode = 0; inode < nnodes; inode++) {
         gpos[inode] = pos[inode];
         baseFunGpVals[inode].resize( nnodes );
@@ -25,29 +26,14 @@ class Element {
         baseFunGpVals[inode][inode] = 1.0;
       }
       fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
-
-      //UNCOMMON
-      setBaseFunGradGpVals();
     }
 
-    void allocateBaseFunGradGpVals() {
-      // Refactoring needed here!
-      // allocate. this is common between elements
-      baseFunGradGpVals.resize( nnodes );
-      for (int igp = 0; igp < nnodes; igp++) {
-        baseFunGradGpVals[igp].resize( nnodes );
-        for (int jgp = 0; jgp < nnodes; jgp++) {
-          baseFunGradGpVals[igp][jgp].resize( dimension );
-        }
-      }
-    }
-
-    void setBaseFunGradGpVals() {
+    void computeNodalValues_GradBase() {
       switch (elementType) {
         case 0: {//P0-line
+          vol = pos[ 1 ][0] - pos[ 0 ][0];
           for (int jgp=0; jgp<nnodes; jgp++) {
             // compute vol
-            vol = pos[ 1 ] - pos[ 0 ];
             baseFunGradGpVals[0][jgp][0] = -1.0 / vol ;
             baseFunGradGpVals[1][jgp][0] = +1.0 / vol ;
           }

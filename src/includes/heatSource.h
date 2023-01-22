@@ -20,10 +20,10 @@ class HeatSource {
       }
 
       void computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double dt );
-      double (*powerDensity)(double x, double t, double x0, double power, double efficiency, double radius);
+      double (*powerDensity)(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
     };
 
-double gaussianPowerDensity(double x, double t, double x0, double power, double efficiency, double radius);
-double forcedSolutionSource91(double x, double t, double x0, double power, double efficiency, double radius);
+double gaussianPowerDensity(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
+double forcedSolutionSource91(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
 #define HEATSOURCE
 #endif

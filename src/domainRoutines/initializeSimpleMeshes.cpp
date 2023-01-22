@@ -13,7 +13,9 @@ void Mesh::initialize1DMesh( double A, double B, int numberOfEls ){
   pos.resize( nnodes );
 
   for (int i = 0; i < nnodes; i++) {
-    pos[i] = A + i*h;
+    pos[i][0] = A + i*h;
+    pos[i][1] = 0.0;
+    pos[i][2] = 0.0;
   }
 
   // build connectivity; inneficient but clear

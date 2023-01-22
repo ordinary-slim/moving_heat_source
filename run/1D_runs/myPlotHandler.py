@@ -7,8 +7,8 @@ class myPlotHandler:
             pauseTime=0.25,
             figureFolder="",
             shortDescription=""):
-        self.left = min(m.pos)
-        self.right = max(m.pos)
+        self.left = m.pos[0][0]
+        self.right = m.pos[-1][0]
         self.L = self.right - self.left
         self.currentTime = -1
         self.Tmin = Tmin
@@ -47,7 +47,10 @@ class myPlotHandler:
             plt.axvline(x=x0, linestyle='--', linewidth=0.5, color="red")
             self.mhsPlotted = True
 
-        mesh = p.mesh.pos
+        mesh = []
+        for idx in range(len(p.mesh.pos)):
+            mesh.append( p.mesh.pos[idx][0] )
+
         if p.isAdvection:
             mesh += -(x0 + p.advectionSpeed[0] * p.time)
 
