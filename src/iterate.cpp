@@ -43,6 +43,9 @@ void Problem::iterate() {
     A.setZero();
 
     Element e;
+    double rho = material["rho"];
+    double cp = material["cp"];
+    double k = material["k"];
     for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
       e = mesh.getElement( ielem );
       for (int inode = 0; inode < e.nnodes; inode++) {
@@ -52,23 +55,23 @@ void Problem::iterate() {
           a_ij = 0;
           for (int igp = 0; igp < e.nnodes; igp++) {
             // mass matrix
-            m_ij += e.gpweight[igp] * e.baseFunGpVals[inode][igp]*e.baseFunGpVals[jnode][igp]*e.vol;
+            m_ij += e.gpweight[igp] * e.BaseGpVals[inode][igp]*e.BaseGpVals[jnode][igp]*e.vol;
             // stiffness matrix
-            ip = inner_product(e.baseFunGradGpVals[inode][igp].begin(),
-                  e.baseFunGradGpVals[inode][igp].end(),
-                  e.baseFunGradGpVals[jnode][igp].begin(),
+            ip = inner_product(e.GradBaseGpVals[inode][igp].begin(),
+                  e.GradBaseGpVals[inode][igp].end(),
+                  e.GradBaseGpVals[jnode][igp].begin(),
                   0.0);
             k_ij += e.gpweight[igp] * ip * e.vol;
             // advection matrix
-            ip = inner_product(e.baseFunGradGpVals[jnode][igp].begin(),
-                  e.baseFunGradGpVals[jnode][igp].end(),
+            ip = inner_product(e.GradBaseGpVals[jnode][igp].begin(),
+                  e.GradBaseGpVals[jnode][igp].end(),
                   advectionSpeed.begin(),
                   0.0);
-            a_ij += e.gpweight[igp] * (ip * e.baseFunGpVals[inode][igp]) * e.vol;
+            a_ij += e.gpweight[igp] * (ip * e.BaseGpVals[inode][igp]) * e.vol;
           }
-          m_ij *= material["rho"]*material["cp"];
-          k_ij *= material["k"];
-          a_ij *= material["rho"]*material["cp"];
+          m_ij *= rho * cp ;
+          k_ij *= k ;
+          a_ij *= rho * cp;
 
           // lookup i or j belong to fixed nodes
           //
@@ -151,7 +154,19 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("pos", &Mesh::pos)
         .def_readonly("nels", &Mesh::nels)
         .def_readonly("nnodes", &Mesh::nnodes)
-        .def("initialize1DMesh", &Mesh::initialize1DMesh);
+        .def("generate1DMesh", &Mesh::generate1DMesh)
+        .def("getElement", &Mesh::getElement);
+    py::class_<Element>(m, "Element", py::dynamic_attr())
+        .def(py::init<>())
+        .def_readonly("pos", &Element::pos)
+        .def_readonly("gpos", &Element::gpos)
+        .def_readonly("gpweight", &Element::gpweight)
+        .def_readonly("con", &Element::con)
+        .def_readonly("vol", &Element::vol)
+        .def_readonly("dimension", &Element::dimension)
+        .def_readonly("elementType", &Element::elementType);
+        vector<vector<double>> BaseGpVals;
+        vector<vector<Eigen::Vector3d>> GradBaseGpVals;
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition);

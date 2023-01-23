@@ -1,6 +1,7 @@
 #ifndef MESH
 #include <iostream>
 #include <vector>
+#include <Eigen/Core>
 #include "element.h"
 
 using namespace std;
@@ -21,23 +22,28 @@ class Mesh {
             e.nnodes = 2;
             break;
           }
+        case 3: {//P0-triangle
+            e.dimension = 2;
+            e.nnodes = 3;
+            break;
+          }
         default: {
           break;}
       }
 
       // ALLOCATIONS
-      e.pos.reserve( e.nnodes );
-      e.gpos.reserve( e.nnodes );
+      e.pos.resize( e.nnodes );
+      e.gpos.resize( e.nnodes );
       // BaseFun
-      e.baseFunGpVals.resize( nnodes );
+      e.BaseGpVals.resize( e.nnodes );
       // Quadrature weights
-      e.gpweight.resize( nnodes );
+      e.gpweight.resize( e.nnodes );
       // GradBaseFun
-      e.baseFunGradGpVals.resize( e.nnodes );
+      e.GradBaseGpVals.resize( e.nnodes );
       for (int igp = 0; igp < e.nnodes; igp++) {
-        e.baseFunGradGpVals[igp].resize( e.nnodes );
+        e.GradBaseGpVals[igp].resize( e.nnodes );
         for (int jgp = 0; jgp < e.nnodes; jgp++) {
-          e.baseFunGradGpVals[igp][jgp].resize( e.dimension );
+          e.GradBaseGpVals[igp][jgp].setZero();
         }
       }
 
@@ -54,7 +60,7 @@ class Mesh {
       return e;
     }
 
-    void initialize1DMesh( double A, double B, int numberOfEls );
+    void generate1DMesh( double A, double B, int numberOfEls );
 
     // DEBUG
     void print() {

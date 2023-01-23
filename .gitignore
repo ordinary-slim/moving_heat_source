@@ -2,3 +2,5 @@ main
 MovingHeatSource.so
 obj
 build
+Debug
+Release

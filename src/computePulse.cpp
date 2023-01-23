@@ -35,7 +35,7 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double
       r_i = 0;
       for (int igp = 0; igp < e.nnodes; ++igp) {
         x_gp = e.gpos[ igp ];
-        r_i += e.gpweight[igp] * e.baseFunGpVals[inode][igp] * e.vol * powerDensity(x_gp, time, currentPosition, power, efficiency, radius);
+        r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol * powerDensity(x_gp, time, currentPosition, power, efficiency, radius);
       }
       pulse[e.con[inode]] += r_i;
     }

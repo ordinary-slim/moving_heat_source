@@ -1,7 +1,7 @@
 #include "../includes/mesh.h"
 
 
-void Mesh::initialize1DMesh( double A, double B, int numberOfEls ){
+void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
   nels = numberOfEls;
   nnodes = nels + 1;
   double L = (B - A);

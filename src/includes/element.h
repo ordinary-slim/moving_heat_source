@@ -13,17 +13,17 @@ class Element {
     vector<int> con;
     double vol;
     int dimension, elementType;
-    vector<vector<double>> baseFunGpVals;
-    vector<vector<vector<double>>> baseFunGradGpVals;
+    vector<vector<double>> BaseGpVals;
+    vector<vector<Eigen::Vector3d>> GradBaseGpVals;
 
     void computeNodalValues_Base(){
       //COMMON
       //Closed integration
       for (int inode = 0; inode < nnodes; inode++) {
         gpos[inode] = pos[inode];
-        baseFunGpVals[inode].resize( nnodes );
-        fill( baseFunGpVals[inode].begin(), baseFunGpVals[inode].end(), 0.0);
-        baseFunGpVals[inode][inode] = 1.0;
+        BaseGpVals[inode].resize( nnodes );
+        fill( BaseGpVals[inode].begin(), BaseGpVals[inode].end(), 0.0);
+        BaseGpVals[inode][inode] = 1.0;
       }
       fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
     }
@@ -34,8 +34,8 @@ class Element {
           vol = pos[ 1 ][0] - pos[ 0 ][0];
           for (int jgp=0; jgp<nnodes; jgp++) {
             // compute vol
-            baseFunGradGpVals[0][jgp][0] = -1.0 / vol ;
-            baseFunGradGpVals[1][jgp][0] = +1.0 / vol ;
+            GradBaseGpVals[0][jgp][0] = -1.0 / vol ;
+            GradBaseGpVals[1][jgp][0] = +1.0 / vol ;
           }
           break;}
         default: {
@@ -49,7 +49,7 @@ class Element {
         for (int jgp = 0; jgp < nnodes; jgp++) {
           cout << "(";
           for (int idim = 0; idim < dimension; idim++) {
-            printf("%.3f, ", baseFunGradGpVals[igp][jgp][idim]);
+            printf("%.3f, ", GradBaseGpVals[igp][jgp][idim]);
           }
           cout << ")\t\t";
         }
