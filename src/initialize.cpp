@@ -17,7 +17,13 @@ void Problem::initialize(py::dict &input) {
     int nels = py::cast<int>( input["nels"] );
     mesh.generate1DMesh( a, b, nels );
   } else {
-    mesh.pos = py::cast<vector<Eigen::Vector3d>>( input["points"] );
+    // TODO : Casting to pos / con DSs
+    //ALLOCATIONS
+    //get nnodes, nels
+    //allocate
+    //CASTING
+    py::object points = input["points"];
+    cout << "hello" << endl;
   }
 
   // heat source

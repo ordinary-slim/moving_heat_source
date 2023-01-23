@@ -8,7 +8,7 @@ using namespace std;
 class Element {
   public:
     int nnodes;
-    vector<Eigen::Vector3d> pos, gpos;
+    Eigen::MatrixX3d pos, gpos;
     vector<double> gpweight;
     vector<int> con;
     double vol;
@@ -20,7 +20,7 @@ class Element {
       //COMMON
       //Closed integration
       for (int inode = 0; inode < nnodes; inode++) {
-        gpos[inode] = pos[inode];
+        gpos.row(inode) = pos.row(inode);
         BaseGpVals[inode].resize( nnodes );
         fill( BaseGpVals[inode].begin(), BaseGpVals[inode].end(), 0.0);
         BaseGpVals[inode][inode] = 1.0;
@@ -31,7 +31,7 @@ class Element {
     void computeNodalValues_GradBase() {
       switch (elementType) {
         case 0: {//P0-line
-          vol = pos[ 1 ][0] - pos[ 0 ][0];
+          vol = pos(1, 0) - pos(0, 0);
           for (int jgp=0; jgp<nnodes; jgp++) {
             // compute vol
             GradBaseGpVals[0][jgp][0] = -1.0 / vol ;
@@ -60,7 +60,7 @@ class Element {
 
     void print() {
       for (int i = 0; i < nnodes; i++) {
-        cout << pos[i] << ", ";
+        cout << pos.row(i) << ", ";
       }
       cout << endl;
     }

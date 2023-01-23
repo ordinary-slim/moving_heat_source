@@ -9,7 +9,7 @@ using namespace std;
 class Mesh {
   public:
     int nels, nnodes, nnodes_per_el;
-    vector<Eigen::Vector3d> pos;// node positions
+    Eigen::MatrixX3d pos;// node positions
     vector<vector<int>> con;// connectivy
     vector<int> elementTypes;
     
@@ -32,8 +32,8 @@ class Mesh {
       }
 
       // ALLOCATIONS
-      e.pos.resize( e.nnodes );
-      e.gpos.resize( e.nnodes );
+      e.pos.resize( e.nnodes, 3 );
+      e.gpos.resize( e.nnodes, 3 );
       // BaseFun
       e.BaseGpVals.resize( e.nnodes );
       // Quadrature weights
@@ -47,12 +47,12 @@ class Mesh {
         }
       }
 
-      // set pos
-      for (int inode=0; inode < e.nnodes; inode++) {
-        e.pos[inode] = pos[ con[ielem][inode] ];
-      }
       // set connectivity
       e.con = con[ielem];
+      // set pos
+      for (int inode=0; inode < e.nnodes; inode++) {
+        e.pos.row(inode) = pos.row(e.con[inode]);
+      }
 
       // COMPUTATIONS
       e.computeNodalValues_Base();//COMMON BETWEEN ELS
@@ -66,7 +66,7 @@ class Mesh {
     void print() {
       cout << "Nodal pos:" << endl;
       for (int i = 0; i<nnodes; i++) {
-        cout << pos[i] << endl;
+        cout << pos.row(i) << endl;
       }
       cout << "connectivity:" << endl;
       for (int i = 0; i<nels; i++) {

@@ -10,12 +10,12 @@ void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
 
   con.resize( nels );
   elementTypes.resize( nels );
-  pos.resize( nnodes );
+  pos.resize( nnodes, 3 );
 
   for (int i = 0; i < nnodes; i++) {
-    pos[i][0] = A + i*h;
-    pos[i][1] = 0.0;
-    pos[i][2] = 0.0;
+    pos(i, 0) = A + i*h;
+    pos(i, 1) = 0.0;
+    pos(i, 2) = 0.0;
   }
 
   // build connectivity; inneficient but clear
