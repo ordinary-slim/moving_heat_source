@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/eigen.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
 namespace py = pybind11;
@@ -20,10 +21,22 @@ void Problem::initialize(py::dict &input) {
     // TODO : Casting to pos / con DSs
     //ALLOCATIONS
     //get nnodes, nels
+    py::array points = input["points"];
+    cout << "npoints:" << points.shape(0) << endl;
+    cout << "ndims:" << points.shape(1) << endl;
+
+    mesh.pos.resize( points.shape( 0 ), 3 );
+    mesh.pos.setZero();
+
+    auto aux_points = points.unchecked<double>();
+    for ( int ipoint = 0; ipoint < points.shape(0); ipoint++) {
+      for ( int idim = 0; idim < points.shape(1); idim++) {
+        mesh.pos(ipoint, idim) =  aux_points(ipoint, idim);
+      }
+    }
+    
     //allocate
     //CASTING
-    py::object points = input["points"];
-    cout << "hello" << endl;
   }
 
   // heat source
