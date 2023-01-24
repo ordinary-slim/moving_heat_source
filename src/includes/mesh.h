@@ -16,21 +16,7 @@ class Mesh {
     
     Element getElement(int ielem) {
       Element e;
-      e.elementType = elementTypes[ielem];
-      switch (e.elementType) {
-        case 0: {//P0-line
-            e.dimension = 1;
-            e.nnodes = 2;
-            break;
-          }
-        case 3: {//P0-triangle
-            e.dimension = 2;
-            e.nnodes = 3;
-            break;
-          }
-        default: {
-          break;}
-      }
+      e.setElementType( elementTypes[ielem] );
 
       // ALLOCATIONS
       e.pos.resize( e.nnodes, 3 );
@@ -47,6 +33,8 @@ class Mesh {
           e.GradBaseGpVals[igp][jgp].setZero();
         }
       }
+      // reference to current mapping
+      e.ref2Local.resize( e.dim, e.dim );
 
       // set connectivity
       e.con = con.row(ielem);

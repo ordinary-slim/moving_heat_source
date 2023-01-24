@@ -20,11 +20,9 @@ d["points"] = points
 d["cells"] = cells
 d["cell_type"]="quad4"
 
-print( "points:", points )
-print( "tpoints:", type(points) )
-print( "cells:", cells )
-print( "tcells:", type(cells) )
-
 p = mhs.Problem()
 p.initialize( d )
-print( p.solution )
+e = p.mesh.getElement( 0 )
+e.computeRef2Local()
+print( e.vol )
+print( e.pos )

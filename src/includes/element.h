@@ -3,6 +3,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <algorithm>
+#include "refElement.h"
 using namespace std;
 
 class Element {
@@ -12,9 +13,12 @@ class Element {
     Eigen::VectorXi  con;
     vector<double> gpweight;
     double vol;
-    int dimension, elementType;
+    int dim, elementType;
     vector<vector<double>> BaseGpVals;
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
+
+    refElement      refEl;
+    Eigen::MatrixXd ref2Local;// x = c + ref2Local · xi
 
     void computeNodalValues_Base(){
       //COMMON
@@ -43,12 +47,39 @@ class Element {
       }
     }
 
+    void setElementType( int elType ) {
+      elementType = elType;
+      refEl = refElement( elType );
+      nnodes = refEl.nnodes;
+      dim = refEl.dim;
+    }
+
+    void computeRef2Local() {
+      // Build helper matrices
+      Eigen::Matrix3d X;
+      // Compute
+      X.setZero();
+      for (int inode = 0; inode<dim; inode++) {
+        X.row( inode )  = pos.row( inode+1 ) - pos.row( 0 );
+      }
+      X.transposeInPlace();
+      // Fill missing dims
+      for (int idim = dim; idim < 3; idim++) {
+        X(idim, idim)  = 1.0;
+      }
+      ref2Local = X * refEl.XI_inverse;
+
+      // Compute volume
+      vol = refEl.vol * ref2Local.determinant();
+    }
+
+
     // DEBUGGING FUNCS
     void printBaseFunGradGpVals() {
       for (int igp = 0; igp < nnodes; igp++) {
         for (int jgp = 0; jgp < nnodes; jgp++) {
           cout << "(";
-          for (int idim = 0; idim < dimension; idim++) {
+          for (int idim = 0; idim < dim; idim++) {
             printf("%.3f, ", GradBaseGpVals[igp][jgp][idim]);
           }
           cout << ")\t\t";

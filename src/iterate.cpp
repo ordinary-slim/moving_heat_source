@@ -163,10 +163,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("gpweight", &Element::gpweight)
         .def_readonly("con", &Element::con)
         .def_readonly("vol", &Element::vol)
-        .def_readonly("dimension", &Element::dimension)
-        .def_readonly("elementType", &Element::elementType);
-        vector<vector<double>> BaseGpVals;
-        vector<vector<Eigen::Vector3d>> GradBaseGpVals;
+        .def_readonly("dimension", &Element::dim)
+        .def_readonly("elementType", &Element::elementType)
+        .def("computeRef2Local", &Element::computeRef2Local);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition);
