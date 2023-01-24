@@ -18,25 +18,31 @@ void Problem::initialize(py::dict &input) {
     int nels = py::cast<int>( input["nels"] );
     mesh.generate1DMesh( a, b, nels );
   } else {
-    // TODO : Casting to pos / con DSs
-    //ALLOCATIONS
-    //get nnodes, nels
+    //READ POINTS
     py::array points = input["points"];
-    cout << "npoints:" << points.shape(0) << endl;
-    cout << "ndims:" << points.shape(1) << endl;
-
-    mesh.pos.resize( points.shape( 0 ), 3 );
+    int aux_npoints = points.shape(0);
+    int aux_ndims =    points.shape(1);
+    mesh.pos.resize( aux_npoints, 3 );
     mesh.pos.setZero();
-
     auto aux_points = points.unchecked<double>();
-    for ( int ipoint = 0; ipoint < points.shape(0); ipoint++) {
-      for ( int idim = 0; idim < points.shape(1); idim++) {
+    for ( int ipoint = 0; ipoint < aux_npoints; ipoint++) {
+      for ( int idim = 0; idim < aux_ndims; idim++) {
         mesh.pos(ipoint, idim) =  aux_points(ipoint, idim);
       }
     }
-    
-    //allocate
-    //CASTING
+    //READ ELEMENTS
+    py::array cells = input["cells"];
+    int aux_ncells =       cells.shape(0);
+    int aux_nodesPerCell = cells.shape(1);
+    mesh.con.resize( aux_ncells, aux_nodesPerCell );
+    mesh.con.setOnes();
+    mesh.con *= -1;
+    auto aux_cells = cells.unchecked<int>();
+    for ( int icell = 0; icell < aux_ncells; icell++) {
+      for ( int inode = 0; inode < aux_nodesPerCell; inode++) {
+        mesh.con(icell, inode) =  aux_cells(icell, inode);
+      }
+    }
   }
 
   // heat source

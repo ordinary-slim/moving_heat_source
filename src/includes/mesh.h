@@ -10,7 +10,7 @@ class Mesh {
   public:
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos;// node positions
-    vector<vector<int>> con;// connectivy
+    Eigen::MatrixXi  con;// connectivy
     vector<int> elementTypes;
     
     Element getElement(int ielem) {
@@ -48,7 +48,7 @@ class Mesh {
       }
 
       // set connectivity
-      e.con = con[ielem];
+      e.con = con.row(ielem);
       // set pos
       for (int inode=0; inode < e.nnodes; inode++) {
         e.pos.row(inode) = pos.row(e.con[inode]);
@@ -70,10 +70,7 @@ class Mesh {
       }
       cout << "connectivity:" << endl;
       for (int i = 0; i<nels; i++) {
-        for (int j = 0; j < 2; j++) {
-          cout << con[i][j] << ", ";
-        }
-        cout << endl;
+        cout << con.row(i) << endl;
       }
     }
 };

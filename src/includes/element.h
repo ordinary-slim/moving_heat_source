@@ -9,8 +9,8 @@ class Element {
   public:
     int nnodes;
     Eigen::MatrixX3d pos, gpos;
+    Eigen::VectorXi  con;
     vector<double> gpweight;
-    vector<int> con;
     double vol;
     int dimension, elementType;
     vector<vector<double>> BaseGpVals;
