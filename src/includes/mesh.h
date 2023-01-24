@@ -3,6 +3,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include "element.h"
+#include "refElement.h"
 
 using namespace std;
 
@@ -13,10 +14,12 @@ class Mesh {
     Eigen::MatrixX3d pos;// node positions
     Eigen::MatrixXi  con;// connectivy
     vector<int> elementTypes;
+    refElement refEl;
+
     
     Element getElement(int ielem) {
       Element e;
-      e.setElementType( elementTypes[ielem] );
+      e.setElementType( refEl );
 
       // ALLOCATIONS
       e.pos.resize( e.nnodes, 3 );

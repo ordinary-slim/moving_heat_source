@@ -58,6 +58,8 @@ void Problem::initialize(py::dict &input) {
     std::fill (mesh.elementTypes.begin(), mesh.elementTypes.end(), 
         cell_type_flag);
   }
+  // reference element. no support for mixed meshes yet
+  mesh.refEl = refElement(mesh.elementTypes[0]);
 
   // heat source
   mhs.radius = py::cast<double>(input["radius"]);

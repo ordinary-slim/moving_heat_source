@@ -17,7 +17,7 @@ class Element {
     vector<vector<double>> BaseGpVals;
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
 
-    refElement      refEl;
+    refElement      *refEl;
     Eigen::Matrix3d ref2loc;// x = c + ref2loc · xi
     Eigen::Matrix3d loc2ref_T;// tranpose of loc2ref where loc2ref st xi= c'+ loc2ref · x
 
@@ -51,12 +51,12 @@ class Element {
       computeDerivatives();
     }
 
-    void setElementType( int elType ) {
-      elementType = elType;
-      refEl = refElement( elType );
-      nnodes = refEl.nnodes;
-      ngpoints = refEl.ngpoints;
-      dim = refEl.dim;
+    void setElementType( refElement target_refEl ) {
+      refEl = &target_refEl;
+      elementType = refEl->elementType;
+      nnodes = refEl->nnodes;
+      ngpoints = refEl->ngpoints;
+      dim = refEl->dim;
     }
 
     void computeDerivatives() {
@@ -72,16 +72,16 @@ class Element {
       for (int idim = dim; idim < 3; idim++) {
         X(idim, idim)  = 1.0;
       }
-      ref2loc = X * refEl.XI_inverse;
+      ref2loc = X * refEl->XI_inverse;
       loc2ref_T = ref2loc.inverse();
       loc2ref_T.transposeInPlace();
 
       // Compute volume
-      vol = refEl.vol * ref2loc.determinant();
+      vol = refEl->vol * ref2loc.determinant();
 
       for (int inode = 0; inode < nnodes; inode++) {
         for (int igp = 0; igp < ngpoints; igp++) {
-          GradBaseGpVals[inode][igp] = loc2ref_T*refEl.GradBaseGpVals[inode][igp];
+          GradBaseGpVals[inode][igp] = (loc2ref_T)*(refEl->GradBaseGpVals[inode][igp]);
         }
       }
     }
