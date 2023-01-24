@@ -8,6 +8,7 @@ using namespace std;
 
 class Mesh {
   public:
+    int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos;// node positions
     Eigen::MatrixXi  con;// connectivy

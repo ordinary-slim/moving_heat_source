@@ -18,6 +18,7 @@ d = formatInputFile( "input.txt" )
 d = parseInput(d)
 d["points"] = points
 d["cells"] = cells
+d["cell_type"]="quad4"
 
 print( "points:", points )
 print( "tpoints:", type(points) )
@@ -26,3 +27,4 @@ print( "tcells:", type(cells) )
 
 p = mhs.Problem()
 p.initialize( d )
+print( p.solution )

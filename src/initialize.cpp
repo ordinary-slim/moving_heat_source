@@ -1,6 +1,7 @@
 #include "includes/problem.h"
 #include <map>
 #include <string>
+#include <algorithm>
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include "../external/pybind11/include/pybind11/stl.h"
@@ -20,29 +21,42 @@ void Problem::initialize(py::dict &input) {
   } else {
     //READ POINTS
     py::array points = input["points"];
-    int aux_npoints = points.shape(0);
-    int aux_ndims =    points.shape(1);
-    mesh.pos.resize( aux_npoints, 3 );
+    mesh.nnodes = points.shape(0);
+    mesh.dim    = points.shape(1);
+    mesh.pos.resize( mesh.nnodes, 3 );
     mesh.pos.setZero();
     auto aux_points = points.unchecked<double>();
-    for ( int ipoint = 0; ipoint < aux_npoints; ipoint++) {
-      for ( int idim = 0; idim < aux_ndims; idim++) {
+    for ( int ipoint = 0; ipoint < mesh.nnodes; ipoint++) {
+      for ( int idim = 0; idim < mesh.dim; idim++) {
         mesh.pos(ipoint, idim) =  aux_points(ipoint, idim);
       }
     }
     //READ ELEMENTS
-    py::array cells = input["cells"];
-    int aux_ncells =       cells.shape(0);
-    int aux_nodesPerCell = cells.shape(1);
-    mesh.con.resize( aux_ncells, aux_nodesPerCell );
+    py::array cells    = input["cells"];
+    mesh.nels          = cells.shape(0);
+    mesh.nnodes_per_el = cells.shape(1);
+    mesh.con.resize( mesh.nels, mesh.nnodes_per_el );
+    mesh.elementTypes.resize( mesh.nels );
     mesh.con.setOnes();
     mesh.con *= -1;
     auto aux_cells = cells.unchecked<int>();
-    for ( int icell = 0; icell < aux_ncells; icell++) {
-      for ( int inode = 0; inode < aux_nodesPerCell; inode++) {
+    for ( int icell = 0; icell < mesh.nels; icell++) {
+      for ( int inode = 0; inode < mesh.nnodes_per_el; inode++) {
         mesh.con(icell, inode) =  aux_cells(icell, inode);
       }
     }
+    //Set element type
+    int cell_type_flag = -1;
+    string aux_cell_type = py::cast<string>( input["cell_type"] );
+    if        (aux_cell_type == "line2") {
+      cell_type_flag = 0;
+    } else if (aux_cell_type == "triangle3") {
+      cell_type_flag = 3;
+    } else if (aux_cell_type == "quad4") {
+      cell_type_flag = 4;
+    }
+    std::fill (mesh.elementTypes.begin(), mesh.elementTypes.end(), 
+        cell_type_flag);
   }
 
   // heat source
