@@ -8,3 +8,4 @@ To-do:
 Dependencies:
 
 - pybind11
+- Eigen

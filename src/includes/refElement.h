@@ -1,13 +1,15 @@
 #ifndef REFELEMENT
 #include <iostream>
+#include <vector>
 #include <Eigen/Dense>
 class refElement {
   public:
-    int nnodes, dim;
+    int nnodes, dim, ngpoints;
     int elementType;
     double vol = -1;
     Eigen::MatrixX3d pos;
     Eigen::Matrix3d XI_inverse;
+    std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
 
     refElement(){}
     refElement( int elType ) {
@@ -18,6 +20,7 @@ class refElement {
            *  1 x___________x 2
           */
           nnodes = 2;
+          ngpoints = 2;
           dim =1;
           pos.resize(nnodes, 3);
           pos << -1.0, 0.0, 0.0,
@@ -26,6 +29,14 @@ class refElement {
           XI_inverse << 0.5, 0.0, 0.0,
                         0.0, 1.0, 0.0,
                         0.0, 0.0, 1.0;
+
+          GradBaseGpVals.resize( nnodes );
+          GradBaseGpVals[0].resize( ngpoints );
+          GradBaseGpVals[1].resize( ngpoints );
+          for (int igp = 0; igp < ngpoints; igp++) {
+            GradBaseGpVals[0][igp] << -0.5, 0.0, 0.0;
+            GradBaseGpVals[1][igp] << +0.5, 0.0, 0.0;
+          }
           break;
         case 3://triangle3
           /*

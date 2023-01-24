@@ -23,6 +23,5 @@ d["cell_type"]="quad4"
 p = mhs.Problem()
 p.initialize( d )
 e = p.mesh.getElement( 0 )
-e.computeRef2Local()
 print( e.vol )
 print( e.pos )

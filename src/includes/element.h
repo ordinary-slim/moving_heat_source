@@ -8,7 +8,7 @@ using namespace std;
 
 class Element {
   public:
-    int nnodes;
+    int nnodes, ngpoints;
     Eigen::MatrixX3d pos, gpos;
     Eigen::VectorXi  con;
     vector<double> gpweight;
@@ -18,7 +18,8 @@ class Element {
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
 
     refElement      refEl;
-    Eigen::MatrixXd ref2Local;// x = c + ref2Local · xi
+    Eigen::Matrix3d ref2loc;// x = c + ref2loc · xi
+    Eigen::Matrix3d loc2ref_T;// tranpose of loc2ref where loc2ref st xi= c'+ loc2ref · x
 
     void computeNodalValues_Base(){
       //COMMON
@@ -33,6 +34,7 @@ class Element {
     }
 
     void computeNodalValues_GradBase() {
+      /*
       switch (elementType) {
         case 0: {//P0-line
           vol = pos(1, 0) - pos(0, 0);
@@ -45,16 +47,19 @@ class Element {
         default: {
           break;}
       }
+      */
+      computeDerivatives();
     }
 
     void setElementType( int elType ) {
       elementType = elType;
       refEl = refElement( elType );
       nnodes = refEl.nnodes;
+      ngpoints = refEl.ngpoints;
       dim = refEl.dim;
     }
 
-    void computeRef2Local() {
+    void computeDerivatives() {
       // Build helper matrices
       Eigen::Matrix3d X;
       // Compute
@@ -67,10 +72,18 @@ class Element {
       for (int idim = dim; idim < 3; idim++) {
         X(idim, idim)  = 1.0;
       }
-      ref2Local = X * refEl.XI_inverse;
+      ref2loc = X * refEl.XI_inverse;
+      loc2ref_T = ref2loc.inverse();
+      loc2ref_T.transposeInPlace();
 
       // Compute volume
-      vol = refEl.vol * ref2Local.determinant();
+      vol = refEl.vol * ref2loc.determinant();
+
+      for (int inode = 0; inode < nnodes; inode++) {
+        for (int igp = 0; igp < ngpoints; igp++) {
+          GradBaseGpVals[inode][igp] = loc2ref_T*refEl.GradBaseGpVals[inode][igp];
+        }
+      }
     }
 
 

@@ -27,14 +27,12 @@ class Mesh {
       e.gpweight.resize( e.nnodes );
       // GradBaseFun
       e.GradBaseGpVals.resize( e.nnodes );
-      for (int igp = 0; igp < e.nnodes; igp++) {
-        e.GradBaseGpVals[igp].resize( e.nnodes );
-        for (int jgp = 0; jgp < e.nnodes; jgp++) {
-          e.GradBaseGpVals[igp][jgp].setZero();
+      for (int inode = 0; inode < e.nnodes; inode++) {
+        e.GradBaseGpVals[inode].resize( e.ngpoints );
+        for (int jgp = 0; jgp < e.ngpoints; jgp++) {
+          e.GradBaseGpVals[inode][jgp].setZero();
         }
       }
-      // reference to current mapping
-      e.ref2Local.resize( e.dim, e.dim );
 
       // set connectivity
       e.con = con.row(ielem);

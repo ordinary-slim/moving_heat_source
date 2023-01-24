@@ -165,7 +165,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("vol", &Element::vol)
         .def_readonly("dimension", &Element::dim)
         .def_readonly("elementType", &Element::elementType)
-        .def("computeRef2Local", &Element::computeRef2Local);
+        .def("computeDerivatives", &Element::computeDerivatives);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition);
