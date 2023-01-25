@@ -103,16 +103,17 @@ class refElement {
           gpos = pos;//closed integration
 
           {
-            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase1 = [](Eigen::Vector3d Xi) {
+            //auto here is std::function<Eigen::Vector3d(Eigen::Vector3d)>
+            auto GradBase1 = [](Eigen::Vector3d Xi) {
               return Eigen::Vector3d(+0.25*(1+Xi(1)), +0.25*(1+Xi(0)), 0.0);
             };
-            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase2 = [](Eigen::Vector3d Xi) {
-              return Eigen::Vector3d(-0.25*(1+Xi(1)), -0.25*(1-Xi(0)), 0.0);
+            auto GradBase2 = [](Eigen::Vector3d Xi) {
+              return Eigen::Vector3d(-0.25*(1+Xi(1)), 0.25*(1-Xi(0)), 0.0);
             };
-            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase3 = [](Eigen::Vector3d Xi) {
+            auto GradBase3 = [](Eigen::Vector3d Xi) {
               return Eigen::Vector3d(-0.25*(1-Xi(1)), -0.25*(1-Xi(0)), 0.0);
             };
-            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase4 = [](Eigen::Vector3d Xi) {
+            auto GradBase4 = [](Eigen::Vector3d Xi) {
               return Eigen::Vector3d(0.25*(1-Xi(1)), -0.25*(1+Xi(0)), 0.0);
             };
             std::vector<std::function<Eigen::Vector3d(Eigen::Vector3d)>> GradBaseFuns = {GradBase1,

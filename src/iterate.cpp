@@ -57,16 +57,10 @@ void Problem::iterate() {
             // mass matrix
             m_ij += e.gpweight[igp] * e.BaseGpVals[inode][igp]*e.BaseGpVals[jnode][igp]*e.vol;
             // stiffness matrix
-            ip = inner_product(e.GradBaseGpVals[inode][igp].begin(),
-                  e.GradBaseGpVals[inode][igp].end(),
-                  e.GradBaseGpVals[jnode][igp].begin(),
-                  0.0);
+            ip = e.GradBaseGpVals[inode][igp].dot( e.GradBaseGpVals[jnode][igp] );
             k_ij += e.gpweight[igp] * ip * e.vol;
             // advection matrix
-            ip = inner_product(e.GradBaseGpVals[jnode][igp].begin(),
-                  e.GradBaseGpVals[jnode][igp].end(),
-                  advectionSpeed.begin(),
-                  0.0);
+            ip = e.GradBaseGpVals[jnode][igp].dot(advectionSpeed);
             a_ij += e.gpweight[igp] * (ip * e.BaseGpVals[inode][igp]) * e.vol;
           }
           m_ij *= rho * cp ;
@@ -159,12 +153,15 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Element::pos)
+        .def_readonly("nnodes", &Element::nnodes)
         .def_readonly("gpos", &Element::gpos)
+        .def_readonly("ngpoints", &Element::ngpoints)
         .def_readonly("gpweight", &Element::gpweight)
         .def_readonly("con", &Element::con)
         .def_readonly("vol", &Element::vol)
         .def_readonly("dimension", &Element::dim)
         .def_readonly("elementType", &Element::elementType)
+        .def_readonly("GradBaseGpVals", &Element::GradBaseGpVals)
         .def("computeDerivatives", &Element::computeDerivatives);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
