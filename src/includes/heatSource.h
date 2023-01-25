@@ -23,7 +23,8 @@ class HeatSource {
       double (*powerDensity)(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
     };
 
-double gaussianPowerDensity(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
+double gaussianPowerDensity1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
+double gaussianPowerDensity2D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
 double forcedSolutionSource91(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
 #define HEATSOURCE
 #endif

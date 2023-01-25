@@ -7,8 +7,13 @@
 #include "includes/heatSource.h"
 
 //1D heat sources
-double gaussianPowerDensity(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius) {
+double gaussianPowerDensity1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius) {
   double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x[0] - x0[0], 2)/pow(radius, 2));
+  return pd;
+}
+double gaussianPowerDensity2D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius) {
+  //TODO: check formula
+  double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*(pow(x[0] - x0[0], 2) + pow(x[1] - x0[1], 2)) /pow(radius, 2));
   return pd;
 }
 

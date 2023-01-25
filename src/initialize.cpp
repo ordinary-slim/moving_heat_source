@@ -78,7 +78,15 @@ void Problem::initialize(py::dict &input) {
       { mhs.powerDensity = &forcedSolutionSource91;
         break; }
     default:
-      { mhs.powerDensity = &gaussianPowerDensity;
+      {
+        if (mesh.dim == 1 ) {
+          mhs.powerDensity = &gaussianPowerDensity1D;
+        } else if (mesh.dim == 2 ) {
+          mhs.powerDensity = &gaussianPowerDensity2D;
+        } else {
+          printf("Dim > 2 not ready yet\n");
+          exit(EXIT_FAILURE);
+        }
         break; }
   }
 
