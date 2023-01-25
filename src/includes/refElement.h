@@ -30,6 +30,9 @@ class refElement {
                         0.0, 1.0, 0.0,
                         0.0, 0.0, 1.0;
 
+          gpos.resize(ngpoints, 3);
+          gpos = pos;//closed integration
+
           GradBaseGpVals.resize( nnodes );
           GradBaseGpVals[0].resize( ngpoints );
           GradBaseGpVals[1].resize( ngpoints );
@@ -49,6 +52,7 @@ class refElement {
            * 1x__>__x2
            */
           nnodes = 3;
+          ngpoints = 3;
           dim =2;
           pos.resize(nnodes, 3);
           pos << 0.0, 0.0, 0.0,
@@ -58,6 +62,10 @@ class refElement {
           XI_inverse << +1.0, 0.0, 0.0,
                         0.0, +1.0, 0.0,
                         0.0, 0.0, +1.0;
+
+          gpos.resize(ngpoints, 3);
+          gpos = pos;//closed integration
+                     //
           GradBaseGpVals.resize( nnodes );
           GradBaseGpVals[0].resize( ngpoints );
           GradBaseGpVals[1].resize( ngpoints );
@@ -79,6 +87,7 @@ class refElement {
            * 3x____________x4
            */
           nnodes = 4;
+          ngpoints = 4;
           dim =2;
           pos.resize(nnodes, 3);
           pos << 1.0, 1.0, 0.0,
@@ -89,14 +98,41 @@ class refElement {
           XI_inverse << -0.5, 0.5, 0.0,
                         0.0, -0.5, 0.0,
                         0.0, 0.0, 1.0;
-          //TODO: add GradBaseGpVals
+
+          gpos.resize(ngpoints, 3);
+          gpos = pos;//closed integration
+
+          {
+            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase1 = [](Eigen::Vector3d Xi) {
+              return Eigen::Vector3d(+0.25*(1+Xi(1)), +0.25*(1+Xi(0)), 0.0);
+            };
+            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase2 = [](Eigen::Vector3d Xi) {
+              return Eigen::Vector3d(-0.25*(1+Xi(1)), -0.25*(1-Xi(0)), 0.0);
+            };
+            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase3 = [](Eigen::Vector3d Xi) {
+              return Eigen::Vector3d(-0.25*(1-Xi(1)), -0.25*(1-Xi(0)), 0.0);
+            };
+            std::function<Eigen::Vector3d(Eigen::Vector3d)> GradBase4 = [](Eigen::Vector3d Xi) {
+              return Eigen::Vector3d(0.25*(1-Xi(1)), -0.25*(1+Xi(0)), 0.0);
+            };
+            std::vector<std::function<Eigen::Vector3d(Eigen::Vector3d)>> GradBaseFuns = {GradBase1,
+                                                                                        GradBase2,
+                                                                                        GradBase3,
+                                                                                        GradBase4};
+            GradBaseGpVals.resize( nnodes );
+            for (int inode = 0; inode < nnodes; inode++) {
+              GradBaseGpVals[inode].resize( ngpoints );
+              for (int igp = 0; igp < ngpoints; igp++) {
+                GradBaseGpVals[inode][igp] = GradBaseFuns[inode]( gpos.row(igp) );
+              }
+            }
+          break;
+          }
           break;
         default:
           printf("Unknown element type\n");
           exit(EXIT_FAILURE);
       }
-      gpos.resize(nnodes, 3);
-      gpos = pos;//closed integration
     }
 };
 #define REFELEMENT

@@ -41,7 +41,7 @@ class Mesh {
       e.con = con.row(ielem);
       // set pos
       for (int inode=0; inode < e.nnodes; inode++) {
-        e.pos.row(inode) = pos.row(e.con[inode]);
+        e.pos.row(inode) = pos.row(e.con(inode));
       }
 
       // COMPUTATIONS

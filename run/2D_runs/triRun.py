@@ -7,17 +7,19 @@ import numpy as np
 import meshzoo
 import meshio
 
-points, cells = meshzoo.rectangle_tri(
+cell_type="quad4"
+points, cells = meshzoo.rectangle_quad(
     np.linspace(-5, 5, 11),
     np.linspace(-5, 5, 11),
-    variant="zigzag",  # or "up", "down", "center"
+    cell_type=cell_type
+    #variant="zigzag",  # or "up", "down", "center"
 )
 
 d = formatInputFile( "input.txt" )
 d = parseInput(d)
 d["points"] = points
 d["cells"] = cells
-d["cell_type"]="triangle3"
+d["cell_type"]=cell_type
 
 p = mhs.Problem()
 p.initialize( d )
@@ -28,7 +30,7 @@ for iteration in range( d["maxIter"] ):
 
 #export
 tmpCells = [
-    ("triangle", cells),
+    ("quad", cells),
         ]
 mesh = meshio.Mesh(
     points,
