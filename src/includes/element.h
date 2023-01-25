@@ -51,7 +51,7 @@ class Element {
       computeDerivatives();
     }
 
-    void setElementType( refElement target_refEl ) {
+    void setElementType( refElement &target_refEl ) {
       refEl = &target_refEl;
       elementType = refEl->elementType;
       nnodes = refEl->nnodes;

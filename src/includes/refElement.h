@@ -7,7 +7,7 @@ class refElement {
     int nnodes, dim, ngpoints;
     int elementType;
     double vol = -1;
-    Eigen::MatrixX3d pos;
+    Eigen::MatrixX3d pos, gpos;
     Eigen::Matrix3d XI_inverse;
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
 
@@ -58,6 +58,15 @@ class refElement {
           XI_inverse << +1.0, 0.0, 0.0,
                         0.0, +1.0, 0.0,
                         0.0, 0.0, +1.0;
+          GradBaseGpVals.resize( nnodes );
+          GradBaseGpVals[0].resize( ngpoints );
+          GradBaseGpVals[1].resize( ngpoints );
+          GradBaseGpVals[2].resize( ngpoints );
+          for (int igp = 0; igp < ngpoints; igp++) {
+            GradBaseGpVals[0][igp] << -1.0, -1.0, 0.0;
+            GradBaseGpVals[1][igp] << +1.0, 0.0, 0.0;
+            GradBaseGpVals[2][igp] << 0.0, +1.0, 0.0;
+          }
           break;
         case 4://quad4
           /*
@@ -80,11 +89,14 @@ class refElement {
           XI_inverse << -0.5, 0.5, 0.0,
                         0.0, -0.5, 0.0,
                         0.0, 0.0, 1.0;
+          //TODO: add GradBaseGpVals
           break;
         default:
           printf("Unknown element type\n");
           exit(EXIT_FAILURE);
       }
+      gpos.resize(nnodes, 3);
+      gpos = pos;//closed integration
     }
 };
 #define REFELEMENT
