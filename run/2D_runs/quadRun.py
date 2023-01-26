@@ -21,7 +21,6 @@ d["points"] = points
 d["cells"] = cells
 d["cell_type"]=cell_type
 
-print( "Points = \n", points )
 p = mhs.Problem()
 p.initialize( d )
 
