@@ -37,6 +37,7 @@ void Problem::initialize(py::dict &input) {
     mesh.nnodes_per_el = cells.shape(1);
     mesh.con.resize( mesh.nels, mesh.nnodes_per_el );
     mesh.elementTypes.resize( mesh.nels );
+    mesh.activeElements.resize( mesh.nels );
     mesh.con.setOnes();
     mesh.con *= -1;
     auto aux_cells = cells.unchecked<int>();
@@ -57,6 +58,8 @@ void Problem::initialize(py::dict &input) {
     }
     std::fill (mesh.elementTypes.begin(), mesh.elementTypes.end(), 
         cell_type_flag);
+    std::fill (mesh.activeElements.begin(), mesh.activeElements.end(), 
+        1);//all elements start active
   }
   // reference element. no support for mixed meshes yet
   mesh.refEl = refElement(mesh.elementTypes[0]);

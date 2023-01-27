@@ -35,6 +35,9 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double
   Element e;
   // assemble
   for (int ielem = 0; ielem < m.nels; ++ielem) {
+    if (m.activeElements[ielem]==0){
+      continue;
+    }
     e = m.getElement( ielem );
     for (int inode = 0; inode < e.nnodes; ++inode) {
       r_i = 0;

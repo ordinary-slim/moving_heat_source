@@ -14,6 +14,7 @@ class Mesh {
     Eigen::MatrixX3d pos;// node positions
     Eigen::MatrixXi  con;// connectivy
     vector<int> elementTypes;
+    vector<int> activeElements;
     refElement refEl;
 
     
@@ -48,6 +49,10 @@ class Mesh {
       e.computeNodalValues_Base();//COMMON BETWEEN ELS
       e.computeNodalValues_GradBase();//UNCOMMON
       return e;
+    }
+
+    void setActiveElements(vector<int> inputActiveElements ) {
+      activeElements = inputActiveElements;
     }
 
     void generate1DMesh( double A, double B, int numberOfEls );

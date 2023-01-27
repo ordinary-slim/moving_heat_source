@@ -13,8 +13,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("iterate", &Problem::iterate)
         .def("setTime", &Problem::setTime)
-        .def_readwrite("solution", &Problem::solution)
-        .def_readwrite("pulse", &Problem::pulse)//debugging
+        .def_readonly("solution", &Problem::solution)
+        //.def_readwrite("pulse", &Problem::pulse)//debugging
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
         .def_readwrite("time", &Problem::time)
@@ -26,8 +26,10 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("pos", &Mesh::pos)
         .def_readonly("nels", &Mesh::nels)
         .def_readonly("nnodes", &Mesh::nnodes)
+        .def_readonly("activeElements", &Mesh::activeElements)
         .def("generate1DMesh", &Mesh::generate1DMesh)
-        .def("getElement", &Mesh::getElement);
+        .def("getElement", &Mesh::getElement)
+        .def("setActiveElements", &Mesh::setActiveElements);
     py::class_<Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Element::pos)

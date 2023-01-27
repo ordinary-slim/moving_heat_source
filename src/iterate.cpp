@@ -43,6 +43,9 @@ void Problem::iterate() {
     double cp = material["cp"];
     double k = material["k"];
     for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
+      if (mesh.activeElements[ielem]==0){
+        continue;
+      }
       e = mesh.getElement( ielem );
       for (int inode = 0; inode < e.nnodes; inode++) {
         for (int jnode = 0; jnode < e.nnodes; jnode++) {

@@ -6,12 +6,13 @@ import sys
 sys.path.insert(1, '..')
 sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
+import os
 import numpy as np
 import meshio
 import pdb
 import re
 
-class PrePosProcessor:
+class Problem(mhs.Problem):
     # Convenience glob vars
     integerKeys = [
             "nels",
@@ -25,11 +26,11 @@ class PrePosProcessor:
             "quad4" : "quad",
             "triangle3" : "triangle",
         }
-    def __init__(self, caseName, problem):
+    def __init__(self, caseName):
         self.caseName= caseName
-        self.problem = problem
         self.input = {}
         self.iter = 0
+        super().__init__()
 
     # PREPROCESSING
     # Process params
@@ -37,7 +38,6 @@ class PrePosProcessor:
         self.parseInput( fileName )
 
     def parseInput(self, fileName):
-        dic = {}
         lines = []
 
         with open( fileName, 'r') as f:
@@ -55,20 +55,25 @@ class PrePosProcessor:
                 self.input[iK] = int(self.input[iK])
 
     def initialize(self):
-        self.problem.initialize( self.input )
+        super(Problem, self).initialize( self.input )
+
+    def activate(self, activeElements):
+        self.mesh.setActiveElements( activeElements )
 
     def iterate(self):
-        self.problem.iterate()
+        super(Problem, self).iterate()
         self.iter += 1
 
     #POSTPROCESSING
     def writepos( self, postFolder ):
+        os.makedirs(postFolder, exist_ok=True)
         #export
+        cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
-            self.input["points"],
-            [ (self.cellMappingMeshio[self.input["cell_type"]],
-               self.input["cells"]), ],
-            point_data={"T": self.problem.solution}
+            self.mesh.pos,
+            [ (cell_type, self.input["cells"]), ],
+            point_data={"T": self.solution},
+            cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 
         postFilePath = "{}/{}_{}.vtk".format( postFolder, self.caseName, self.iter )
@@ -76,7 +81,6 @@ class PrePosProcessor:
             postFilePath,  # str, os.PathLike, or buffer/open file
             # file_format="vtk",  # optional if first argument is a path; inferred from extension
         )
-
 
 if __name__=="__main__":
     pass
