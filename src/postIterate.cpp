@@ -22,7 +22,7 @@ void Problem::postIterate() {
 
   // update positions in no advection RF
   for (int inode=0; inode < mesh.nnodes; inode++){
-    mesh.pos_noAdv.row( inode ) += +dt * advectionSpeed;
+    mesh.pos_noAdv.row( inode ) += -dt * advectionSpeed;
   }
-  mesh.x0 += dt * advectionSpeed;
+  mesh.x0 += -dt * advectionSpeed;
 }
