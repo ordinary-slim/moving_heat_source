@@ -11,10 +11,13 @@ class Mesh {
   public:
     int dim;
     int nels, nnodes, nnodes_per_el;
-    Eigen::MatrixX3d pos;// node positions
+    Eigen::MatrixX3d pos, pos_noAdv;// node positions
+    Eigen::Vector3d x0;
     Eigen::MatrixXi  con;// connectivy
     vector<int> elementTypes;
     vector<int> activeElements;
+    vector<int> activeNodes;
+    bool hasInactive = false;
     refElement refEl;
 
     
@@ -53,6 +56,23 @@ class Mesh {
 
     void setActiveElements(vector<int> inputActiveElements ) {
       activeElements = inputActiveElements;
+      //Update activeNodes
+      fill( activeNodes.begin(), activeNodes.end(), 0 );
+      for (int ielem = 0; ielem < nels; ielem++) {
+        if (activeElements[ielem] == 1) {
+          Eigen::VectorXi locCon = con.row( ielem );
+          //set to 1 nodes who belong to element
+          for (int locInode = 0; locInode < locCon.size(); locInode++){
+            activeNodes[ locCon[locInode] ] = 1;
+          }
+        }
+      }
+      if (std::find( activeElements.begin(), activeElements.end(), 0)
+          != activeElements.end() ) {
+        hasInactive = true;
+      } else {
+        hasInactive = false;
+      }
     }
 
     void generate1DMesh( double A, double B, int numberOfEls );

@@ -20,16 +20,19 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readwrite("time", &Problem::time)
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
-        .def_readonly("advectionSpeed", &Problem::advectionSpeed);
+        .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def("activateDomain", &Problem::activateDomain);
     py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)
+        .def_readonly("pos_noAdv", &Mesh::pos_noAdv)
+        .def_readonly("x0", &Mesh::x0)
+        .def_readonly("con", &Mesh::con)
         .def_readonly("nels", &Mesh::nels)
         .def_readonly("nnodes", &Mesh::nnodes)
         .def_readonly("activeElements", &Mesh::activeElements)
         .def("generate1DMesh", &Mesh::generate1DMesh)
-        .def("getElement", &Mesh::getElement)
-        .def("setActiveElements", &Mesh::setActiveElements);
+        .def("getElement", &Mesh::getElement);
     py::class_<Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Element::pos)

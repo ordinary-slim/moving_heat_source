@@ -24,6 +24,7 @@ void Problem::initialize(py::dict &input) {
     mesh.nnodes = points.shape(0);
     mesh.dim    = points.shape(1);
     mesh.pos.resize( mesh.nnodes, 3 );
+    mesh.pos_noAdv.resize( mesh.nnodes, 3 );
     mesh.pos.setZero();
     auto aux_points = points.unchecked<double>();
     for ( int ipoint = 0; ipoint < mesh.nnodes; ipoint++) {
@@ -31,6 +32,7 @@ void Problem::initialize(py::dict &input) {
         mesh.pos(ipoint, idim) =  aux_points(ipoint, idim);
       }
     }
+    mesh.pos_noAdv = mesh.pos;
     //READ ELEMENTS
     py::array cells    = input["cells"];
     mesh.nels          = cells.shape(0);
@@ -38,6 +40,7 @@ void Problem::initialize(py::dict &input) {
     mesh.con.resize( mesh.nels, mesh.nnodes_per_el );
     mesh.elementTypes.resize( mesh.nels );
     mesh.activeElements.resize( mesh.nels );
+    mesh.activeNodes.resize( mesh.nnodes );
     mesh.con.setOnes();
     mesh.con *= -1;
     auto aux_cells = cells.unchecked<int>();
@@ -63,6 +66,7 @@ void Problem::initialize(py::dict &input) {
   }
   // reference element. no support for mixed meshes yet
   mesh.refEl = refElement(mesh.elementTypes[0]);
+  mesh.x0.setZero();
 
   // heat source
   mhs.radius = py::cast<double>(input["radius"]);

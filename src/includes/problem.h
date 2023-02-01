@@ -28,13 +28,14 @@ class Problem {
 
     bool isAssembled = false;
     bool isAdvection = false;
-    Eigen::Vector3d advectionSpeed;
     bool isSteady    = false;
+    Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
     SpMat lhs;
     SpMat M; // mass mat
     SpMat K; // stiffness mat
     SpMat A; // advection mat
+    SpMat I; // inactive nodes
     Eigen::VectorXd pulse; // source term
 
 
@@ -49,6 +50,10 @@ class Problem {
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void postIterate();
+    void activateDomain(vector<int> inputActiveElements ) {
+      mesh.setActiveElements( inputActiveElements );
+      isAssembled = false;
+    }
     };
 #define PROBLEM
 #endif

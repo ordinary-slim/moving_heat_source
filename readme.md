@@ -1,9 +1,13 @@
-1D implementation of moving heat sources using FEM
+Moving heat sources using FEM
 
 To-do:
 ------
-- [x] Transition to cmake
-- [ ] Find a way to install resulting module
+- [~] Write pvd
+        Bug, gotta fix.
+        Compare to other PVDs
+- [x] Move mesh points in post if advection
+        Either full python or half half c++ python
+- [~] Proper activation
 
 Dependencies:
 

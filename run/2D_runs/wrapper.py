@@ -30,6 +30,7 @@ class Problem(mhs.Problem):
         self.caseName= caseName
         self.input = {}
         self.iter = 0
+        self.postFolder = "post_{}".format( caseName )
         super().__init__()
 
     # PREPROCESSING
@@ -58,29 +59,53 @@ class Problem(mhs.Problem):
         super(Problem, self).initialize( self.input )
 
     def activate(self, activeElements):
-        self.mesh.setActiveElements( activeElements )
+        self.activateDomain( activeElements )
 
     def iterate(self):
         super(Problem, self).iterate()
         self.iter += 1
 
     #POSTPROCESSING
-    def writepos( self, postFolder ):
-        os.makedirs(postFolder, exist_ok=True)
+    def writepos( self ):
+        os.makedirs(self.postFolder, exist_ok=True)
         #export
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
-            self.mesh.pos,
-            [ (cell_type, self.input["cells"]), ],
+            self.mesh.pos_noAdv,
+            [ (cell_type, self.mesh.con), ],
             point_data={"T": self.solution},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 
-        postFilePath = "{}/{}_{}.vtk".format( postFolder, self.caseName, self.iter )
+        postFilePath = "{}/{}_{}.vtk".format( self.postFolder, self.caseName, self.iter )
         mesh.write(
             postFilePath,  # str, os.PathLike, or buffer/open file
-            # file_format="vtk",  # optional if first argument is a path; inferred from extension
         )
+        #update pvd
+        pvdFileName =  self.caseName + ".pvd" 
+        if not( os.path.isfile(pvdFileName) ):
+            baseLinesPVD = [
+                '<?xml version="1.0"?>',
+                '<VTKFile type="Collection" version="0.1">',
+                '<Collection>',
+                '</Collection>',
+                '</VTKFile>',
+                ]
+            with open( pvdFileName, 'w' ) as pvd:
+                pvd.write( "\n".join(baseLinesPVD) )
+        #insert time-step into pvd.
+        #always two lines before last
+        timestepLine = '<DataSet timestep="{}" group="" part="0" file="{}"/>\n'.format(round(self.time, 3), postFilePath)
+
+        pvdContents = []
+        with open(pvdFileName, "r") as f:
+            pvdContents = f.readlines()
+
+        pvdContents.insert(-2, timestepLine)
+
+        with open(pvdFileName, "w") as f:
+            pvdContents = "".join(pvdContents)
+            f.write(pvdContents)
 
 if __name__=="__main__":
     pass

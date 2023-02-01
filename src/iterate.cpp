@@ -22,6 +22,7 @@ void Problem::iterate() {
     M.resize(mesh.nnodes, mesh.nnodes); // mass mat
     K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
     A.resize(mesh.nnodes, mesh.nnodes); // advection mat
+    I.resize(mesh.nnodes, mesh.nnodes); // inactive nodes
     lhs.resize( mesh.nnodes, mesh.nnodes );
     rhs.resize( mesh.nnodes );
     pulse.resize( mesh.nnodes ); // source term
@@ -37,6 +38,7 @@ void Problem::iterate() {
     M.setZero();
     K.setZero();
     A.setZero();
+    I.setZero();
 
     Element e;
     double rho = material["rho"];
@@ -113,6 +115,20 @@ void Problem::iterate() {
     //Add time dependency
     lhs += timeIntegrator.lhsCoeff * M / dt;
     rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
+  }
+
+  if (mesh.hasInactive) {
+    // Treat inactive nodes
+    vector<T> InacNodes_coeffs;
+    InacNodes_coeffs.reserve( mesh.nnodes );
+    for (int inode = 0; inode < mesh.nnodes; inode++) {
+      if (mesh.activeNodes[inode] == 0) {
+        InacNodes_coeffs.push_back( T(inode, inode, 1) );
+        rhs[ inode ] = solution[ inode ];
+      }
+    }
+    I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
+    lhs += I;
   }
 
   //Solve linear system
