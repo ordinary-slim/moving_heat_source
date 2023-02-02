@@ -1,6 +1,6 @@
 radius		2.0
 power		300.0
-initialPositionX		0.0
+initialPositionX	 -5.0
 initialPositionY		0.0
 initialPositionZ		0.0
 speedX		10

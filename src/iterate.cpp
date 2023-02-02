@@ -14,6 +14,7 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 typedef Eigen::Triplet<double> T;
 
 void Problem::iterate() {
+  // ASSEMBLY
   // numerical params
   double m_ij, k_ij, a_ij, ip;
 

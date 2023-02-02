@@ -49,6 +49,7 @@ class Problem {
     void initialize(py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
+    void preIterate();
     void postIterate();
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );

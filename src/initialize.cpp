@@ -66,7 +66,6 @@ void Problem::initialize(py::dict &input) {
   }
   // reference element. no support for mixed meshes yet
   mesh.refEl = refElement(mesh.elementTypes[0]);
-  mesh.x0.setZero();
 
   // heat source
   mhs.radius = py::cast<double>(input["radius"]);
@@ -79,6 +78,7 @@ void Problem::initialize(py::dict &input) {
   mhs.initialPosition[0] = py::cast<double>(input["initialPositionX"]);
   mhs.initialPosition[1] = py::cast<double>(input["initialPositionY"]);
   mhs.initialPosition[2] = py::cast<double>(input["initialPositionZ"]);
+  mhs.currentPosition    = mhs.initialPosition;
   // set type of source term
   switch (int(py::cast<int>( input["sourceTerm"] ))) {
     case 91:

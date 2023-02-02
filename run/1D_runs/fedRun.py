@@ -31,7 +31,6 @@ def getadimR( d ):
     return (speed * dt) / h
 
 def set_dt( d, adimR ):
-    L = d["Right"] - d["Left"]
     r = d["radius"]
     speed = d["speedX"]
     dt = (adimR * r) / float(speed)

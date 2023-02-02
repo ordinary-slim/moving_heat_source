@@ -12,7 +12,6 @@ class Mesh {
     int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos, pos_noAdv;// node positions
-    Eigen::Vector3d x0;
     Eigen::MatrixXi  con;// connectivy
     vector<int> elementTypes;
     vector<int> activeElements;

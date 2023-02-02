@@ -64,6 +64,7 @@ class Problem(mhs.Problem):
     def iterate(self):
         super(Problem, self).iterate()
         self.iter += 1
+        print( "iter = {}".format( self.iter ) )
 
     #POSTPROCESSING
     def writepos( self ):
@@ -71,13 +72,14 @@ class Problem(mhs.Problem):
         #export
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
+            #self.mesh.pos,
             self.mesh.pos_noAdv,
             [ (cell_type, self.mesh.con), ],
             point_data={"T": self.solution},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 
-        postFilePath = "{}/{}_{}.vtk".format( self.postFolder, self.caseName, self.iter )
+        postFilePath = "{}/{}_{}.vtu".format( self.postFolder, self.caseName, self.iter )
         mesh.write(
             postFilePath,  # str, os.PathLike, or buffer/open file
         )
