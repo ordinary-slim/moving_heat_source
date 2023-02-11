@@ -46,10 +46,14 @@ class Problem {
       time = newTime;
       mhs.time = newTime;
     }
+    void setAdvectionSpeed(Eigen::Vector3d inputAdvectionSpeed){
+      advectionSpeed = inputAdvectionSpeed;
+    }
     void initialize(py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
-    void preIterate();
+    void updateFRF_positions();
+    void assemble();
     void postIterate();
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );

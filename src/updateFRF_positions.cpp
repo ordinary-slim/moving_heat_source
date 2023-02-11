@@ -1,6 +1,6 @@
 #include "includes/problem.h"
 
-void Problem::preIterate() {
+void Problem::updateFRF_positions() {
   // Pre-iteration operations
 
   // update positions in no advection RF

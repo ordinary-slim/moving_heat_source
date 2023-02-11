@@ -11,9 +11,10 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<>())
         .def("initialize", &Problem::initialize)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
-        .def("preIterate", &Problem::preIterate)
+        .def("updateFRF_positions", &Problem::updateFRF_positions)
         .def("iterate", &Problem::iterate)
         .def("setTime", &Problem::setTime)
+        .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def_readonly("solution", &Problem::solution)
         //.def_readwrite("pulse", &Problem::pulse)//debugging
         .def_readonly("mhs", &Problem::mhs)
@@ -48,5 +49,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("computeDerivatives", &Element::computeDerivatives);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
-        .def_readwrite("currentPosition", &HeatSource::currentPosition);
+        .def_readwrite("currentPosition", &HeatSource::currentPosition)
+        .def_readonly("speed", &HeatSource::speed)
+        .def("setSpeed", &HeatSource::setSpeed);
 }

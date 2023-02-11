@@ -56,9 +56,9 @@ def setAdimR( adimR, p ):
 
 if __name__=="__main__":
     inputFile = "input.txt"
-    boxRef = [-10, 10, -5, 5]
-    boxInac = [-20, 20, -5, 5]
-    adimR = 1.5
+    boxRef = [-16, 16, -5, 5]
+    boxInac = [-36, 36, -5, 5]
+    adimR = 1
 
     problemFine    = Problem("fineFRF")
     problemFRF     = Problem("FRF")
@@ -99,16 +99,37 @@ if __name__=="__main__":
         p.initialize()
 
     maxIter = problemFRF.input["maxIter"]
+    # FORWARD
     for iteration in range(maxIter):
         #fine problem
-        #for istep in range(fineStepsPerStep):
-            #problemFine.iterate()
-        #problemFine.writepos()
+        for istep in range(fineStepsPerStep):
+            problemFine.iterate()
+        problemFine.writepos()
 
+        #for p in [problemFRF, problemMRF_act]:
         for p in [problemFRF, problemMRF_act]:
-            #others
-            p.preIterate()#update positions
-            activeElements = isInsideBox( p.mesh, boxRef )#activation criterion
+            p.updateFRF_positions()#get tn+1 positions (not tn)
+            activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
             p.activate( activeElements )#activation
             p.iterate()#assembly + solve
             p.writepos()
+
+    problemMRF_act.setAdvectionSpeed( -problemMRF_act.advectionSpeed )
+    problemFine.mhs.setSpeed( -problemFine.mhs.speed )
+    problemFRF.mhs.setSpeed( -problemFRF.mhs.speed )
+
+    # BACKWARDS
+    for iteration in range(maxIter):
+        #fine problem
+        for istep in range(fineStepsPerStep):
+            problemFine.iterate()
+        problemFine.writepos()
+
+        #for p in [problemMRF_act]:
+        for p in [problemFRF, problemMRF_act]:
+            p.updateFRF_positions()#get tn+1 positions (not tn)
+            activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
+            p.activate( activeElements )#activation
+            p.iterate()#assembly + solve
+            p.writepos()
+
