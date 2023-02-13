@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "includes/element.h"
-#include "includes/problem.h"
+#include "domain/element.h"
+#include "problem.h"
 #include <numeric>
 #include <algorithm>
 #include <Eigen/Core>

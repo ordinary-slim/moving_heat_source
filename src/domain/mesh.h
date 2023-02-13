@@ -4,6 +4,8 @@
 #include <Eigen/Core>
 #include "element.h"
 #include "refElement.h"
+#include "elementTypes.h"
+#include "../../external/pybind11/include/pybind11/pybind11.h"
 
 using namespace std;
 
@@ -13,7 +15,7 @@ class Mesh {
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos, pos_noAdv;// node positions
     Eigen::MatrixXi  con;// connectivy
-    vector<int> elementTypes;
+    vector<ElementType> elementTypes;
     vector<int> activeElements;
     vector<int> activeNodes;
     bool hasInactive = false;
@@ -87,6 +89,7 @@ class Mesh {
         cout << con.row(i) << endl;
       }
     }
+    void initializeMesh(pybind11::dict &input);
 };
 #define MESH
 #endif

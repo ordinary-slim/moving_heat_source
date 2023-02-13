@@ -1,4 +1,5 @@
-#include "../includes/mesh.h"
+#include "mesh.h"
+#include "element.h"
 
 
 void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
@@ -23,6 +24,6 @@ void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
   for (int i = 0; i < nels; i++) {
     con(i, 0 ) = i;
     con(i, 1 ) = i+1;
-    elementTypes[i] = 0;
+    elementTypes[i] = line2;
   }
 }

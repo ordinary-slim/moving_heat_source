@@ -1,7 +1,7 @@
 #ifndef HEATSOURCE
 #include <vector>
 #include <Eigen/Core>
-#include "mesh.h"
+#include "domain/mesh.h"
 
 using namespace std;
 

@@ -16,6 +16,7 @@ def mesh(box):
         cell_type=cell_type
         #variant="zigzag",  # or "up", "down", "center"
     )
+    cells = cells.astype( int )
     return points, cells
 
 def isInsideBox( mesh, box ):
@@ -102,9 +103,9 @@ if __name__=="__main__":
     # FORWARD
     for iteration in range(maxIter):
         #fine problem
-        for istep in range(fineStepsPerStep):
-            problemFine.iterate()
-        problemFine.writepos()
+        #for istep in range(fineStepsPerStep):
+            #problemFine.iterate()
+        #problemFine.writepos()
 
         #for p in [problemFRF, problemMRF_act]:
         for p in [problemFRF, problemMRF_act]:
@@ -114,6 +115,7 @@ if __name__=="__main__":
             p.iterate()#assembly + solve
             p.writepos()
 
+    '''
     problemMRF_act.setAdvectionSpeed( -problemMRF_act.advectionSpeed )
     problemFine.mhs.setSpeed( -problemFine.mhs.speed )
     problemFRF.mhs.setSpeed( -problemFRF.mhs.speed )
@@ -133,3 +135,4 @@ if __name__=="__main__":
             p.iterate()#assembly + solve
             p.writepos()
 
+    '''

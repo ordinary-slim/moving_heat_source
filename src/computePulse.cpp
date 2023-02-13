@@ -2,9 +2,9 @@
 #include <Eigen/Core>
 #include <cmath>
 #include <vector>
-#include "includes/mesh.h"
-#include "includes/element.h"
-#include "includes/heatSource.h"
+#include "domain/mesh.h"
+#include "domain/element.h"
+#include "heatSource.h"
 
 //1D heat sources
 double gaussianPowerDensity1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius) {

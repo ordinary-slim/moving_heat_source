@@ -1,13 +1,13 @@
 #ifndef PROBLEM
 #include <map>
 #include <string>
-#include "mesh.h"
+#include "domain/mesh.h"
 #include "heatSource.h"
 #include "timeIntegrator.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
-#include "../../external/pybind11/include/pybind11/pybind11.h"
-#include "../../external/pybind11/include/pybind11/stl.h"
+#include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/stl.h"
 
 namespace py = pybind11;
 

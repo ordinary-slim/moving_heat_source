@@ -13,7 +13,8 @@ class Element {
     Eigen::VectorXi  con;
     vector<double> gpweight;
     double vol;
-    int dim, elementType;
+    int dim;
+    ElementType elementType;
     vector<vector<double>> BaseGpVals;
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
 

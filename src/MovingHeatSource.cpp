@@ -1,5 +1,5 @@
-#include "includes/element.h"
-#include "includes/problem.h"
+#include "domain/element.h"
+#include "problem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"

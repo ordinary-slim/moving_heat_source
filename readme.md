@@ -2,12 +2,10 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [~] Write pvd
-        Bug, gotta fix.
-        Compare to other PVDs
-- [x] Move mesh points in post if advection
-        Either full python or half half c++ python
-- [~] Proper activation
+- [ ] Boundary mesh connectivity
+- [ ] Prepare code for hexa and tetra els
+- [ ] Better connectivity DSs
+- [ ] Cell connectivity stored in uint to match meshzoo library
 
 Dependencies:
 

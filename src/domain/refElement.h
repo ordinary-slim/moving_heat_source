@@ -2,20 +2,21 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
+#include "elementTypes.h"
 class refElement {
   public:
     int nnodes, dim, ngpoints;
-    int elementType;
+    ElementType elementType;
     double vol = -1;
     Eigen::MatrixX3d pos, gpos;
     Eigen::Matrix3d XI_inverse;
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
 
     refElement(){}
-    refElement( int elType ) {
+    refElement( ElementType elType ) {
       elementType = elType;
       switch (elementType ) {
-        case 0://line2
+        case line2:
           /*
            *  1 x___________x 2
           */
@@ -41,7 +42,7 @@ class refElement {
             GradBaseGpVals[1][igp] << +0.5, 0.0, 0.0;
           }
           break;
-        case 3://triangle3
+        case triangle3:
           /*
            * 3x
            *  |\
@@ -76,7 +77,7 @@ class refElement {
             GradBaseGpVals[2][igp] << 0.0, +1.0, 0.0;
           }
           break;
-        case 4://quad4
+        case quad4:
           /*
            * 2x____________x1
            *  |            |

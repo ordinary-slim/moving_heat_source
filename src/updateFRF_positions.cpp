@@ -1,4 +1,4 @@
-#include "includes/problem.h"
+#include "problem.h"
 
 void Problem::updateFRF_positions() {
   // Pre-iteration operations
