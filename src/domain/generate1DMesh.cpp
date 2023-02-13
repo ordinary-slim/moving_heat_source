@@ -9,7 +9,7 @@ void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
   double h = L / nels;
   cout << "h = " << h << endl;
 
-  con.resize( nels, 2 );
+  con_CellPoint.con.resize( nels, 2 );
   elementTypes.resize( nels );
   pos.resize( nnodes, 3 );
 
@@ -22,8 +22,8 @@ void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
   // build connectivity; inneficient but clear
   nnodes_per_el = 2;
   for (int i = 0; i < nels; i++) {
-    con(i, 0 ) = i;
-    con(i, 1 ) = i+1;
+    con_CellPoint.con(i, 0 ) = i;
+    con_CellPoint.con(i, 1 ) = i+1;
     elementTypes[i] = line2;
   }
 }

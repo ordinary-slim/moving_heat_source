@@ -28,12 +28,14 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<>())
         .def_readonly("pos", &Mesh::pos)
         .def_readonly("pos_noAdv", &Mesh::pos_noAdv)
-        .def_readonly("con", &Mesh::con)
+        .def_readonly("con_CellPoint", &Mesh::con_CellPoint)
         .def_readonly("nels", &Mesh::nels)
         .def_readonly("nnodes", &Mesh::nnodes)
         .def_readonly("activeElements", &Mesh::activeElements)
         .def("generate1DMesh", &Mesh::generate1DMesh)
         .def("getElement", &Mesh::getElement);
+    py::class_<Connectivity>(m, "Connectivity", py::dynamic_attr())
+        .def_readonly("con", &Connectivity::con);
     py::class_<Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Element::pos)

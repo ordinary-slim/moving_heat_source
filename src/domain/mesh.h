@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Core>
+#include "connectivity.h"
 #include "element.h"
 #include "refElement.h"
 #include "elementTypes.h"
@@ -14,7 +15,7 @@ class Mesh {
     int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos, pos_noAdv;// node positions
-    Eigen::MatrixXi  con;// connectivy
+    Connectivity  con_CellPoint;
     vector<ElementType> elementTypes;
     vector<int> activeElements;
     vector<int> activeNodes;
@@ -43,7 +44,7 @@ class Mesh {
       }
 
       // set connectivity
-      e.con = con.row(ielem);
+      e.con = con_CellPoint.con.row(ielem);
       // set pos
       for (int inode=0; inode < e.nnodes; inode++) {
         e.pos.row(inode) = pos.row(e.con(inode));
@@ -61,7 +62,7 @@ class Mesh {
       fill( activeNodes.begin(), activeNodes.end(), 0 );
       for (int ielem = 0; ielem < nels; ielem++) {
         if (activeElements[ielem] == 1) {
-          Eigen::VectorXi locCon = con.row( ielem );
+          Eigen::VectorXi locCon = con_CellPoint.con.row( ielem );
           //set to 1 nodes who belong to element
           for (int locInode = 0; locInode < locCon.size(); locInode++){
             activeNodes[ locCon[locInode] ] = 1;
@@ -86,7 +87,7 @@ class Mesh {
       }
       cout << "connectivity:" << endl;
       for (int i = 0; i<nels; i++) {
-        cout << con.row(i) << endl;
+        cout << con_CellPoint.con.row(i) << endl;
       }
     }
     void initializeMesh(pybind11::dict &input);

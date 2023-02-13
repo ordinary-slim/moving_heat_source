@@ -74,7 +74,7 @@ class Problem(mhs.Problem):
         mesh = meshio.Mesh(
             #self.mesh.pos,
             self.mesh.pos_noAdv,
-            [ (cell_type, self.mesh.con), ],
+            [ (cell_type, self.mesh.con_CellPoint.con), ],
             point_data={"T": self.solution},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )

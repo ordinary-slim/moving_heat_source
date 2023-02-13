@@ -31,16 +31,16 @@ void Mesh::initializeMesh(py::dict &input) {
     py::array cells    = input["cells"];
     nels          = cells.shape(0);
     nnodes_per_el = cells.shape(1);
-    con.resize( nels, nnodes_per_el );
+    con_CellPoint.con.resize( nels, nnodes_per_el );
     elementTypes.resize( nels );
     activeElements.resize( nels );
     activeNodes.resize( nnodes );
-    con.setOnes();
-    con *= -1;
+    con_CellPoint.con.setOnes();
+    con_CellPoint.con *= -1;
     auto aux_cells = cells.unchecked<int>();
     for ( int icell = 0; icell < nels; icell++) {
       for ( int inode = 0; inode < nnodes_per_el; inode++) {
-        con(icell, inode) =  aux_cells(icell, inode);
+        con_CellPoint.con(icell, inode) =  aux_cells(icell, inode);
       }
     }
     //Set element type
