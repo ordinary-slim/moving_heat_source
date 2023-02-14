@@ -22,7 +22,7 @@ class HeatSource {
         speed = inputSpeed;
       }
 
-      void computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double dt );
+      void computePulse( Eigen::VectorXd &pulse, mesh::Mesh &m, double t, double dt );
       double (*powerDensity)(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
     };
 

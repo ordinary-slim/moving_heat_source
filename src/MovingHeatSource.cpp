@@ -24,18 +24,26 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def("activateDomain", &Problem::activateDomain);
-    py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
+    py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
-        .def_readonly("pos", &Mesh::pos)
-        .def_readonly("pos_noAdv", &Mesh::pos_noAdv)
-        .def_readonly("con_CellPoint", &Mesh::con_CellPoint)
-        .def_readonly("nels", &Mesh::nels)
-        .def_readonly("nnodes", &Mesh::nnodes)
-        .def_readonly("activeElements", &Mesh::activeElements)
-        .def("generate1DMesh", &Mesh::generate1DMesh)
-        .def("getElement", &Mesh::getElement);
-    py::class_<Connectivity>(m, "Connectivity", py::dynamic_attr())
-        .def_readonly("con", &Connectivity::con);
+        .def_readonly("pos", &mesh::Mesh::pos)
+        .def_readonly("pos_noAdv", &mesh::Mesh::pos_noAdv)
+        .def_readonly("con_CellPoint", &mesh::Mesh::con_CellPoint)
+        .def_readonly("con_CellCell", &mesh::Mesh::con_CellCell)
+        .def_readonly("con_FacetPoint", &mesh::Mesh::con_FacetPoint)//Debugging
+        .def_readonly("con_FacetCell", &mesh::Mesh::con_FacetCell)//Debugging
+        .def_readonly("nels", &mesh::Mesh::nels)
+        .def_readonly("nnodes", &mesh::Mesh::nnodes)
+        .def_readonly("activeElements", &mesh::Mesh::activeElements)
+        .def("generate1DMesh", &mesh::Mesh::generate1DMesh)
+        .def("getElement", &mesh::Mesh::getElement);
+    py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
+        .def_readonly("con", &mesh::Connectivity::con)
+        .def_readonly("nels_oDim", &mesh::Connectivity::nels_oDim)
+        .def_readonly("nels_tDim", &mesh::Connectivity::nels_tDim);
+    m.def( "transpose", &mesh::transpose, "(d -> d') ---> (d' -> d)" );
+    m.def( "intersect", &mesh::intersect, "(d -> d''), (d'' -> d') ---> (d -> d')" );
+    m.def( "build", &mesh::build, "(D -> 0), (D -> D) ---> (d -> 0), (D -> d)" );
     py::class_<Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &Element::pos)

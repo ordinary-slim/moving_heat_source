@@ -2,7 +2,7 @@
 #include "element.h"
 
 
-void Mesh::generate1DMesh( double A, double B, int numberOfEls ){
+void mesh::Mesh::generate1DMesh( double A, double B, int numberOfEls ){
   nels = numberOfEls;
   nnodes = nels + 1;
   double L = (B - A);

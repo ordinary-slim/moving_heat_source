@@ -17,7 +17,7 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
                                            //
 class Problem {
   public:
-    Mesh mesh;
+    mesh::Mesh mesh;
     HeatSource mhs;
     map<string,double> material;
     Eigen::VectorXd solution;

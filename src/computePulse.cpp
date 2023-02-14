@@ -24,7 +24,7 @@ double forcedSolutionSource91(Eigen::Vector3d x, double t, Eigen::Vector3d x0, d
   return pd;
 }
 
-void HeatSource::computePulse( Eigen::VectorXd &pulse, Mesh &m, double t, double dt ) {
+void HeatSource::computePulse( Eigen::VectorXd &pulse, mesh::Mesh &m, double t, double dt ) {
   double r_i;
   Eigen::Vector3d x_gp;
 

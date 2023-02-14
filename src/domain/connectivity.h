@@ -2,6 +2,8 @@
 #include <Eigen/Core>
 #include "elementTypes.h"
 
+namespace mesh
+{
 class Connectivity {
   public:
     int oDim = -1;
@@ -29,5 +31,7 @@ class Connectivity {
 Connectivity transpose(Connectivity inCon);
 Connectivity intersect(Connectivity inCon1, Connectivity inCon2);
 std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Connectivity DD_connec);
+
+}
 #define CONNEC
 #endif

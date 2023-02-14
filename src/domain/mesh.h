@@ -10,12 +10,17 @@
 
 using namespace std;
 
+namespace mesh
+{
 class Mesh {
   public:
     int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::MatrixX3d pos, pos_noAdv;// node positions
     Connectivity  con_CellPoint;
+    Connectivity  con_CellCell;
+    Connectivity  con_FacetPoint;
+    Connectivity  con_FacetCell;
     vector<ElementType> elementTypes;
     vector<int> activeElements;
     vector<int> activeNodes;
@@ -92,5 +97,6 @@ class Mesh {
     }
     void initializeMesh(pybind11::dict &input);
 };
+}
 #define MESH
 #endif

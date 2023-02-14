@@ -9,6 +9,8 @@
 
 using namespace std;
 
+namespace mesh
+{
 vector<vector<int>> getVertexSets_Dd( Eigen::VectorXi localCon_D0,
     int d, ElementType entD_elType) {
 
@@ -112,7 +114,7 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
   vector<vector<int>> auxConnec_d0;
 
   auxConnec_Dd.resize( DD_connec.nels_oDim );
-  auxConnec_d0.resize( DD_connec.nels_oDim );
+  //auxConnec_d0.resize( DD_connec.nels_oDim );
 
   int k = 0;
   for (int icell = 0; icell < DD_connec.nels_oDim; icell++){
@@ -137,10 +139,7 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
 
       if (newEdge) {
         auxConnec_Dd[icell].push_back( k );
-        auxConnec_d0.resize( auxConnec_d0.size() + 1 );
-        for (int ipoin : vi ) {
-          auxConnec_d0[k].push_back( ipoin );
-        }
+        auxConnec_d0.push_back( vi );
         k++;
       }
     }
@@ -153,4 +152,5 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
       DD_connec.nels_oDim, connec_d0.nels_oDim, DO_connec.oelType,
       getDdElType( DO_connec.oelType , d));
   return std::make_tuple( connec_d0, connec_Dd );
+}
 }
