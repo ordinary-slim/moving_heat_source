@@ -75,7 +75,7 @@ class Problem(mhs.Problem):
             #self.mesh.pos,
             self.mesh.pos_noAdv,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
-            point_data={"T": self.solution},
+            point_data={"T": self.unknown.values},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 

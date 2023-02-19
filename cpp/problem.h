@@ -1,7 +1,8 @@
 #ifndef PROBLEM
 #include <map>
 #include <string>
-#include "domain/mesh.h"
+#include "mesh/Mesh.h"
+#include "FEMFunction.h"
 #include "heatSource.h"
 #include "timeIntegrator.h"
 #include <Eigen/Core>
@@ -18,10 +19,9 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 class Problem {
   public:
     mesh::Mesh mesh;
+    FEMFunction unknown;
     HeatSource mhs;
     map<string,double> material;
-    Eigen::VectorXd solution;
-    Eigen::MatrixXd prevSolutions;
     double time = 0.0;
     double dt;
     int iter;

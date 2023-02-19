@@ -7,7 +7,7 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
     cout << "Not enough value provided for time integrator inititialization " << endl;
     exit(1);
   }
-  prevSolutions = pSols(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.nstepsRequired - 1));
-  solution = prevSolutions(Eigen::placeholders::all, 0);
+  unknown.prevValues = pSols(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.nstepsRequired - 1));
+  unknown.values = unknown.prevValues(Eigen::placeholders::all, 0);
   timeIntegrator.nstepsStored += pSols.cols();
 }

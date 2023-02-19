@@ -1,5 +1,5 @@
-#include "mesh.h"
-#include "element.h"
+#include "Mesh.h"
+#include "Element.h"
 #include <Eigen/Core>
 #include <chrono>
 

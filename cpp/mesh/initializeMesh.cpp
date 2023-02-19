@@ -1,5 +1,5 @@
 #include <chrono>
-#include "mesh.h"
+#include "Mesh.h"
 #include "../../external/pybind11/include/pybind11/pybind11.h"
 #include "../../external/pybind11/include/pybind11/eigen.h"
 #include "../../external/pybind11/include/pybind11/stl.h"

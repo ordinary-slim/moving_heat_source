@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "domain/element.h"
+#include "mesh/Element.h"
 #include "problem.h"
 #include <numeric>
 #include <algorithm>
@@ -44,7 +44,7 @@ void Problem::iterate() {
     }
     //Add time dependency
     lhs += timeIntegrator.lhsCoeff * M / dt;
-    rhs += M * (prevSolutions(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
+    rhs += M * (unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
   }
 
   if (mesh.hasInactive) {
@@ -54,7 +54,7 @@ void Problem::iterate() {
     for (int inode = 0; inode < mesh.nnodes; inode++) {
       if (mesh.activeNodes[inode] == 0) {
         InacNodes_coeffs.push_back( T(inode, inode, 1) );
-        rhs[ inode ] = solution[ inode ];
+        rhs[ inode ] = unknown.values[ inode ];
       }
     }
     I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
@@ -67,7 +67,7 @@ void Problem::iterate() {
   if (not(solver.info() == Eigen::Success)) {
     cout << "Singular matrix!" << endl;
   }
-  solution = solver.solve(rhs);
+  unknown.values = solver.solve(rhs);
 
   //END ITERATION
   postIterate();

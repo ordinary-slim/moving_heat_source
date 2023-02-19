@@ -44,9 +44,10 @@ void Problem::initialize(py::dict &input) {
         break; }
   }
 
-  // initialize solution and increment
   double environmentTemperature = py::cast<double>(input["environmentTemperature"]);
-  solution = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
+  // initialize unknown
+  unknown.mesh = &mesh;
+  unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
 
   // dirichlet BC
   vector<int> freeNodes(mesh.nnodes);
@@ -78,7 +79,7 @@ void Problem::initialize(py::dict &input) {
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
 
   // allocate storage for previous solutions
-  prevSolutions = Eigen::MatrixXd::Zero( mesh.nnodes, timeIntegrator.nstepsRequired );
-  prevSolutions.col( 0 ) << solution;
+  unknown.prevValues = Eigen::MatrixXd::Zero( mesh.nnodes, timeIntegrator.nstepsRequired );
+  unknown.prevValues.col( 0 ) << unknown.values;
   ++timeIntegrator.nstepsStored;
 }

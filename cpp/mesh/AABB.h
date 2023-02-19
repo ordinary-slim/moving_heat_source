@@ -1,4 +1,4 @@
-#include "element.h"
+#include "Element.h"
 #include <Eigen/Core>
 
 struct AABB {

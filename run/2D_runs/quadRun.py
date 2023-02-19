@@ -9,7 +9,7 @@ import pdb
 
 def mesh(box):
     cell_type="quad4"
-    meshDen = 1
+    meshDen = 4
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
         np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),

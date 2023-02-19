@@ -1,4 +1,4 @@
-#include "domain/element.h"
+#include "mesh/Element.h"
 #include "problem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
@@ -15,8 +15,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("iterate", &Problem::iterate)
         .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
-        .def_readonly("solution", &Problem::solution)
-        //.def_readwrite("pulse", &Problem::pulse)//debugging
+        .def_readonly("unknown", &Problem::unknown)
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
         .def_readwrite("time", &Problem::time)
@@ -38,6 +37,10 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("generate1DMesh", &mesh::Mesh::generate1DMesh)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
+    py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())
+        .def(py::init<>())
+        .def("interpolate", &FEMFunction::interpolate)
+        .def_readonly("values", &FEMFunction::values);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)
         .def_readonly("nels_oDim", &mesh::Connectivity::nels_oDim)

@@ -1,5 +1,5 @@
-#include "mesh.h"
-#include "element.h"
+#include "Mesh.h"
+#include "Element.h"
 
 
 void mesh::Mesh::generate1DMesh( double A, double B, int numberOfEls ){

@@ -2,8 +2,8 @@
 #include <Eigen/Core>
 #include <cmath>
 #include <vector>
-#include "domain/mesh.h"
-#include "domain/element.h"
+#include "mesh/Mesh.h"
+#include "mesh/Element.h"
 #include "heatSource.h"
 
 //1D heat sources

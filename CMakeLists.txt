@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(MovingHeatSource LANGUAGES CXX)
 
-FILE(GLOB_RECURSE mySources src/*.cpp)
+FILE(GLOB_RECURSE mySources cpp/*.cpp)
 
 add_subdirectory(external/pybind11)
 

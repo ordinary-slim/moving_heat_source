@@ -3,8 +3,8 @@
 
 void Problem::postIterate() {
   // End iteration operations
-  // Overwrite last column of prevSolutions
-  prevSolutions.col( prevSolutions.cols()-1 ) << solution;
+  // Overwrite last column of unknown.prevValues
+  unknown.prevValues.col( unknown.prevValues.cols()-1 ) << unknown.values;
   // Permutate N-1, 0, ..., N-2
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(timeIntegrator.nstepsRequired);
   Eigen::VectorXi indices(timeIntegrator.nstepsRequired);
@@ -13,7 +13,7 @@ void Problem::postIterate() {
   }
   indices[0] = indices.size() -  1 ;
   perm.indices() = indices;
-  prevSolutions = prevSolutions * perm;
+  unknown.prevValues = unknown.prevValues * perm;
 
   ++timeIntegrator.nstepsStored;
   setTime( time + dt );

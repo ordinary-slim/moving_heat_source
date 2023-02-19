@@ -3,7 +3,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include "connectivity.h"
-#include "element.h"
+#include "Element.h"
 #include "refElement.h"
 #include "elementTypes.h"
 #include "AABB.h"
