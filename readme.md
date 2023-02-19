@@ -2,11 +2,11 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Correct cell-cell conectivity
-- [ ] Prepare code for hexa and tetra els
+- [x] Correct cell-cell conectivity
+- [x] Boundary mesh connectivity
 - [ ] Better connectivity DSs
 - [ ] Cell connectivity stored in uint to match meshzoo library
-- [x] Boundary mesh connectivity
+- [ ] Prepare code for hexa and tetra els
 
 Dependencies:
 
