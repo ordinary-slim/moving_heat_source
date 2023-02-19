@@ -55,6 +55,7 @@ class Problem {
     void updateFRF_positions();
     void assemble();
     void postIterate();
+    void getFromExternal(mesh::Mesh &extMesh, FEMFunction &extFEMFunc);
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );
       isAssembled = false;

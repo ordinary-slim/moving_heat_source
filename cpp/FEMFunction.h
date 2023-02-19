@@ -1,3 +1,4 @@
+#ifndef FEMFUNC
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
@@ -25,3 +26,5 @@ class FEMFunction{
       return val;
     }
 };
+#define FEMFUNC
+#endif

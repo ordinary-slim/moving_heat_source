@@ -8,10 +8,10 @@ void Problem::postIterate() {
   // Permutate N-1, 0, ..., N-2
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(timeIntegrator.nstepsRequired);
   Eigen::VectorXi indices(timeIntegrator.nstepsRequired);
-  for (int i = 0; i < indices.size(); i++) {
+  indices[0] = indices.size() -  1 ;
+  for (int i = 1; i < indices.size(); i++) {
     indices[i] = i-1;
   }
-  indices[0] = indices.size() -  1 ;
   perm.indices() = indices;
   unknown.prevValues = unknown.prevValues * perm;
 

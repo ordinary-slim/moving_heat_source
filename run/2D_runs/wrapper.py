@@ -38,6 +38,11 @@ class Problem(mhs.Problem):
     def readInputFile( self, fileName ):
         self.parseInput( fileName )
 
+    def setMesh( self, points, cells, cell_type ):
+        self.input["points"] = points
+        self.input["cells"] = cells
+        self.input["cell_type"]=cell_type
+
     def parseInput(self, fileName):
         lines = []
 
@@ -63,8 +68,12 @@ class Problem(mhs.Problem):
 
     def iterate(self):
         super(Problem, self).iterate()
-        self.iter += 1
         print( "iter = {}".format( self.iter ) )
+        self.postIterate()
+
+    def postIterate(self):
+        self.iter += 1
+        super(Problem, self).postIterate()
 
     #POSTPROCESSING
     def writepos( self ):
@@ -73,7 +82,7 @@ class Problem(mhs.Problem):
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
             #self.mesh.pos,
-            self.mesh.pos_noAdv,
+            self.mesh.pos,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
             point_data={"T": self.unknown.values},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
