@@ -13,14 +13,19 @@ class Element {
     Eigen::VectorXi  con;
     vector<double> gpweight;
     double vol;
+    Eigen::Vector3d centroid;
+    Eigen::Vector3d normal;
     int dim;
     ElementType elementType;
     vector<vector<double>> BaseGpVals;
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
 
-    refElement      *refEl;
-    Eigen::Matrix3d ref2loc;// x = c + ref2loc · xi
-    Eigen::Matrix3d loc2ref_T;// tranpose of loc2ref where loc2ref st xi= c'+ loc2ref · x
+    ReferenceElement      *refEl;
+    // x : loc coordinate; xi : reference coordinate
+    // x = ref2locShift + ref2locMatrix · xi
+    // xi = loc2refShift + loc2refMatrix · x
+    Eigen::Vector3d ref2locShift, loc2refShift;
+    Eigen::Matrix3d ref2locMatrix, loc2refMatrix;
 
     void computeNodalValues_Base(){
       //COMMON
@@ -35,24 +40,28 @@ class Element {
     }
 
     void computeNodalValues_GradBase() {
-      /*
-      switch (elementType) {
-        case 0: {//P0-line
-          vol = pos(1, 0) - pos(0, 0);
-          for (int jgp=0; jgp<nnodes; jgp++) {
-            // compute vol
-            GradBaseGpVals[0][jgp][0] = -1.0 / vol ;
-            GradBaseGpVals[1][jgp][0] = +1.0 / vol ;
-          }
-          break;}
-        default: {
-          break;}
-      }
-      */
       computeDerivatives();
     }
 
-    void setElementType( refElement &target_refEl ) {
+    void allocate() {
+      // ALLOCATIONS
+      pos.resize( nnodes, 3 );
+      gpos.resize( nnodes, 3 );
+      // BaseFun
+      BaseGpVals.resize( nnodes );
+      // Quadrature weights
+      gpweight.resize( nnodes );
+      // GradBaseFun
+      GradBaseGpVals.resize( nnodes );
+      for (int inode = 0; inode < nnodes; inode++) {
+        GradBaseGpVals[inode].resize( ngpoints );
+        for (int jgp = 0; jgp < ngpoints; jgp++) {
+          GradBaseGpVals[inode][jgp].setZero();
+        }
+      }
+    }
+
+    void setElementType( ReferenceElement &target_refEl ) {
       refEl = &target_refEl;
       elementType = refEl->elementType;
       nnodes = refEl->nnodes;
@@ -60,7 +69,7 @@ class Element {
       dim = refEl->dim;
     }
 
-    void computeDerivatives() {
+    void computeLocRefMappings() {
       // Build helper matrices
       Eigen::Matrix3d X;
       // Compute
@@ -73,41 +82,101 @@ class Element {
       for (int idim = dim; idim < 3; idim++) {
         X(idim, idim)  = 1.0;
       }
-      ref2loc = X * refEl->XI_inverse;
-      loc2ref_T = ref2loc.inverse();
-      loc2ref_T.transposeInPlace();
+      
+      // Compute local <-> reference mappings
+      ref2locMatrix = X * refEl->XI_inverse;
+      ref2locShift  = pos.row(0).transpose() - ref2locMatrix * refEl->pos.row(0).transpose() ;
+      loc2refMatrix = ref2locMatrix.inverse();
+      loc2refShift  = refEl->pos.row(0).transpose() - loc2refMatrix * pos.row(0).transpose();
+    }
+
+    Eigen::Vector3d map_loc2ref( Eigen::Vector3d x ) {
+      return loc2refShift + loc2refMatrix * x;
+    }
+
+    void computeDerivatives() {
+      Eigen::Matrix3d loc2refMatrix_T = loc2refMatrix.transpose();
 
       // Compute volume
-      vol = refEl->vol * ref2loc.determinant();
+      vol = refEl->vol * ref2locMatrix.determinant();
 
       for (int inode = 0; inode < nnodes; inode++) {
         for (int igp = 0; igp < ngpoints; igp++) {
-          GradBaseGpVals[inode][igp] = (loc2ref_T)*(refEl->GradBaseGpVals[inode][igp]);
+          GradBaseGpVals[inode][igp] = loc2refMatrix_T*(refEl->GradBaseGpVals[inode][igp]);
         }
       }
     }
 
 
-    // DEBUGGING FUNCS
-    void printBaseFunGradGpVals() {
-      for (int igp = 0; igp < nnodes; igp++) {
-        for (int jgp = 0; jgp < nnodes; jgp++) {
-          cout << "(";
-          for (int idim = 0; idim < dim; idim++) {
-            printf("%.3f, ", GradBaseGpVals[igp][jgp][idim]);
-          }
-          cout << ")\t\t";
-        }
-        cout << endl;
+    void computeCentroid() {
+      centroid.setZero();
+      for (int inode = 0; inode < nnodes; ++inode){
+        centroid += pos.row(inode);
       }
-      cout << "-------------\n";
+      centroid /= nnodes;
     }
 
-    void print() {
-      for (int i = 0; i < nnodes; i++) {
-        cout << pos.row(i) << ", ";
+    void computeNormal( Eigen::Vector3d parentCentroid ) {
+      normal.setZero();
+      switch (dim) {
+        case 1: {//Element is a line
+          Eigen::Vector3d lineVec = pos.row(1) - pos.row(0);
+          normal(0) = -lineVec( 1 );
+          normal(1) = +lineVec( 0 );
+          normal /= lineVec.norm();
+          break;
+        }
+        case 2: {
+          printf("Not implemented\n");
+          exit(EXIT_FAILURE);
+        }
+        case 3: {
+          printf("Not implemented\n");
+          exit(EXIT_FAILURE);
+        }
+        default: {
+          printf("Not implemented\n");
+          exit(EXIT_FAILURE);
+        }
       }
-      cout << endl;
+
+      // Test for sign
+      Eigen::Vector3d testVector = parentCentroid - centroid;
+      if ( testVector.dot( normal ) > 0 ) normal = -normal;
+    }
+
+    Element getFacetElement( Eigen::VectorXi vertices, ReferenceElement &facetRefEl ) {
+      Element e;
+      e.setElementType( facetRefEl );
+      e.allocate();
+
+      // positions
+      int locInode;
+      int counter = 0;
+      for (int globInode : vertices ) {
+        locInode = find(con.begin(), con.end(), globInode) - con.begin();
+        e.pos.row( counter ) = pos.row( locInode );
+        counter++;
+      }
+      // computations
+      e.computeCentroid();
+      e.computeNormal( centroid );
+      return e;
+    }
+
+    Eigen::VectorXd evaluateShaFuns( Eigen::Vector3d pos ) {
+      // Evaluate shape funcs at a point
+      Eigen::VectorXd shaFunsVals( nnodes );
+      
+      // Map to reference element
+      Eigen::Vector3d xi = map_loc2ref( pos );
+
+      // Evaluate shafuns in reference element
+      for (int inode = 0; inode < nnodes; inode++) {
+        shaFunsVals(inode) = refEl->shapeFuns[inode]( xi );
+      }
+
+      return shaFunsVals;
     }
 };
 #define ELEMENT

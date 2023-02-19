@@ -1,6 +1,7 @@
 #ifndef CONNEC
 #include <Eigen/Core>
 #include "elementTypes.h"
+#include "refElement.h"
 
 namespace mesh
 {
@@ -12,7 +13,8 @@ class Connectivity {
     int nels_tDim = -1;
     ElementType oelType;
     ElementType telType;
-    Eigen::MatrixXi  con;// connectivy
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic,
+      Eigen::RowMajor> con;// connectivy
 
     Connectivity() {}
 
@@ -25,6 +27,10 @@ class Connectivity {
       nels_tDim = in_nels_tDim;
       oelType = in_oelType;
       telType = in_telType;
+    }
+
+    Eigen::VectorXi getLocalCon( int idx ) {
+      return con.row( idx );
     }
 };
 

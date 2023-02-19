@@ -11,7 +11,7 @@ int getNnodesElType (ElementType elType ) {
   };
 };
 
-ElementType getDdElType( ElementType Dent_elType, int d ) {
+ElementType getIncidentElType( ElementType Dent_elType, int d ) {
   switch (d){
     case 0: return point1;
     case 1: return line2;

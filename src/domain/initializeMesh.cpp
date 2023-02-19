@@ -1,3 +1,4 @@
+#include <chrono>
 #include "mesh.h"
 #include "../../external/pybind11/include/pybind11/pybind11.h"
 #include "../../external/pybind11/include/pybind11/eigen.h"
@@ -24,7 +25,9 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
       cell_type_flag = quad4;
     }
     // reference element. no support for mixed meshes yet
-    refEl = refElement(cell_type_flag);
+    refCellEl = ReferenceElement(cell_type_flag);
+    ElementType FacetElType = getIncidentElType(cell_type_flag, refCellEl.dim-1);
+    refFacetEl = ReferenceElement(FacetElType);
 
     //READ POINTS
     py::array points = input["points"];
@@ -64,17 +67,40 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   // reference element. no support for mixed s yet
 
   //Manually fill D0 connectivity fields
-  con_CellPoint.oDim = refEl.dim;
+  con_CellPoint.oDim = refCellEl.dim;
   con_CellPoint.tDim = 0;
   con_CellPoint.nels_oDim = nels;
   con_CellPoint.nels_tDim = nnodes;
-  con_CellPoint.oelType = refEl.elementType;
+  con_CellPoint.oelType = refCellEl.elementType;
   con_CellPoint.telType = point1;
   //CONNECTIVITIES
+  printf("Nels = %i\n", nels);
+  cout << "Building connectivities: " << endl;
+  printf("Tranposition CellPoint -> PointCell\n");
+  auto begin = std::chrono::steady_clock::now();
+
   Connectivity con_PointCell = mesh::transpose( con_CellPoint );
+
+  auto end = std::chrono::steady_clock::now();
+  std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;;
+  begin = std::chrono::steady_clock::now();
+  printf("Intersection CellPoint, PointCell -> CellCell\n");
+
   con_CellCell = mesh::intersect( con_CellPoint, con_PointCell );
-  Connectivity con_CellFacet;
-  tie(con_FacetPoint, con_CellFacet) = mesh::build( refEl.dim-1, con_CellPoint, con_CellCell );
+
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;
+  begin = std::chrono::steady_clock::now();
+  printf("Build (Facet, Points), (Cells, facet)\n");
+
+  tie(con_FacetPoint, con_CellFacet) = mesh::build( refCellEl.dim-1, con_CellPoint, con_CellCell );
+
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;;
+
   con_FacetCell = mesh::transpose(con_CellFacet);
+
+  // Build AABBs
+  setAABBs();
 
 }

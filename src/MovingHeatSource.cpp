@@ -36,6 +36,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
         .def_readonly("activeElements", &mesh::Mesh::activeElements)
         .def("generate1DMesh", &mesh::Mesh::generate1DMesh)
+        .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)

@@ -6,6 +6,6 @@ enum ElementType {
   quad4,
 };
 int getNnodesElType( ElementType );
-ElementType getDdElType( ElementType Dent_elType, int d );
+ElementType getIncidentElType( ElementType Dent_elType, int d );
 #define ELTYPE
 #endif

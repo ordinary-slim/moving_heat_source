@@ -3,7 +3,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "elementTypes.h"
-class refElement {
+class ReferenceElement {
   public:
     int nnodes, dim, ngpoints;
     ElementType elementType;
@@ -12,8 +12,11 @@ class refElement {
     Eigen::Matrix3d XI_inverse;
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
 
-    refElement(){}
-    refElement( ElementType elType ) {
+    // Array of shape funcs
+    std::vector<std::function<double(Eigen::Vector3d)>> shapeFuns;
+
+    ReferenceElement(){}
+    ReferenceElement( ElementType elType ) {
       elementType = elType;
       switch (elementType ) {
         case line2:
@@ -26,6 +29,10 @@ class refElement {
           pos.resize(nnodes, 3);
           pos << -1.0, 0.0, 0.0,
                   1.0, 0.0, 0.0;
+          shapeFuns.resize(nnodes);
+          shapeFuns[0] = [](Eigen::Vector3d Xi) { return 0.5*(1 - Xi(0) ); };
+          shapeFuns[1] = [](Eigen::Vector3d Xi) { return 0.5*(1 + Xi(0) ); };
+
           vol = 2;
           XI_inverse << 0.5, 0.0, 0.0,
                         0.0, 1.0, 0.0,
@@ -59,6 +66,11 @@ class refElement {
           pos << 0.0, 0.0, 0.0,
                  1.0, 0.0, 0.0,
                  0.0, 1.0, 0.0;
+          shapeFuns.resize(nnodes);
+          shapeFuns[0] = [](Eigen::Vector3d Xi) { return ( 1 - Xi(0) - Xi(1) ); };
+          shapeFuns[1] = [](Eigen::Vector3d Xi) { return ( Xi(0) ); };
+          shapeFuns[2] = [](Eigen::Vector3d Xi) { return ( Xi(1) ); };
+
           vol = 0.5;
           XI_inverse << +1.0, 0.0, 0.0,
                         0.0, +1.0, 0.0,
@@ -95,6 +107,20 @@ class refElement {
                 -1.0, 1.0, 0.0,
                 -1.0,-1.0, 0.0,
                  1.0,-1.0, 0.0;
+          shapeFuns.resize(nnodes);
+          shapeFuns[0] = [](Eigen::Vector3d Xi) {
+            return ( 0.25*( 1 + Xi(0) )*( 1 + Xi(1)  ) );
+          };
+          shapeFuns[1] = [](Eigen::Vector3d Xi) {
+            return ( 0.25*( 1 - Xi(0) )*( 1 + Xi(1) ) );
+          };
+          shapeFuns[2] = [](Eigen::Vector3d Xi) {
+            return ( 0.25*( 1 - Xi(0) )*( 1 - Xi(1) ) );
+          };
+          shapeFuns[3] = [](Eigen::Vector3d Xi) {
+            return ( 0.25*( 1 + Xi(0) )*( 1 - Xi(1) ) );
+          };
+
           vol = 4;
           XI_inverse << -0.5, 0.5, 0.0,
                         0.0, -0.5, 0.0,

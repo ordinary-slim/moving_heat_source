@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 #include "elementTypes.h"
 
 using namespace std;
@@ -16,28 +17,30 @@ vector<vector<int>> getVertexSets_Dd( Eigen::VectorXi localCon_D0,
 
   vector<vector<int>> vertexSets;
 
-  ElementType entd_elType = getDdElType( entD_elType, d );
+  ElementType entd_elType = getIncidentElType( entD_elType, d );
   if (entd_elType != line2) {
     cout << "Not implemented yet!" << endl;
     exit(-1);
   }
+  int nnodes = localCon_D0.size();
   int windowSize = getNnodesElType(entd_elType);
+
   vector<int> vSet;
   vSet.resize( windowSize );
 
-  for (int ipoin = 0; ipoin < localCon_D0.size(); ipoin++) {
+  for (int ipoin = 0; ipoin < nnodes; ipoin++) {
     for (int jpoin = 0; jpoin < windowSize; jpoin++) {
       vSet[jpoin] = localCon_D0( (ipoin + jpoin)%localCon_D0.size() );
     }
     std::sort( vSet.begin(), vSet.end() );
-    vertexSets.push_back(vSet);
+    vertexSets.push_back( vSet );
   }
   return vertexSets;
 }
 
-int get_dIndex( vector<vector<int>> auxConnec_Dd,
-    vector<vector<int>> auxConnec_d0,
-    int j, vector<int> v){
+int get_dIndex( vector<vector<int>> &auxConnec_Dd,
+    vector<vector<int>> &auxConnec_d0,
+    int j, vector<int> &v){
 
   for (int idcell : auxConnec_Dd[j]) {
     vector<int> vtest = auxConnec_d0[idcell];
@@ -50,6 +53,9 @@ int get_dIndex( vector<vector<int>> auxConnec_Dd,
 
 Connectivity auxCon2Con(vector<vector<int>> auxCon, int oDim, int tDim, int nels_oDim, int nels_tDim,
     ElementType oelType, ElementType telType) {
+
+  auto begin = std::chrono::steady_clock::now();
+
   //Compute max tDim per oDim
   int max_tDim = -1;
   for (int ioDim = 0; ioDim < auxCon.size(); ioDim++) {
@@ -65,7 +71,17 @@ Connectivity auxCon2Con(vector<vector<int>> auxCon, int oDim, int tDim, int nels
       con( i_odim, i_tdim ) = auxCon[i_odim][i_tdim];
     }
   }
+
+  auto end = std::chrono::steady_clock::now();
+  std::cout << "Converting aux con -> con took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
   return Connectivity(con, oDim, tDim, nels_oDim, nels_tDim, oelType, telType);
+}
+
+void addEntry( vector<vector<int>> &auxCon, int i, int j ) {
+  auto it = find( auxCon[i].begin(), auxCon[i].end(), j);
+  if (it == auxCon[i].end() ) {
+    auxCon[i].push_back( j );
+  }
 }
 
 Connectivity transpose(Connectivity inCon) {
@@ -75,7 +91,7 @@ Connectivity transpose(Connectivity inCon) {
     for ( auto p_ient_tdim = inCon.con.row(ient_odim).begin();
         (p_ient_tdim != inCon.con.row(ient_odim).end())&&(*p_ient_tdim != -1);
           ++p_ient_tdim ) {
-      tCon[*p_ient_tdim].push_back( ient_odim );
+      addEntry( tCon, *p_ient_tdim, ient_odim );
     }
   }
   Connectivity outCon = auxCon2Con( tCon, inCon.tDim, inCon.oDim, inCon.nels_tDim, inCon.nels_oDim, inCon.telType, inCon.oelType );
@@ -99,7 +115,7 @@ Connectivity intersect(Connectivity inCon1, Connectivity inCon2) {
           (pentj != inCon2.con.row(*pentk).end())&&(*pentj != -1);
             ++pentj ) {
         if (enti != *pentj){
-          intersecCon[enti].push_back( *pentj );
+          addEntry( intersecCon, enti, *pentj );
         }
       }
     }
@@ -114,32 +130,39 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
   vector<vector<int>> auxConnec_d0;
 
   auxConnec_Dd.resize( DD_connec.nels_oDim );
-  //auxConnec_d0.resize( DD_connec.nels_oDim );
 
   int k = 0;
+  vector<vector<int>> Vi, Vj;
+  vector<bool> newEntity;
   for (int icell = 0; icell < DD_connec.nels_oDim; icell++){
-    vector<vector<int>> Vi = getVertexSets_Dd(DO_connec.con.row(icell), d, DO_connec.oelType);
-    for (vector<int> vi : Vi ) {
-      bool newEdge = true;
+    Vi = getVertexSets_Dd(DO_connec.con.row(icell), d, DO_connec.oelType);
+    newEntity.resize(Vi.size());
+    fill(newEntity.begin(), newEntity.end(), true);
 
-      for ( auto pjcell = DD_connec.con.row(icell).begin();
-          (pjcell != DD_connec.con.row(icell).end())&&(*pjcell != -1);
-            ++pjcell ) {
-        if (*pjcell > icell) continue;
+    for ( auto pjcell = DD_connec.con.row(icell).begin();
+        (pjcell != DD_connec.con.row(icell).end())&&(*pjcell != -1);
+          ++pjcell ) {
+      if (*pjcell > icell) continue;
 
-        vector<vector<int>> Vj = getVertexSets_Dd(DO_connec.con.row(*pjcell), d, DO_connec.oelType);
+      Vj = getVertexSets_Dd(DO_connec.con.row(*pjcell), d, DO_connec.oelType);
+
+      for (int ient = 0; ient < Vi.size(); ient++) {
+        vector<int> vi = Vi[ient];
         for (vector<int> vj : Vj ) {
           if (vi==vj) {
             int l = get_dIndex(auxConnec_Dd, auxConnec_d0, *pjcell, vi);
-            auxConnec_Dd[icell].push_back( l );
-            newEdge = false;
+            addEntry( auxConnec_Dd, icell, l );
+            newEntity[ient] = false;
           }
         }
       }
 
-      if (newEdge) {
-        auxConnec_Dd[icell].push_back( k );
-        auxConnec_d0.push_back( vi );
+    }
+
+    for (int ient = 0; ient < Vi.size(); ient++) {
+      if (newEntity[ient]) {
+        addEntry( auxConnec_Dd, icell, k );
+        auxConnec_d0.push_back( Vi[ient] );
         k++;
       }
     }
@@ -147,10 +170,10 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
 
   Connectivity connec_d0 = auxCon2Con( auxConnec_d0, d, 0, auxConnec_d0.size(),
       DO_connec.nels_tDim,
-      getDdElType( DO_connec.oelType, d ), point1 );
+      getIncidentElType( DO_connec.oelType, d ), point1 );
   Connectivity connec_Dd = auxCon2Con( auxConnec_Dd, DD_connec.oDim, d,
       DD_connec.nels_oDim, connec_d0.nels_oDim, DO_connec.oelType,
-      getDdElType( DO_connec.oelType , d));
+      getIncidentElType( DO_connec.oelType , d));
   return std::make_tuple( connec_d0, connec_Dd );
 }
 }
