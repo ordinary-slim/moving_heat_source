@@ -11,7 +11,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<>())
         .def("initialize", &Problem::initialize)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
-        .def("updateFRF_positions", &Problem::updateFRF_positions)
+        .def("updateFRFpos", &Problem::updateFRFpos)
         .def("iterate", &Problem::iterate)
         .def("postIterate", &Problem::postIterate)
         .def("setTime", &Problem::setTime)
@@ -24,11 +24,12 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def_readonly("shiftFRF", &Problem::shiftFRF)
         .def("activateDomain", &Problem::activateDomain);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &mesh::Mesh::pos)
-        .def_readonly("pos_noAdv", &mesh::Mesh::pos_noAdv)
+        .def_readonly("posFRF", &mesh::Mesh::posFRF)
         .def_readonly("con_CellPoint", &mesh::Mesh::con_CellPoint)
         .def_readonly("con_CellCell", &mesh::Mesh::con_CellCell)
         .def_readonly("con_FacetPoint", &mesh::Mesh::con_FacetPoint)//Debugging

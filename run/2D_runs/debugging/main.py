@@ -56,21 +56,21 @@ if __name__=="__main__":
         p.initialize()
 
     # ITERATE BG ONCE
-    bgProblem.updateFRF_positions()#get tn+1 positions (not tn)
+    bgProblem.updateFRFpos()#get tn+1 positions (not tn)
     bgProblem.iterate()#assembly + solve
     bgProblem.writepos()
 
-    fgProblem.getFromExternal( bgProblem.mesh, bgProblem.unknown )
+    fgProblem.getFromExternal( bgProblem.mesh, bgProblem.unknown, bgProblem.shiftFRF )
     fgProblem.writepos()
 
     # MARCH FG, INTERPOLATE BACK TO BG
     for it in range(fgProblem.input["maxIter"]):
-        fgProblem.updateFRF_positions()
+        fgProblem.updateFRFpos()
         #MARCH
         fgProblem.postIterate()
         bgProblem.postIterate()
 
-        bgProblem.getFromExternal( fgProblem.mesh, fgProblem.unknown )
+        bgProblem.getFromExternal( fgProblem.mesh, fgProblem.unknown, fgProblem.shiftFRF )
 
         fgProblem.writepos()
         bgProblem.writepos()

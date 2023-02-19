@@ -29,6 +29,7 @@ class Problem {
     bool isAssembled = false;
     bool isAdvection = false;
     bool isSteady    = false;
+    Eigen::Vector3d shiftFRF;
     Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
     SpMat lhs;
@@ -52,10 +53,10 @@ class Problem {
     void initialize(py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
-    void updateFRF_positions();
+    void updateFRFpos();
     void assemble();
     void postIterate();
-    void getFromExternal(mesh::Mesh &extMesh, FEMFunction &extFEMFunc);
+    void getFromExternal(mesh::Mesh &extMesh, FEMFunction &extFEMFunc, Eigen::Vector3d shiftExtFRF );
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );
       isAssembled = false;

@@ -109,7 +109,7 @@ if __name__=="__main__":
 
         #for p in [problemFRF, problemMRF_act]:
         for p in [problemFRF, problemMRF_act]:
-            p.updateFRF_positions()#get tn+1 positions (not tn)
+            p.updateFRFpos()#get tn+1 positions (not tn)
             activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
             p.activate( activeElements )#activation
             p.iterate()#assembly + solve
@@ -129,7 +129,7 @@ if __name__=="__main__":
 
         #for p in [problemMRF_act]:
         for p in [problemFRF, problemMRF_act]:
-            p.updateFRF_positions()#get tn+1 positions (not tn)
+            p.updateFRFpos()#get tn+1 positions (not tn)
             activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
             p.activate( activeElements )#activation
             p.iterate()#assembly + solve

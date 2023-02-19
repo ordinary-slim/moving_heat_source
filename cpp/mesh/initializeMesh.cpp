@@ -34,7 +34,7 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
     nnodes = points.shape(0);
     dim    = points.shape(1);
     pos.resize( nnodes, 3 );
-    pos_noAdv.resize( nnodes, 3 );
+    posFRF.resize( nnodes, 3 );
     pos.setZero();
     auto aux_points = points.unchecked<double>();
     for ( int ipoint = 0; ipoint < nnodes; ipoint++) {
@@ -42,7 +42,7 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
         pos(ipoint, idim) =  aux_points(ipoint, idim);
       }
     }
-    pos_noAdv = pos;
+    posFRF = pos;
     //READ ELEMENTS
     py::array cells    = input["cells"];
     nels          = cells.shape(0);

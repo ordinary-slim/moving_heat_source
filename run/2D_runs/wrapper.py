@@ -82,7 +82,7 @@ class Problem(mhs.Problem):
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
             #self.mesh.pos,
-            self.mesh.pos,
+            self.mesh.posFRF,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
             point_data={"T": self.unknown.values},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
