@@ -76,7 +76,14 @@ if __name__=="__main__":
     for p in [mrfTransporter, mrfProblem]:
         p.initialize()
 
-    mrfTransporter.unknown.getFromExternal(  mrfProblem.unknown )
+    # Manufactured Initial Condition
+    f = lambda pos : abs(pos[0]+pos[1])
+
+
+    # CORRECT
+    #mrfTransporter.unknown.getFromExternal(  mrfProblem.unknown )
+    # DEBUGGING
+    mrfTransporter.forceState( f )
 
     # MARCH FG, INTERPOLATE BACK TO BG
     for it in range(mrfTransporter.input["maxIter"]):
@@ -85,7 +92,7 @@ if __name__=="__main__":
         activeElements = isInsideBox( mrfProblem.mesh, frfBox )
         mrfProblem.activate( activeElements )
 
-        mrfProblem.iterate()
+        mrfProblem.fakeIter()
 
         mrfTransporter.fakeIter()
         mrfTransporter.unknown.getFromExternal( mrfProblem.unknown )
