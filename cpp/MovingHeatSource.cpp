@@ -16,7 +16,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("postIterate", &Problem::postIterate)
         .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
-        .def("getFromExternal", &Problem::getFromExternal)
         .def_readonly("unknown", &Problem::unknown)
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
@@ -24,7 +23,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
-        .def_readonly("shiftFRF", &Problem::shiftFRF)
         .def("activateDomain", &Problem::activateDomain);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
@@ -36,13 +34,17 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("con_FacetCell", &mesh::Mesh::con_FacetCell)//Debugging
         .def_readonly("nels", &mesh::Mesh::nels)
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
+        .def_readonly("activeNodes", &mesh::Mesh::activeNodes)
         .def_readonly("activeElements", &mesh::Mesh::activeElements)
+        .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
         .def("generate1DMesh", &mesh::Mesh::generate1DMesh)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())
         .def(py::init<>())
-        .def("interpolate", &FEMFunction::interpolate)
+        .def("evaluateVal", &FEMFunction::evaluateVal)
+        .def("evaluateValNPrevVals", &FEMFunction::evaluateValNPrevVals)
+        .def("getFromExternal", &FEMFunction::getFromExternal)
         .def_readonly("values", &FEMFunction::values);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)

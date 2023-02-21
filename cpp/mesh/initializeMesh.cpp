@@ -63,6 +63,8 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
         cell_type_flag);
     std::fill (activeElements.begin(), activeElements.end(), 
         1);//all elements start active
+    std::fill (activeNodes.begin(), activeNodes.end(), 
+        1);//all elements start active
   }
   // reference element. no support for mixed s yet
 

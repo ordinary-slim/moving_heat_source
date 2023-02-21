@@ -17,7 +17,9 @@ class Mesh {
   public:
     int dim;
     int nels, nnodes, nnodes_per_el;
-    Eigen::MatrixX3d pos, posFRF;// node positions
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
+      pos, posFRF;// node positions in xi and x
+    Eigen::Vector3d shiftFRF;
     Connectivity  con_CellPoint;
     Connectivity  con_CellCell;
     Connectivity  con_FacetPoint;

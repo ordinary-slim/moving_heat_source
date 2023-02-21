@@ -61,17 +61,21 @@ class Problem(mhs.Problem):
                 self.input[iK] = int(self.input[iK])
 
     def initialize(self):
+        print( "Initializing {}".format( self.caseName ) )
         super(Problem, self).initialize( self.input )
 
     def activate(self, activeElements):
         self.activateDomain( activeElements )
 
     def iterate(self):
+        self.iter += 1
         super(Problem, self).iterate()
-        print( "iter = {}".format( self.iter ) )
-        self.postIterate()
+        print( "{} iter# {}, time={}".format(
+            self.caseName,
+            self.iter,
+            self.time) )
 
-    def postIterate(self):
+    def fakeIter(self):
         self.iter += 1
         super(Problem, self).postIterate()
 
@@ -84,7 +88,8 @@ class Problem(mhs.Problem):
             #self.mesh.pos,
             self.mesh.posFRF,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
-            point_data={"T": self.unknown.values},
+            point_data={"T": self.unknown.values,
+                        "ActiveNodes": self.mesh.activeNodes,},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 
