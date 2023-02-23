@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
-#include "elementTypes.h"
+#include "ElementTypes.h"
 class ReferenceElement {
   public:
     int nnodes, dim, ngpoints;

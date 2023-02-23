@@ -3,7 +3,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <algorithm>
-#include "refElement.h"
+#include "RefElement.h"
 using namespace std;
 
 class Element {

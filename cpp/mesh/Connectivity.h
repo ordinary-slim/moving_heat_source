@@ -1,7 +1,7 @@
 #ifndef CONNEC
 #include <Eigen/Core>
-#include "elementTypes.h"
-#include "refElement.h"
+#include "ElementTypes.h"
+#include "RefElement.h"
 
 namespace mesh
 {

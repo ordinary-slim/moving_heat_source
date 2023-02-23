@@ -1,4 +1,4 @@
-#include "elementTypes.h"
+#include "ElementTypes.h"
 #include <iostream>
 
 int getNnodesElType (ElementType elType ) {

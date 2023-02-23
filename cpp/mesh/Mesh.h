@@ -2,10 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Core>
-#include "connectivity.h"
+#include "Connectivity.h"
 #include "Element.h"
-#include "refElement.h"
-#include "elementTypes.h"
+#include "RefElement.h"
+#include "ElementTypes.h"
 #include "AABB.h"
 #include "../../external/pybind11/include/pybind11/pybind11.h"
 

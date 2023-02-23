@@ -1,4 +1,4 @@
-#include "connectivity.h"
+#include "Connectivity.h"
 #include <map>
 #include <algorithm>
 #include <iostream>
@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
-#include "elementTypes.h"
+#include "ElementTypes.h"
 
 using namespace std;
 
