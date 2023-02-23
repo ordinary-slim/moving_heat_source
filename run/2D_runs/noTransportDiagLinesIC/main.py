@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
+sys.path.insert(1, '../../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
@@ -33,20 +33,6 @@ def isInsideBox( mesh, box ):
         activeElements.append(isInside)
     return activeElements
 
-def computeAvElSize( p ):
-    #double counting!
-    accumulation = 0
-    N = 0
-    points = p.input["points"]
-    con    = p.input["cells"]
-    for ielem in range(con.shape[0]):
-        #compute size
-        for inode in range( con.shape[1] ):
-            accumulation += np.linalg.norm(
-                points[con[ielem][(inode+1)%con.shape[1]]] - points[con[ielem][inode]])
-    N = con.size
-    return accumulation / float( N )
-
 def setAdimR( adimR, p ):
     r = p.input["radius"]
     speedX = max( abs(p.input["speedX"]), abs(p.input["advectionSpeedX"]))
@@ -55,26 +41,13 @@ def setAdimR( adimR, p ):
     speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
     return (adimR * r / speed)
 
-def getMaxT( p ):
-    maxT = -1
-    posMaxT = None
-    for inode in range(p.mesh.nnodes):
-        if (p.unknown.values[inode] > maxT):
-            maxT = p.unknown.values[inode]
-            posMaxT = p.mesh.pos[inode]
-    return maxT, posMaxT
-
-def debugHeatSourceNPeak( p ):
-    print("Position on heat source in Xi:", p.mhs.currentPosition)
-    print("MaxT = {}, pos max T Xi = {}".format( *getMaxT( p ) ))
-
 if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
     boxInac = [-36, 36, -5, 5]
     adimR = 1
 
-    pFineFRF         = Problem("fineFRFADVEC")
+    pFineFRF         = Problem("fineFRF")
     pFRF             = Problem("FRF")
     pNoTransportMRF           = Problem("NoTransportMRF")
     pTransportedMRF             = Problem("TransportedMRF")
@@ -107,9 +80,6 @@ if __name__=="__main__":
     fine_dt = dt / float( fineStepsPerStep )
     pFineFRF.input["dt"] = fine_dt
 
-    #DEBUGGING
-    pFineFRF.input["speedX"] = 2*pFineFRF.input["speedX"]
-    pFineFRF.input["dt"] = fine_dt/2
     #set MRF business
     for p in [pNoTransportMRF, pTransportedMRF]:
         p.input["isAdvection"] = 1
@@ -120,32 +90,33 @@ if __name__=="__main__":
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.initialize()
 
-    pMRFTransporter.unknown.getFromExternal(  pTransportedMRF.unknown )
+    # Different IC
+    # Manufactured Initial Condition
+    f = lambda pos : abs(pos[0]+pos[1])
+    for p in [pFRF, pFineFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
+        p.forceState( f )
+    #quickfix
+    pNoTransportMRF.unknown.getFromExternal( pMRFTransporter.unknown )
 
     maxIter = pFRF.input["maxIter"]
+
     # FORWARD
     for iteration in range(maxIter):
         #fine problem
-        for istep in range(fineStepsPerStep):
-            pFineFRF.iterate()
-        pFineFRF.writepos()
+        #for istep in range(fineStepsPerStep):
+            #pFineFRF.iterate()
+        #pFineFRF.writepos()
 
         #iter FRF
-        pFRF.iterate()#assembly + solve
+        pFRF.fakeIter()#assembly + solve
         pFRF.writepos()
 
         #iter NoTransportMRF
         pNoTransportMRF.updateFRFpos()
         activeElements = isInsideBox( pNoTransportMRF.mesh, boxRef )
         pNoTransportMRF.activate( activeElements )
-        print("---BEFORE-----------")
-        debugHeatSourceNPeak( pNoTransportMRF )
-        print("--------------------")
 
-        pNoTransportMRF.iterate()
-        print("---AFTER------------")
-        debugHeatSourceNPeak( pNoTransportMRF )
-        print("--------------------")
+        pNoTransportMRF.fakeIter()
         #pdb.set_trace()
 
         pNoTransportMRF.writepos()
@@ -155,14 +126,8 @@ if __name__=="__main__":
         pTransportedMRF.unknown.getFromExternal( pMRFTransporter.unknown )
         activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
         pTransportedMRF.activate( activeElements )
-        print("---BEFORE-----------")
-        debugHeatSourceNPeak( pTransportedMRF )
-        print("--------------------")
 
-        pTransportedMRF.iterate()
-        print("---AFTER------------")
-        debugHeatSourceNPeak( pTransportedMRF )
-        print("--------------------")
+        pTransportedMRF.fakeIter()
         #pdb.set_trace()
 
         pMRFTransporter.fakeIter()
@@ -172,7 +137,7 @@ if __name__=="__main__":
 
 
     '''
-    pTransportedMRF.setAdvectionSpeed( -pTransportedMRF.advectionSpeed )
+    pMRF.setAdvectionSpeed( -pMRF.advectionSpeed )
     pFineFRF.mhs.setSpeed( -pFineFRF.mhs.speed )
     pFRF.mhs.setSpeed( -pFRF.mhs.speed )
 
@@ -184,7 +149,7 @@ if __name__=="__main__":
         pFineFRF.writepos()
 
         #for p in [problemMRF_act]:
-        for p in [pFRF, pTransportedMRF]:
+        for p in [pFRF, pMRF]:
             p.updateFRFpos()#get tn+1 positions (not tn)
             activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
             p.activate( activeElements )#activation

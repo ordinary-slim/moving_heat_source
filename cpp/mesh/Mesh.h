@@ -20,6 +20,7 @@ class Mesh {
     Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
       pos, posFRF;// node positions in xi and x
     Eigen::Vector3d shiftFRF;
+    Eigen::Vector3d speedFRF;//domain speed with respect to FRF
     Connectivity  con_CellPoint;
     Connectivity  con_CellCell;
     Connectivity  con_FacetPoint;

@@ -69,6 +69,13 @@ void Problem::initialize(py::dict &input) {
     }
   }
 
+  // check for domain motion
+  if (input.contains("speedFRF_X")) {
+    mesh.speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
+    mesh.speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);
+    mesh.speedFRF[2] = py::cast<double>(input["speedFRF_Z"]);
+  }
+
   // check for time dependency
   if (input.contains("steadyState")) {
     isSteady = py::cast<bool>(input["steadyState"]);
