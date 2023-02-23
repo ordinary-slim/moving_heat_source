@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
@@ -23,7 +23,7 @@ def isInsideBox( mesh, box ):
     activeElements = []
     for ielem in range( mesh.nels ):
         el = mesh.getElement( ielem )
-        pos = mesh.pos_noAdv[el.con]
+        pos = mesh.posFRF[el.con]
         xmin = min(pos[:, 0])
         xmax = max(pos[:, 0])
         ymin = min(pos[:, 1])
@@ -55,80 +55,135 @@ def setAdimR( adimR, p ):
     speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
     return (adimR * r / speed)
 
+def getMaxT( p ):
+    maxT = -1
+    posMaxT = None
+    for inode in range(p.mesh.nnodes):
+        if (p.unknown.values[inode] > maxT):
+            maxT = p.unknown.values[inode]
+            posMaxT = p.mesh.pos[inode]
+    return maxT, posMaxT
+
+def debugHeatSourceNPeak( p ):
+    print("Position on heat source in Xi:", p.mhs.currentPosition)
+    print("MaxT = {}, pos max T Xi = {}".format( *getMaxT( p ) ))
+
 if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
     boxInac = [-36, 36, -5, 5]
     adimR = 1
 
-    problemFine    = Problem("fineFRF")
-    problemFRF     = Problem("FRF")
-    problemMRF_act = Problem("MRF_act")
+    pFineFRF         = Problem("fineFRFADVEC")
+    pFRF             = Problem("FRF")
+    pNoTransportMRF           = Problem("NoTransportMRF")
+    pTransportedMRF             = Problem("TransportedMRF")
+    pMRFTransporter  = Problem("MRFTransporter")
 
     points, cells = mesh(boxRef)
-    for p in [problemFine, problemFRF]:
+    for p in [pFineFRF, pFRF, pMRFTransporter]:
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]="quad4"
 
     points, cells = mesh(boxInac)
-    problemMRF_act.input["points"] = points
-    problemMRF_act.input["cells"] = cells
-    problemMRF_act.input["cell_type"]="quad4"
+    for p in [pNoTransportMRF, pTransportedMRF]:
+        p.input["points"] = points
+        p.input["cells"] = cells
+        p.input["cell_type"]="quad4"
 
     #read input
-    for p in [problemFine, problemFRF, problemMRF_act]:
+    for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.parseInput( inputFile )
 
     # set dt
-    dt = setAdimR( adimR, problemFRF )
-    problemFRF.input["dt"] = dt
-    problemMRF_act.input["dt"] = dt
+    dt = setAdimR( adimR, pFRF )
+    for p in [pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
+        p.input["dt"] = dt
     ##determine fine problem tstep size
     approxFine_dt = pow(dt, 2)
     approxFine_dt = min( approxFine_dt, dt / 16.0 )
     fineStepsPerStep = int( np.ceil( dt / approxFine_dt ) )
     fine_dt = dt / float( fineStepsPerStep )
-    problemFine.input["dt"] = fine_dt
+    pFineFRF.input["dt"] = fine_dt
 
+    #DEBUGGING
+    pFineFRF.input["speedX"] = 2*pFineFRF.input["speedX"]
+    pFineFRF.input["dt"] = fine_dt/2
     #set MRF business
-    problemMRF_act.input["isAdvection"] = 1
-    problemMRF_act.input["advectionSpeedX"] = -problemMRF_act.input["speedX"]
-    problemMRF_act.input["speedX"] = 0.0
+    for p in [pNoTransportMRF, pTransportedMRF]:
+        p.input["isAdvection"] = 1
+        p.input["advectionSpeedX"] = -pTransportedMRF.input["speedX"]
+        p.input["speedX"] = 0.0
 
-    for p in [problemFine, problemFRF, problemMRF_act]:
+    for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.initialize()
 
-    maxIter = problemFRF.input["maxIter"]
+    pMRFTransporter.unknown.getFromExternal(  pTransportedMRF.unknown )
+
+    maxIter = pFRF.input["maxIter"]
     # FORWARD
     for iteration in range(maxIter):
         #fine problem
-        #for istep in range(fineStepsPerStep):
-            #problemFine.iterate()
-        #problemFine.writepos()
+        for istep in range(fineStepsPerStep):
+            pFineFRF.iterate()
+        pFineFRF.writepos()
 
-        #for p in [problemFRF, problemMRF_act]:
-        for p in [problemFRF, problemMRF_act]:
-            p.updateFRFpos()#get tn+1 positions (not tn)
-            activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
-            p.activate( activeElements )#activation
-            p.iterate()#assembly + solve
-            p.writepos()
+        #iter FRF
+        pFRF.iterate()#assembly + solve
+        pFRF.writepos()
+
+        #iter NoTransportMRF
+        pNoTransportMRF.updateFRFpos()
+        activeElements = isInsideBox( pNoTransportMRF.mesh, boxRef )
+        pNoTransportMRF.activate( activeElements )
+        print("---BEFORE-----------")
+        debugHeatSourceNPeak( pNoTransportMRF )
+        print("--------------------")
+
+        pNoTransportMRF.iterate()
+        print("---AFTER------------")
+        debugHeatSourceNPeak( pNoTransportMRF )
+        print("--------------------")
+        #pdb.set_trace()
+
+        pNoTransportMRF.writepos()
+
+        #iter transportedMRF
+        pTransportedMRF.updateFRFpos()
+        pTransportedMRF.unknown.getFromExternal( pMRFTransporter.unknown )
+        activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
+        pTransportedMRF.activate( activeElements )
+        print("---BEFORE-----------")
+        debugHeatSourceNPeak( pTransportedMRF )
+        print("--------------------")
+
+        pTransportedMRF.iterate()
+        print("---AFTER------------")
+        debugHeatSourceNPeak( pTransportedMRF )
+        print("--------------------")
+        #pdb.set_trace()
+
+        pMRFTransporter.fakeIter()
+        pMRFTransporter.unknown.getFromExternal( pTransportedMRF.unknown )
+        pTransportedMRF.writepos()
+        pMRFTransporter.writepos()
+
 
     '''
-    problemMRF_act.setAdvectionSpeed( -problemMRF_act.advectionSpeed )
-    problemFine.mhs.setSpeed( -problemFine.mhs.speed )
-    problemFRF.mhs.setSpeed( -problemFRF.mhs.speed )
+    pTransportedMRF.setAdvectionSpeed( -pTransportedMRF.advectionSpeed )
+    pFineFRF.mhs.setSpeed( -pFineFRF.mhs.speed )
+    pFRF.mhs.setSpeed( -pFRF.mhs.speed )
 
     # BACKWARDS
     for iteration in range(maxIter):
         #fine problem
         for istep in range(fineStepsPerStep):
-            problemFine.iterate()
-        problemFine.writepos()
+            pFineFRF.iterate()
+        pFineFRF.writepos()
 
         #for p in [problemMRF_act]:
-        for p in [problemFRF, problemMRF_act]:
+        for p in [pFRF, pTransportedMRF]:
             p.updateFRFpos()#get tn+1 positions (not tn)
             activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
             p.activate( activeElements )#activation

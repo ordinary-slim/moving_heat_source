@@ -62,7 +62,26 @@ class Problem(mhs.Problem):
 
     def initialize(self):
         print( "Initializing {}".format( self.caseName ) )
+        self.cleanupPrevPost()
         super(Problem, self).initialize( self.input )
+
+    def forceState( self, function ):
+        # TODO: Handle prevValues for BDF2+
+        val = np.zeros( self.mesh.nnodes )
+        for inode in range(self.mesh.nnodes):
+            if not(self.mesh.activeNodes[inode]):
+                val[inode] = 0
+                continue
+            pos = self.mesh.posFRF[inode, :]
+            val[inode] = function( pos )
+        self.initializeIntegrator( val )
+
+    def cleanupPrevPost(self):
+        try:
+            os.remove( self.caseName + ".pvd" )
+            os.removedirs( self.postFolder )
+        except OSError:
+            pass
 
     def activate(self, activeElements):
         self.activateDomain( activeElements )
