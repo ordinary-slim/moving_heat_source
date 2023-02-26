@@ -71,10 +71,10 @@ def debugHeatSourceNPeak( p ):
 if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
-    boxInac = [-36, 36, -5, 5]
-    adimR = 1
+    boxInac = [-32, 32, -5, 5]
+    adimR = 0.5
 
-    pFineFRF         = Problem("fineFRFADVEC")
+    pFineFRF         = Problem("fineFRF")
     pFRF             = Problem("FRF")
     pNoTransportMRF           = Problem("NoTransportMRF")
     pTransportedMRF             = Problem("TransportedMRF")
@@ -102,18 +102,29 @@ if __name__=="__main__":
         p.input["dt"] = dt
     ##determine fine problem tstep size
     approxFine_dt = pow(dt, 2)
-    approxFine_dt = min( approxFine_dt, dt / 16.0 )
+    approxFine_dt = min( approxFine_dt, dt / 32.0 )
     fineStepsPerStep = int( np.ceil( dt / approxFine_dt ) )
     fine_dt = dt / float( fineStepsPerStep )
     pFineFRF.input["dt"] = fine_dt
 
-    #DEBUGGING
-    pFineFRF.input["speedX"] = 2*pFineFRF.input["speedX"]
-    pFineFRF.input["dt"] = fine_dt/2
-    #set MRF business
-    for p in [pNoTransportMRF, pTransportedMRF]:
+    ##DEBUGGING
+    #for p in [pFineFRF, pFRF]:
+        #p.input["speedX"] = 2*p.input["speedX"]
+    ## adjust dt fine FRF
+    #pFineFRF.input["dt"] = fine_dt / 2.0
+    #fineStepsPerStep *= 2
+    ## adjust dt FRF
+    #pFRF.input["dt"] = setAdimR( adimR, pFRF )
+
+    #set MRF business NO TRANSPORT
+    for p in [pNoTransportMRF,]:
         p.input["isAdvection"] = 1
         p.input["advectionSpeedX"] = -pTransportedMRF.input["speedX"]
+        p.input["speedFRF_X"]      = -pTransportedMRF.input["speedX"]
+        p.input["speedX"] = 0.0
+    #set MRF business NO TRANSPORT
+    for p in [pTransportedMRF]:
+        p.input["isAdvection"] = 0
         p.input["speedFRF_X"]      = -pTransportedMRF.input["speedX"]
         p.input["speedX"] = 0.0
 

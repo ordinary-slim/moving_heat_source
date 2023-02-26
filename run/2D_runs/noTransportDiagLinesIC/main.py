@@ -92,7 +92,8 @@ if __name__=="__main__":
 
     # Different IC
     # Manufactured Initial Condition
-    f = lambda pos : abs(pos[0]+pos[1])
+    #f = lambda pos : abs(pos[0]+pos[1])
+    f = lambda pos : 25*( (pos[0] <= boxRef[1])and(pos[0] >= boxRef[0]) )
     for p in [pFRF, pFineFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.forceState( f )
     #quickfix
@@ -108,7 +109,7 @@ if __name__=="__main__":
         #pFineFRF.writepos()
 
         #iter FRF
-        pFRF.fakeIter()#assembly + solve
+        pFRF.iterate()#assembly + solve
         pFRF.writepos()
 
         #iter NoTransportMRF
@@ -116,7 +117,7 @@ if __name__=="__main__":
         activeElements = isInsideBox( pNoTransportMRF.mesh, boxRef )
         pNoTransportMRF.activate( activeElements )
 
-        pNoTransportMRF.fakeIter()
+        pNoTransportMRF.iterate()
         #pdb.set_trace()
 
         pNoTransportMRF.writepos()
@@ -127,33 +128,10 @@ if __name__=="__main__":
         activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
         pTransportedMRF.activate( activeElements )
 
-        pTransportedMRF.fakeIter()
-        #pdb.set_trace()
+        pTransportedMRF.iterate()
 
         pMRFTransporter.fakeIter()
         pMRFTransporter.unknown.getFromExternal( pTransportedMRF.unknown )
+
         pTransportedMRF.writepos()
         pMRFTransporter.writepos()
-
-
-    '''
-    pMRF.setAdvectionSpeed( -pMRF.advectionSpeed )
-    pFineFRF.mhs.setSpeed( -pFineFRF.mhs.speed )
-    pFRF.mhs.setSpeed( -pFRF.mhs.speed )
-
-    # BACKWARDS
-    for iteration in range(maxIter):
-        #fine problem
-        for istep in range(fineStepsPerStep):
-            pFineFRF.iterate()
-        pFineFRF.writepos()
-
-        #for p in [problemMRF_act]:
-        for p in [pFRF, pMRF]:
-            p.updateFRFpos()#get tn+1 positions (not tn)
-            activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
-            p.activate( activeElements )#activation
-            p.iterate()#assembly + solve
-            p.writepos()
-
-    '''

@@ -3,9 +3,6 @@ power		000.0
 initialPositionX	-10.0
 initialPositionY		0.0
 initialPositionZ		0.0
-speedX		10
-speedY		0
-speedZ		0
 dt	0.1
 t		0.0
 Tfinal		20.0
@@ -18,6 +15,12 @@ plot 1
 timeIntegration 1
 sourceTerm 0
 isAdvection 0
+speedX		10
+speedY		0
+speedZ		0
 advectionSpeedX 0.0
 advectionSpeedY 0.0
 advectionSpeedZ 0.0
+speedFRF_X 0.0
+speedFRF_Y 0.0
+speedFRF_Z 0.0
