@@ -37,7 +37,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("activeNodes", &mesh::Mesh::activeNodes)
         .def_readonly("activeElements", &mesh::Mesh::activeElements)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
-        .def("generate1DMesh", &mesh::Mesh::generate1DMesh)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())
