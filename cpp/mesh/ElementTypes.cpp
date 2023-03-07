@@ -1,6 +1,8 @@
 #include "ElementTypes.h"
 #include <iostream>
 
+static const char* nameofElType[] = {"point1", "line2", "triangle3", "quad4"};
+
 int getNnodesElType (ElementType elType ) {
   switch (elType) {
     case point1: return 1;
@@ -16,7 +18,8 @@ ElementType getIncidentElType( ElementType Dent_elType, int d ) {
     case 0: return point1;
     case 1: return line2;
   }
-  std::cout << "Not implemented yet" << std::endl;
+  printf("%s not implemented yet for ", __FUNCTION__);
+  std::cout << "( " << nameofElType[Dent_elType] << ", " << d << ")\n";
   exit(-1);
 }
 

@@ -85,7 +85,6 @@ class Mesh {
 
     void setAABBs();
     int findOwnerElement( Eigen::Vector3d point );
-    void generate1DMesh( double A, double B, int numberOfEls );
 
     // DEBUG
     void print() {

@@ -18,22 +18,31 @@ vector<vector<int>> getVertexSets_Dd( Eigen::VectorXi localCon_D0,
   vector<vector<int>> vertexSets;
 
   ElementType entd_elType = getIncidentElType( entD_elType, d );
-  if (entd_elType != line2) {
-    cout << "Not implemented yet!" << endl;
-    exit(-1);
-  }
   int nnodes = localCon_D0.size();
   int windowSize = getNnodesElType(entd_elType);
 
   vector<int> vSet;
   vSet.resize( windowSize );
 
-  for (int ipoin = 0; ipoin < nnodes; ipoin++) {
-    for (int jpoin = 0; jpoin < windowSize; jpoin++) {
-      vSet[jpoin] = localCon_D0( (ipoin + jpoin)%localCon_D0.size() );
-    }
-    std::sort( vSet.begin(), vSet.end() );
-    vertexSets.push_back( vSet );
+  switch (entD_elType){
+    case line2:
+      for (int inode = 0; inode < nnodes; inode++) {
+        vSet[inode] = localCon_D0[inode];
+        vertexSets.push_back( vSet );
+      }
+      break;
+    case triangle3: case quad4:
+      for (int ipoin = 0; ipoin < nnodes; ipoin++) {
+        for (int jpoin = 0; jpoin < windowSize; jpoin++) {
+          vSet[jpoin] = localCon_D0( (ipoin + jpoin)%localCon_D0.size() );
+        }
+        std::sort( vSet.begin(), vSet.end() );
+        vertexSets.push_back( vSet );
+      }
+      break;
+    default:
+      cout << "ERROR: getBoundary is not implemented yet for " << entD_elType << "element." << endl;
+      exit(-1);
   }
   return vertexSets;
 }

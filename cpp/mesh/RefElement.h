@@ -19,17 +19,38 @@ class ReferenceElement {
     ReferenceElement( ElementType elType ) {
       elementType = elType;
       switch (elementType ) {
+        case point1:
+          // Not sure about this, necessary with structure of code
+          nnodes = 1;
+          ngpoints = 1;
+
+          allocate( nnodes, ngpoints );
+
+          dim =0;
+          pos << 0.0, 0.0, 0.0;
+          shapeFuns[0] = [](Eigen::Vector3d Xi) { return 1; };
+
+          vol = 1;
+          XI_inverse << 1.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0,
+                        0.0, 0.0, 1.0;
+
+          gpos = pos;//closed integration
+
+          GradBaseGpVals[0][0] << 1.0, 0.0, 0.0;
+          break;
         case line2:
           /*
            *  1 x___________x 2
           */
           nnodes = 2;
           ngpoints = 2;
+
+          allocate( nnodes, ngpoints );
+
           dim =1;
-          pos.resize(nnodes, 3);
           pos << -1.0, 0.0, 0.0,
                   1.0, 0.0, 0.0;
-          shapeFuns.resize(nnodes);
           shapeFuns[0] = [](Eigen::Vector3d Xi) { return 0.5*(1 - Xi(0) ); };
           shapeFuns[1] = [](Eigen::Vector3d Xi) { return 0.5*(1 + Xi(0) ); };
 
@@ -38,12 +59,8 @@ class ReferenceElement {
                         0.0, 1.0, 0.0,
                         0.0, 0.0, 1.0;
 
-          gpos.resize(ngpoints, 3);
           gpos = pos;//closed integration
 
-          GradBaseGpVals.resize( nnodes );
-          GradBaseGpVals[0].resize( ngpoints );
-          GradBaseGpVals[1].resize( ngpoints );
           for (int igp = 0; igp < ngpoints; igp++) {
             GradBaseGpVals[0][igp] << -0.5, 0.0, 0.0;
             GradBaseGpVals[1][igp] << +0.5, 0.0, 0.0;
@@ -61,12 +78,13 @@ class ReferenceElement {
            */
           nnodes = 3;
           ngpoints = 3;
+
+          allocate( nnodes, ngpoints );
+
           dim =2;
-          pos.resize(nnodes, 3);
           pos << 0.0, 0.0, 0.0,
                  1.0, 0.0, 0.0,
                  0.0, 1.0, 0.0;
-          shapeFuns.resize(nnodes);
           shapeFuns[0] = [](Eigen::Vector3d Xi) { return ( 1 - Xi(0) - Xi(1) ); };
           shapeFuns[1] = [](Eigen::Vector3d Xi) { return ( Xi(0) ); };
           shapeFuns[2] = [](Eigen::Vector3d Xi) { return ( Xi(1) ); };
@@ -76,13 +94,8 @@ class ReferenceElement {
                         0.0, +1.0, 0.0,
                         0.0, 0.0, +1.0;
 
-          gpos.resize(ngpoints, 3);
           gpos = pos;//closed integration
                      //
-          GradBaseGpVals.resize( nnodes );
-          GradBaseGpVals[0].resize( ngpoints );
-          GradBaseGpVals[1].resize( ngpoints );
-          GradBaseGpVals[2].resize( ngpoints );
           for (int igp = 0; igp < ngpoints; igp++) {
             GradBaseGpVals[0][igp] << -1.0, -1.0, 0.0;
             GradBaseGpVals[1][igp] << +1.0, 0.0, 0.0;
@@ -101,13 +114,14 @@ class ReferenceElement {
            */
           nnodes = 4;
           ngpoints = 4;
+
+          allocate( nnodes, ngpoints );
+
           dim =2;
-          pos.resize(nnodes, 3);
           pos << 1.0, 1.0, 0.0,
                 -1.0, 1.0, 0.0,
                 -1.0,-1.0, 0.0,
                  1.0,-1.0, 0.0;
-          shapeFuns.resize(nnodes);
           shapeFuns[0] = [](Eigen::Vector3d Xi) {
             return ( 0.25*( 1 + Xi(0) )*( 1 + Xi(1)  ) );
           };
@@ -126,7 +140,6 @@ class ReferenceElement {
                         0.0, -0.5, 0.0,
                         0.0, 0.0, 1.0;
 
-          gpos.resize(ngpoints, 3);
           gpos = pos;//closed integration
 
           {
@@ -147,9 +160,7 @@ class ReferenceElement {
                                                                                         GradBase2,
                                                                                         GradBase3,
                                                                                         GradBase4};
-            GradBaseGpVals.resize( nnodes );
             for (int inode = 0; inode < nnodes; inode++) {
-              GradBaseGpVals[inode].resize( ngpoints );
               for (int igp = 0; igp < ngpoints; igp++) {
                 GradBaseGpVals[inode][igp] = GradBaseFuns[inode]( gpos.row(igp) );
               }
@@ -162,6 +173,18 @@ class ReferenceElement {
           exit(EXIT_FAILURE);
       }
     }
+  void allocate(int nnodes, int ngpoints ) {
+    // allocate pos, shapeFuns, gpos, GradBaseGpVals
+    pos.resize(nnodes, 3);
+    shapeFuns.resize(nnodes);
+
+    gpos.resize(ngpoints, 3);
+
+    GradBaseGpVals.resize( nnodes );
+    for (int inode = 0; inode < nnodes; inode++) {
+      GradBaseGpVals[inode].resize( ngpoints );
+    }
+  }
 };
 #define REFELEMENT
 #endif
