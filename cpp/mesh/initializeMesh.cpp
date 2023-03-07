@@ -17,8 +17,11 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   } else if (aux_cell_type == "quad4") {
     cell_type_flag = quad4;
   }
+  if (input.contains("numberOfGaussPoints")){
+    ngpointsCell = py::cast<int>( input["numberOfGaussPoints"] );
+  }
   // reference element. no support for mixed meshes yet
-  refCellEl = ReferenceElement(cell_type_flag);
+  refCellEl = ReferenceElement(cell_type_flag, ngpointsCell);
   ElementType FacetElType = getIncidentElType(cell_type_flag, refCellEl.dim-1);
   refFacetEl = ReferenceElement(FacetElType);
 

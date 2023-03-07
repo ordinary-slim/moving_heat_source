@@ -1,30 +1,39 @@
 #ifndef REFELEMENT
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include <Eigen/Dense>
 #include "ElementTypes.h"
 class ReferenceElement {
   public:
-    int nnodes, dim, ngpoints;
+    int nnodes, dim, ngpoints = -1;
     ElementType elementType;
     double vol = -1;
     Eigen::MatrixX3d pos, gpos;
     Eigen::Matrix3d XI_inverse;
+    std::vector<double> gpweight;
+    std::vector<std::vector<double>> BaseGpVals;
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
+    bool openIntegration = false;//default closed integration
 
     // Array of shape funcs
     std::vector<std::function<double(Eigen::Vector3d)>> shapeFuns;
 
     ReferenceElement(){}
-    ReferenceElement( ElementType elType ) {
+    ReferenceElement( ElementType elType, int ngps = -1 ) {
       elementType = elType;
+      nnodes = getNnodesElType( elType );
+      if (ngps >= nnodes ) {
+        ngpoints = ngps;
+        openIntegration = true;
+      } else {
+        ngpoints = nnodes;//closed integration
+      }
+      allocate( nnodes, ngpoints );
+
       switch (elementType ) {
         case point1:
           // Not sure about this, necessary with structure of code
-          nnodes = 1;
-          ngpoints = 1;
-
-          allocate( nnodes, ngpoints );
 
           dim =0;
           pos << 0.0, 0.0, 0.0;
@@ -35,7 +44,16 @@ class ReferenceElement {
                         0.0, 1.0, 0.0,
                         0.0, 0.0, 1.0;
 
-          gpos = pos;//closed integration
+          if (openIntegration) {
+            switch (ngpoints) {
+              default:
+                printf("Open integration with %i not implemented for point1 element\n", ngpoints);
+                exit(-1);
+            }
+          } else {
+            gpos = pos;//closed integration
+            fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
+          }
 
           GradBaseGpVals[0][0] << 1.0, 0.0, 0.0;
           break;
@@ -43,10 +61,6 @@ class ReferenceElement {
           /*
            *  1 x___________x 2
           */
-          nnodes = 2;
-          ngpoints = 2;
-
-          allocate( nnodes, ngpoints );
 
           dim =1;
           pos << -1.0, 0.0, 0.0,
@@ -59,7 +73,22 @@ class ReferenceElement {
                         0.0, 1.0, 0.0,
                         0.0, 0.0, 1.0;
 
-          gpos = pos;//closed integration
+          if (openIntegration) {
+            switch (ngpoints) {
+              case 3:
+                gpos << 0.0, 0.0, 0.0,
+                        -sqrt( 3.0 / 5.0 ), 0.0, 0.0,
+                        +sqrt( 3.0 / 5.0 ), 0.0, 0.0;
+                gpweight = {8.0/18.0, 5.0/18.0, 5.0/18.0};
+                break;
+              default:
+                printf("Open integration with %i nodes not implemented for line2 element.\n", ngpoints);
+                exit(-1);
+            }
+          } else {
+            gpos = pos;//closed integration
+            fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
+          }
 
           for (int igp = 0; igp < ngpoints; igp++) {
             GradBaseGpVals[0][igp] << -0.5, 0.0, 0.0;
@@ -76,10 +105,6 @@ class ReferenceElement {
            *  |    \
            * 1x__>__x2
            */
-          nnodes = 3;
-          ngpoints = 3;
-
-          allocate( nnodes, ngpoints );
 
           dim =2;
           pos << 0.0, 0.0, 0.0,
@@ -94,8 +119,17 @@ class ReferenceElement {
                         0.0, +1.0, 0.0,
                         0.0, 0.0, +1.0;
 
-          gpos = pos;//closed integration
-                     //
+          if (openIntegration) {
+            switch (ngpoints) {
+              default:
+                printf("Open integration with %i not implemented for this element\n", ngpoints);
+                exit(-1);
+            }
+          } else {
+            gpos = pos;//closed integration
+            fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
+          }
+
           for (int igp = 0; igp < ngpoints; igp++) {
             GradBaseGpVals[0][igp] << -1.0, -1.0, 0.0;
             GradBaseGpVals[1][igp] << +1.0, 0.0, 0.0;
@@ -112,10 +146,6 @@ class ReferenceElement {
            *  |            |
            * 3x____________x4
            */
-          nnodes = 4;
-          ngpoints = 4;
-
-          allocate( nnodes, ngpoints );
 
           dim =2;
           pos << 1.0, 1.0, 0.0,
@@ -140,7 +170,16 @@ class ReferenceElement {
                         0.0, -0.5, 0.0,
                         0.0, 0.0, 1.0;
 
-          gpos = pos;//closed integration
+          if (openIntegration) {
+            switch (ngpoints) {
+              default:
+                printf("Open integration with %i not implemented for this element\n", ngpoints);
+                exit(-1);
+            }
+          } else {
+            gpos = pos;//closed integration
+            fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
+          }
 
           {
             //auto here is std::function<Eigen::Vector3d(Eigen::Vector3d)>
@@ -172,6 +211,14 @@ class ReferenceElement {
           printf("Unknown element type\n");
           exit(EXIT_FAILURE);
       }
+
+      // Compute BaseGpVals
+      for (int inode = 0; inode < nnodes; ++inode){
+        for (int igpoin = 0; igpoin < ngpoints; ++igpoin){
+          BaseGpVals[inode][igpoin] = shapeFuns[inode]( gpos.row( igpoin ) );
+        }
+      }
+      // TODO: Move computation of GradBaseGpVals here
     }
   void allocate(int nnodes, int ngpoints ) {
     // allocate pos, shapeFuns, gpos, GradBaseGpVals
@@ -179,7 +226,14 @@ class ReferenceElement {
     shapeFuns.resize(nnodes);
 
     gpos.resize(ngpoints, 3);
-
+    // Quadrature weights
+    gpweight.resize( ngpoints );
+    // BaseFun
+    BaseGpVals.resize( nnodes );
+    for (int inode = 0; inode < nnodes; ++inode) {
+      BaseGpVals[inode].resize( ngpoints );
+    }
+    // GradBaseFun
     GradBaseGpVals.resize( nnodes );
     for (int inode = 0; inode < nnodes; inode++) {
       GradBaseGpVals[inode].resize( ngpoints );

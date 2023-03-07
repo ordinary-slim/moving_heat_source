@@ -19,6 +19,7 @@ class Element {
     ElementType elementType;
     vector<vector<double>> BaseGpVals;
     vector<vector<Eigen::Vector3d>> GradBaseGpVals;
+    bool openIntegration = false;//default closed integration
 
     ReferenceElement      *refEl;
     // x : loc coordinate; xi : reference coordinate
@@ -29,14 +30,18 @@ class Element {
 
     void computeNodalValues_Base(){
       //COMMON
-      //Closed integration
-      for (int inode = 0; inode < nnodes; inode++) {
-        gpos.row(inode) = pos.row(inode);
-        BaseGpVals[inode].resize( nnodes );
-        fill( BaseGpVals[inode].begin(), BaseGpVals[inode].end(), 0.0);
-        BaseGpVals[inode][inode] = 1.0;
+      //TODO: Take all of this from reference element
+      BaseGpVals = refEl->BaseGpVals;
+      gpweight = refEl->gpweight;
+      openIntegration = refEl->openIntegration;
+
+      if (openIntegration) {
+        for (int igpoin = 0; igpoin < ngpoints; ++igpoin) {
+          gpos.row(igpoin) = map_ref2loc( refEl->gpos.row(igpoin) );
+        }
+      } else {
+        gpos = pos;
       }
-      fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
     }
 
     void computeNodalValues_GradBase() {
@@ -46,11 +51,14 @@ class Element {
     void allocate() {
       // ALLOCATIONS
       pos.resize( nnodes, 3 );
-      gpos.resize( nnodes, 3 );
+      gpos.resize( ngpoints, 3 );
       // BaseFun
       BaseGpVals.resize( nnodes );
+      for (int inode = 0; inode < nnodes; ++inode) {
+        BaseGpVals[inode].resize( ngpoints );
+      }
       // Quadrature weights
-      gpweight.resize( nnodes );
+      gpweight.resize( ngpoints );
       // GradBaseFun
       GradBaseGpVals.resize( nnodes );
       for (int inode = 0; inode < nnodes; inode++) {
@@ -88,6 +96,10 @@ class Element {
       ref2locShift  = pos.row(0).transpose() - ref2locMatrix * refEl->pos.row(0).transpose() ;
       loc2refMatrix = ref2locMatrix.inverse();
       loc2refShift  = refEl->pos.row(0).transpose() - loc2refMatrix * pos.row(0).transpose();
+    }
+
+    Eigen::Vector3d map_ref2loc( Eigen::Vector3d xi ) {
+      return ref2locShift + ref2locMatrix * xi;
     }
 
     Eigen::Vector3d map_loc2ref( Eigen::Vector3d x ) {

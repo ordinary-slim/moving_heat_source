@@ -46,7 +46,7 @@ void Problem::assemble() {
           m_ij = 0;
           k_ij = 0;
           a_ij = 0;
-          for (int igp = 0; igp < e.nnodes; igp++) {
+          for (int igp = 0; igp < e.ngpoints; igp++) {
             // mass matrix
             m_ij += e.gpweight[igp] * e.BaseGpVals[inode][igp]*e.BaseGpVals[jnode][igp]*e.vol;
             // stiffness matrix
@@ -60,10 +60,11 @@ void Problem::assemble() {
           k_ij *= k ;
           a_ij *= rho * cp;
 
+          // TODO: Implement Dirichlet BCs
           // lookup i or j belong to fixed nodes
           //
           // if belong
-          // send it to rhs multiplying dirichlet
+          // send it to rhs multiplying DIRICHLET
 
 
           M_coeffs.push_back( T( e.con[inode], e.con[jnode], m_ij ) );

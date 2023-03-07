@@ -30,6 +30,7 @@ class Mesh {
     vector<int> activeElements;
     vector<int> activeNodes;
     bool hasInactive = false;
+    int ngpointsCell = -1;//number of gausspoints for cells elements
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     vector<AABB> elementAABBs;

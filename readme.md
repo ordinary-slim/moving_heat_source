@@ -2,8 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [x] Correct cell-cell conectivity
-- [x] Boundary mesh connectivity
+- [ ] Refactor in order to implement open integration:
+  - [ ] computeNodalValues shouldnt compute anymore
 - [ ] Better connectivity DSs
 - [ ] Cell connectivity stored in uint to match meshzoo library
 - [ ] Prepare code for hexa and tetra els

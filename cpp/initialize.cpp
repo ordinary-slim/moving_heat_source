@@ -59,14 +59,11 @@ void Problem::initialize(py::dict &input) {
   material["cp"] = py::cast<double>(input["specific_heat"]);
 
   // check for advection term
-  if (input.contains("isAdvection")) {
-    isAdvection = py::cast<bool>(input["isAdvection"]);
-    if (isAdvection) {
-      advectionSpeed[0] = py::cast<double>(input["advectionSpeedX"]);
-      advectionSpeed[1] = py::cast<double>(input["advectionSpeedY"]);
-      advectionSpeed[2] = py::cast<double>(input["advectionSpeedZ"]);
-      cout << "advectionSpeed= " << advectionSpeed << endl;
-    }
+  if (input.contains("advectionSpeedX")) {
+    advectionSpeed[0] = py::cast<double>(input["advectionSpeedX"]);
+    advectionSpeed[1] = py::cast<double>(input["advectionSpeedY"]);
+    advectionSpeed[2] = py::cast<double>(input["advectionSpeedZ"]);
+    if (advectionSpeed.norm() > 1e-10) isAdvection = true;
   }
 
   // check for domain motion

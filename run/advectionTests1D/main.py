@@ -16,48 +16,37 @@ def mesh(leftEnd, rightEnd, nels):
     for iel in range(nels):
         auxCells.append( [iel, iel+1] )
     cells = np.array( auxCells, dtype=int )
-    return points, cells, cell_type
-
-def setAdimR( adimR, p ):
-    r = p.input["radius"]
-    speedX = max( abs(p.input["speedX"]), abs(p.input["advectionSpeedX"]))
-    speedY = max( abs(p.input["speedY"]), abs(p.input["advectionSpeedY"]))
-    speedZ = max( abs(p.input["speedZ"]), abs(p.input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
-    return (adimR * r / speed)
+    numberOfGaussPoints = 3
+    return points, cells, cell_type, numberOfGaussPoints
 
 if __name__=="__main__":
     inputFile = "input.txt"
 
-    adimR = 1
+    p = Problem("onlyAdvection")
 
-    p = Problem("FRF")
-
-    nels = 500
-    leftEnd = 0.0
-    rightEnd = 100.0
-    points, cells, cell_type = mesh(leftEnd, rightEnd, nels)
+    nels = 100
+    leftEnd = -50.0
+    rightEnd = +50.0
+    points, cells, cell_type, ngpoins = mesh(leftEnd, rightEnd, nels)
     p.input["points"] = points
     p.input["cells"] = cells
     p.input["cell_type"]=cell_type
+    p.input["numberOfGaussPoints"]=3
 
     #read input
     p.parseInput( inputFile )
 
-    # set dt
-    dt = setAdimR( adimR, p )
-    for p in [p]:
-        p.input["dt"] = dt
+    #set advection
+    p.input["advectionSpeedX"] = -5.0
 
     for p in [p]:
         p.initialize()
 
-    # Different IC
     # Manufactured Initial Condition
-    #f = lambda pos : abs(pos[0]+pos[1])
-    #f = lambda pos : 25
-    #for p in [p,]:
-        #p.forceState( f )
+    L = rightEnd - leftEnd
+    f = lambda pos : np.sin( 4 * pos[0] / L * np.pi )
+    for p in [p,]:
+        p.forceState( f )
 
     maxIter = p.input["maxIter"]
 
@@ -70,4 +59,5 @@ if __name__=="__main__":
 
         #iter FRF
         p.iterate()#assembly + solve
+        print("max T = {}".format( max(p.unknown.values) ))
         p.writepos()
