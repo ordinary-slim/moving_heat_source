@@ -32,7 +32,7 @@ void HeatSource::computePulse( Eigen::VectorXd &pulse, mesh::Mesh &m, double t, 
 
   pulse.setZero();
 
-  Element e;
+  mesh::Element e;
   // assemble
   for (int ielem = 0; ielem < m.nels; ++ielem) {
     if (m.activeElements[ielem]==0){

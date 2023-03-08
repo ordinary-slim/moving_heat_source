@@ -18,7 +18,7 @@ class FEMFunction{
       if (idxOwnerEl < 0) {// Point outside of mesh
         return 0.0;
       }
-      Element e = mesh->getElement( idxOwnerEl );//Load element containing point
+      mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
       Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
 
       val = values( e.con ).dot( shaFunVals );
@@ -35,7 +35,7 @@ class FEMFunction{
         fill(vals.begin(), vals.end(), 0.0);
         return vals;
       }
-      Element e = mesh->getElement( idxOwnerEl );//Load element containing point
+      mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
       Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
 
       vals[0] = values( e.con ).dot( shaFunVals );

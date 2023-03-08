@@ -8,7 +8,7 @@ struct AABB {
   AABB() {
   }
 
-  AABB( Element e ) {
+  AABB( mesh::Element e ) {
     dim = e.dim;
     for (int idim = 0; idim < dim; ++idim) {
       bounds[idim][0] = e.pos.col(idim).minCoeff();

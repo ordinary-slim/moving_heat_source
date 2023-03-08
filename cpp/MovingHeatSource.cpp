@@ -1,5 +1,5 @@
 #include "mesh/Element.h"
-#include "problem.h"
+#include "Problem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
@@ -52,19 +52,20 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     m.def( "transpose", &mesh::transpose, "(d -> d') ---> (d' -> d)" );
     m.def( "intersect", &mesh::intersect, "(d -> d''), (d'' -> d') ---> (d -> d')" );
     m.def( "build", &mesh::build, "(D -> 0), (D -> D) ---> (d -> 0), (D -> d)" );
-    py::class_<Element>(m, "Element", py::dynamic_attr())
+    py::class_<mesh::Element>(m, "mesh::Element", py::dynamic_attr())
         .def(py::init<>())
-        .def_readonly("pos", &Element::pos)
-        .def_readonly("nnodes", &Element::nnodes)
-        .def_readonly("gpos", &Element::gpos)
-        .def_readonly("ngpoints", &Element::ngpoints)
-        .def_readonly("gpweight", &Element::gpweight)
-        .def_readonly("con", &Element::con)
-        .def_readonly("vol", &Element::vol)
-        .def_readonly("dimension", &Element::dim)
-        .def_readonly("elementType", &Element::elementType)
-        .def_readonly("GradBaseGpVals", &Element::GradBaseGpVals)
-        .def("computeDerivatives", &Element::computeDerivatives);
+        .def_readonly("pos", &mesh::Element::pos)
+        .def_readonly("nnodes", &mesh::Element::nnodes)
+        .def_readonly("gpos", &mesh::Element::gpos)
+        .def_readonly("ngpoints", &mesh::Element::ngpoints)
+        .def_readonly("gpweight", &mesh::Element::gpweight)
+        .def_readonly("con", &mesh::Element::con)
+        .def_readonly("vol", &mesh::Element::vol)
+        .def_readonly("dimension", &mesh::Element::dim)
+        .def_readonly("elementType", &mesh::Element::elementType)
+        .def_readonly("GradBaseGpVals", &mesh::Element::GradBaseGpVals)
+        .def("computeDerivatives", &mesh::Element::computeDerivatives)
+        .def("getSizeAlongVector", &mesh::Element::getSizeAlongVector);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition)

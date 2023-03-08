@@ -24,7 +24,7 @@ if __name__=="__main__":
 
     p = Problem("onlyAdvection")
 
-    nels = 100
+    nels = 1000
     leftEnd = -50.0
     rightEnd = +50.0
     points, cells, cell_type, ngpoins = mesh(leftEnd, rightEnd, nels)

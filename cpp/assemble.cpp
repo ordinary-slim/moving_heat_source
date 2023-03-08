@@ -1,4 +1,4 @@
-#include "problem.h"
+#include "Problem.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
@@ -32,7 +32,7 @@ void Problem::assemble() {
     A.setZero();
     I.setZero();
 
-    Element e;
+    mesh::Element e;
     double rho = material["rho"];
     double cp = material["cp"];
     double k = material["k"];
@@ -55,10 +55,13 @@ void Problem::assemble() {
             // advection matrix
             ip = e.GradBaseGpVals[jnode][igp].dot(advectionSpeed);
             a_ij += e.gpweight[igp] * (ip * e.BaseGpVals[inode][igp]) * e.vol;
+            // stabilization matrix
+            // TODO: implement computation of s_ij @ gauss point
           }
           m_ij *= rho * cp ;
           k_ij *= k ;
           a_ij *= rho * cp;
+          //TODO: s_ij *= blablabla;
 
           // TODO: Implement Dirichlet BCs
           // lookup i or j belong to fixed nodes

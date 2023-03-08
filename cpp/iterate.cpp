@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "mesh/Element.h"
-#include "problem.h"
+#include "Problem.h"
 #include <numeric>
 #include <algorithm>
 #include <Eigen/Core>

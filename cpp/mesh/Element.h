@@ -6,6 +6,8 @@
 #include "RefElement.h"
 using namespace std;
 
+namespace mesh
+{
 class Element {
   public:
     int nnodes, ngpoints;
@@ -190,6 +192,9 @@ class Element {
 
       return shaFunsVals;
     }
+
+    double getSizeAlongVector( Eigen::Vector3d vector );
 };
+}
 #define ELEMENT
 #endif

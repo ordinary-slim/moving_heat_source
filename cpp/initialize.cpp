@@ -1,4 +1,4 @@
-#include "problem.h"
+#include "Problem.h"
 #include <map>
 #include <string>
 #include <algorithm>
