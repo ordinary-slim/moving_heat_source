@@ -79,4 +79,6 @@ void Problem::assembleSpatialLHS() {
 
     isAssembled = true;
   }
+  lhs += K;
+  if (isAdvection) lhs += A;
 }

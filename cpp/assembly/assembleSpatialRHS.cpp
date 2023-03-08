@@ -27,4 +27,5 @@ void Problem::assembleSpatialRHS() {
       pulse[e.con[inode]] += r_i;
     }
   }
+  rhs += pulse;
 }

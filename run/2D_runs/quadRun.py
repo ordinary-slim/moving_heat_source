@@ -72,7 +72,7 @@ if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
     boxInac = [-32, 32, -5, 5]
-    adimR = 0.5
+    adimR = 2
 
     pFineFRF         = Problem("fineFRF")
     pFRF             = Problem("FRF")

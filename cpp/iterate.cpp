@@ -17,10 +17,6 @@ void Problem::iterate() {
   // RHS, space
   assembleSpatialRHS();
 
-  lhs += K;
-  if (isAdvection) lhs += A;
-  rhs += pulse;
-
   // LHS & RHS, time
   assembleTime();
 
