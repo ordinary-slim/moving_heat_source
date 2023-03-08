@@ -3,8 +3,6 @@
 #include <Eigen/Core>
 #include "mesh/Mesh.h"
 
-using namespace std;
-
 class HeatSource {
   public:
       Eigen::Vector3d initialPosition;

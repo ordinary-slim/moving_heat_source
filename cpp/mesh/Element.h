@@ -4,7 +4,6 @@
 #include <Eigen/Core>
 #include <algorithm>
 #include "RefElement.h"
-using namespace std;
 
 namespace mesh
 {
@@ -13,14 +12,14 @@ class Element {
     int nnodes, ngpoints;
     Eigen::MatrixX3d pos, gpos;
     Eigen::VectorXi  con;
-    vector<double> gpweight;
+    std::vector<double> gpweight;
     double vol;
     Eigen::Vector3d centroid;
     Eigen::Vector3d normal;
     int dim;
     ElementType elementType;
-    vector<vector<double>> BaseGpVals;
-    vector<vector<Eigen::Vector3d>> GradBaseGpVals;
+    std::vector<std::vector<double>> BaseGpVals;
+    std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
     bool openIntegration = false;//default closed integration
 
     ReferenceElement      *refEl;
@@ -168,7 +167,7 @@ class Element {
       int locInode;
       int counter = 0;
       for (int globInode : vertices ) {
-        locInode = find(con.begin(), con.end(), globInode) - con.begin();
+        locInode = std::find(con.begin(), con.end(), globInode) - con.begin();
         e.pos.row( counter ) = pos.row( locInode );
         counter++;
       }

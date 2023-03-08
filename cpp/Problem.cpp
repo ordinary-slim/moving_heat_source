@@ -15,8 +15,23 @@ void Problem::updateFRFpos() {
   }
 }
 
+void Problem::preIterate() {
+  /* Beginning of iteration operations*/
+  // CLEANUP Linear System
+  lhs.resize( mesh.nnodes, mesh.nnodes );
+  rhs.resize( mesh.nnodes );
+  lhs.setZero();
+  rhs.setZero();
+  // UPDATE to tn+1
+  mhs.updatePosition( dt );
+  setTime( time + dt );
+  ++iter;
+}
+
+
 void Problem::postIterate() {
-  // End iteration operations
+  /* End iteration operations */
+  // STORE last timestep for time-integratino
   // Overwrite last column of unknown.prevValues
   unknown.prevValues.col( unknown.prevValues.cols()-1 ) << unknown.values;
   // Permutate N-1, 0, ..., N-2
@@ -30,8 +45,6 @@ void Problem::postIterate() {
   unknown.prevValues = unknown.prevValues * perm;
 
   ++timeIntegrator.nstepsStored;
-  setTime( time + dt );
-  ++iter;
 }
 
 void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {

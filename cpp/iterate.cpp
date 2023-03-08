@@ -8,64 +8,31 @@
 #include <Eigen/Sparse>
 #include <string>
 
-using namespace std;
-typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
-typedef Eigen::Triplet<double> T;
-
 void Problem::iterate() {
+  // BEGIN ITERATION
+  preIterate();
   // ASSEMBLY
-  assemble();
+  // LHS, space
+  assembleSpatialLHS();
+  // RHS, space
+  assembleSpatialRHS();
 
-  //SOLVE
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  lhs.setZero();
-  rhs.setZero();
-
-  // general treatment implicit schemes
-  mhs.computePulse(pulse, mesh, time+dt, dt);//assembly of RHS
   lhs += K;
   if (isAdvection) lhs += A;
   rhs += pulse;
 
-  if (not isSteady) {
-    //Set time integration
-    if (timeIntegrator.nstepsStored < timeIntegrator.nstepsRequired ) {
-      if (timeIntegrator.nstepsStored >= 4) {
-        timeIntegrator.setCurrentIntegrator( 4 );
-      } else if (timeIntegrator.nstepsStored >= 3) {
-        timeIntegrator.setCurrentIntegrator( 3 );
-      } else if (timeIntegrator.nstepsStored >= 2) {
-        timeIntegrator.setCurrentIntegrator( 2 );
-      } else {
-        timeIntegrator.setCurrentIntegrator( 1 );
-      }
-    } else {
-      timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
-    }
-    //Add time dependency
-    lhs += timeIntegrator.lhsCoeff * M / dt;
-    rhs += M * (unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
-  }
+  // LHS & RHS, time
+  assembleTime();
 
-  if (mesh.hasInactive) {
-    // Treat inactive nodes
-    vector<T> InacNodes_coeffs;
-    InacNodes_coeffs.reserve( mesh.nnodes );
-    for (int inode = 0; inode < mesh.nnodes; inode++) {
-      if (mesh.activeNodes[inode] == 0) {
-        InacNodes_coeffs.push_back( T(inode, inode, 1) );
-        rhs[ inode ] = unknown.values[ inode ];
-      }
-    }
-    I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
-    lhs += I;
-  }
+  // LHS & RHS, inactive nodes
+  forceInactiveNodes();
 
-
+  //SOLVE
+  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
   //Solve linear system
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
-    cout << "Singular matrix!" << endl;
+    std::cout << "Singular matrix!" << std::endl;
   }
   unknown.values = solver.solve(rhs);
 

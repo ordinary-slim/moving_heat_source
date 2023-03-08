@@ -1,8 +1,6 @@
 #ifndef TIMEINTEGRATOR
 #include <Eigen/Core>
 
-using namespace std;
-
 class TimeIntegratorHandler {
   public:
       double lhsCoeff;

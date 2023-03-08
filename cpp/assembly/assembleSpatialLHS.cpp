@@ -1,11 +1,11 @@
-#include "Problem.h"
+#include "../Problem.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
-void Problem::assemble() {
+void Problem::assembleSpatialLHS() {
   // numerical params
   double m_ij, k_ij, a_ij, ip;
 
@@ -15,9 +15,6 @@ void Problem::assemble() {
     K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
     A.resize(mesh.nnodes, mesh.nnodes); // advection mat
     I.resize(mesh.nnodes, mesh.nnodes); // inactive nodes
-    lhs.resize( mesh.nnodes, mesh.nnodes );
-    rhs.resize( mesh.nnodes );
-    pulse.resize( mesh.nnodes ); // source term
 
     vector<T> M_coeffs;
     M_coeffs.reserve( 3*mesh.nnodes );

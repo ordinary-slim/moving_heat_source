@@ -12,8 +12,6 @@
 
 namespace py = pybind11;
 
-using namespace std;
-
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
                                            //
 class Problem {
@@ -53,7 +51,11 @@ class Problem {
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void updateFRFpos();
-    void assemble();
+    void assembleSpatialLHS();
+    void assembleSpatialRHS();
+    void assembleTime();
+    void forceInactiveNodes();
+    void preIterate();
     void postIterate();
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );
