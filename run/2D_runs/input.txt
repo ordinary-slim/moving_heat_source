@@ -15,7 +15,7 @@ conductivity		0.01
 specific_heat		500
 environmentTemperature		25
 plot 1
-timeIntegration 1
+timeIntegration 2
 sourceTerm 0
 isAdvection 0
 advectionSpeedX 0.0
@@ -24,3 +24,4 @@ advectionSpeedZ 0.0
 speedFRF_X 0.0
 speedFRF_Y 0.0
 speedFRF_Z 0.0
+isStabilized 1

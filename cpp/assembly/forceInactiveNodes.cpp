@@ -8,6 +8,10 @@ typedef Eigen::Triplet<double> T;
 void Problem::forceInactiveNodes() {
   // Has to be last step. Similar treatment to Dirichlet BC
   if (mesh.hasInactive) {
+    SpMat I; // inactive nodes
+    I.resize(mesh.nnodes, mesh.nnodes); // inactive nodes
+    I.setZero();
+
     // Treat inactive nodes
     vector<T> InacNodes_coeffs;
     InacNodes_coeffs.reserve( mesh.nnodes );

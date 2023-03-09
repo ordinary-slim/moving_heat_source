@@ -24,18 +24,13 @@ class Problem {
     double dt;
     int iter;
 
-    bool isAssembled = false;
     bool isAdvection = false;
     bool isSteady    = false;
+    bool isStabilized = false;
     Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
     SpMat lhs;
     SpMat M; // mass mat
-    SpMat K; // stiffness mat
-    SpMat A; // advection mat
-    SpMat I; // inactive nodes
-    Eigen::VectorXd pulse; // source term
-
 
     // integrator
     TimeIntegratorHandler timeIntegrator;
@@ -53,13 +48,14 @@ class Problem {
     void updateFRFpos();
     void assembleSpatialLHS();
     void assembleSpatialRHS();
+    void assembleStabilization();//Only P1/Q1 for the moment!
     void assembleTime();
     void forceInactiveNodes();
     void preIterate();
     void postIterate();
     void activateDomain(vector<int> inputActiveElements ) {
       mesh.setActiveElements( inputActiveElements );
-      isAssembled = false;
+      //isAssembled = false;
     }
     };
 #define PROBLEM

@@ -5,6 +5,7 @@
 #include <vector>
 
 void Problem::assembleSpatialRHS() {
+  Eigen::VectorXd pulse; // source term
   pulse.resize( mesh.nnodes ); // source term
   pulse.setZero();
 

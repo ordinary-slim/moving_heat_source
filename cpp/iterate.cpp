@@ -16,12 +16,17 @@ void Problem::iterate() {
   assembleSpatialLHS();
   // RHS, space
   assembleSpatialRHS();
+  // LHS & RHS, VMS
+  if (isStabilized) {
+    assembleStabilization();
+  }
 
   // LHS & RHS, time
   assembleTime();
 
   // LHS & RHS, inactive nodes
   forceInactiveNodes();
+
 
   //SOLVE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;

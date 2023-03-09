@@ -78,6 +78,10 @@ void Problem::initialize(py::dict &input) {
     isSteady = py::cast<bool>(input["steadyState"]);
   }
 
+  // check for VMS stabilization
+  if (input.contains("isStabilized")) {
+    isStabilized = py::cast<bool>(input["isStabilized"]);
+  }
 
   // timeIntegrator
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
