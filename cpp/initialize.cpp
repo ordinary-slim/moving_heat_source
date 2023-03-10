@@ -84,6 +84,7 @@ void Problem::initialize(py::dict &input) {
   // check for VMS stabilization
   if (input.contains("isStabilized")) {
     isStabilized = py::cast<bool>(input["isStabilized"]);
+    if (input.contains("StabilizationConstant")) { SCA = py::cast<double>(input["StabilizationConstant"]); };
   }
 
   // timeIntegrator

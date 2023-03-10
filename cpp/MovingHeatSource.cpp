@@ -13,6 +13,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("updateFRFpos", &Problem::updateFRFpos)
         .def("iterate", &Problem::iterate)
+        .def("preIterate", &Problem::preIterate)
         .def("postIterate", &Problem::postIterate)
         .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)

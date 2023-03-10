@@ -97,7 +97,7 @@ class Problem(mhs.Problem):
 
     def fakeIter(self):
         self.iter += 1
-        super(Problem, self).postIterate()
+        super(Problem, self).preIterate()
 
     #POSTPROCESSING
     def writepos( self ):

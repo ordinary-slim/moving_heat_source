@@ -27,6 +27,7 @@ class Problem {
     bool isAdvection = false;
     bool isSteady    = false;
     bool isStabilized = false;
+    double SCA = 512;//stabilization cte advection
     Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
     SpMat lhs;

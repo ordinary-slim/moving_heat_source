@@ -42,13 +42,16 @@ void Problem::assembleStabilization() {
 
     //Compute tau
     h = e.getSizeAlongVector( advectionSpeed );
-    advectionEstimate = h / 1024 / (rho*cp*norm_advectionSpeed);
+    advectionEstimate = h / SCA / (rho*cp*norm_advectionSpeed);
+    tau = advectionEstimate;
+    /* TODO: Fix this code by finding right formulae
     if (k != 0) {
       diffusionEstimate = pow(h, 2) / (4 * k);
       tau = 1 / ( 1/advectionEstimate + 1/diffusionEstimate );
     } else {
       tau = advectionEstimate;
     }
+    */
 
     // Loop LHS
     for (int inode = 0; inode < e.nnodes; inode++) {
