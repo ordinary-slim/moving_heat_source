@@ -11,6 +11,7 @@ import meshio
 speed = 10
 bumper = 20
 Tfinal = bumper/speed/2
+maxIter = 100
 
 def mesh(leftEnd, rightEnd, elDen):
     cell_type="line2"
@@ -95,7 +96,9 @@ if __name__=="__main__":
     #quickfix
 
     # FORWARD
-    while (pFRF.time < Tfinal):
+    iteration = 0
+    while ((pFRF.time < Tfinal)and(iteration < maxIter)):
+        iteration += 1
         #FRF
         pFRF.iterate()#assembly + solve
         pFRF.writepos()

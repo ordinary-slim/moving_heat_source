@@ -58,7 +58,7 @@ void Problem::assembleStabilization() {
       for (int jnode = 0; jnode < e.nnodes; jnode++) {
         asss_lhs_ij = 0;
         for (int igp = 0; igp < e.ngpoints; igp++) {
-          asss_lhs_ij += rho * cp * tau *
+          asss_lhs_ij += (e.gpweight[igp] * e.vol)* rho * cp * tau *
             e.GradBaseGpVals[inode][igp].dot( advectionSpeed ) *
             e.GradBaseGpVals[jnode][igp].dot( advectionSpeed );
         }
