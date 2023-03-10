@@ -23,7 +23,8 @@ void Problem::assembleSpatialRHS() {
       r_i = 0;
       for (int igp = 0; igp < e.nnodes; ++igp) {
         x_gp = e.gpos.row( igp );
-        r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol * mhs.powerDensity(x_gp, time, mhs.currentPosition, mhs.power, mhs.efficiency, mhs.radius);
+        r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol *
+          mhs.powerDensity(x_gp, time, mhs.currentPosition, mhs.power, mhs.efficiency, mhs.radius);
       }
       pulse[e.con[inode]] += r_i;
     }

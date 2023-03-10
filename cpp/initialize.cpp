@@ -31,6 +31,9 @@ void Problem::initialize(py::dict &input) {
     case 91:
       { mhs.powerDensity = &forcedSolutionSource91;
         break; }
+    case 86:
+      { mhs.powerDensity = &testCteHeat1D;
+        break; }
     default:
       {
         if (mesh.dim == 1 ) {

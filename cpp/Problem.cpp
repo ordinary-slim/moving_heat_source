@@ -9,9 +9,9 @@ void Problem::updateFRFpos() {
 
   // update positions in no advection RF
   // done in pre iterate because activation is also done here
-  mesh.shiftFRF += -dt * mesh.speedFRF;
+  mesh.shiftFRF += dt * mesh.speedFRF;
   for (int inode=0; inode < mesh.nnodes; inode++){
-    mesh.posFRF.row( inode ) += -dt * mesh.speedFRF;
+    mesh.posFRF.row( inode ) += dt * mesh.speedFRF;
   }
 }
 

@@ -16,6 +16,16 @@ double gaussianPowerDensity2D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, d
   return pd;
 }
 
+double testCteHeat1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
+    double power, double efficiency, double radius) {
+
+  double pd = 0;
+  if ( (x - x0).norm() <= radius ) {
+    pd = efficiency * power / 2 / radius;
+  }
+  return pd;
+}
+
 double forcedSolutionSource91(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double cte, double gamma, double beta) {
   double alpha = 1;
   double pd = cte * exp( - gamma * t ) * exp( - beta * pow( x[0] - x0[0], 2 ) );

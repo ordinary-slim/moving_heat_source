@@ -72,7 +72,7 @@ if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
     boxInac = [-32, 32, -5, 5]
-    adimR = 2
+    adimR = 0.5
 
     pFineFRF         = Problem("fineFRF")
     pFRF             = Problem("FRF")
@@ -120,12 +120,12 @@ if __name__=="__main__":
     for p in [pNoTransportMRF,]:
         p.input["isAdvection"] = 1
         p.input["advectionSpeedX"] = -pTransportedMRF.input["speedX"]
-        p.input["speedFRF_X"]      = -pTransportedMRF.input["speedX"]
+        p.input["speedFRF_X"]      = pTransportedMRF.input["speedX"]
         p.input["speedX"] = 0.0
-    #set MRF business NO TRANSPORT
+    #set MRF business TRANSPORT
     for p in [pTransportedMRF]:
         p.input["isAdvection"] = 0
-        p.input["speedFRF_X"]      = -pTransportedMRF.input["speedX"]
+        p.input["speedFRF_X"]      = pTransportedMRF.input["speedX"]
         p.input["speedX"] = 0.0
 
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:

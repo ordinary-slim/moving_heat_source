@@ -129,10 +129,18 @@ class Element {
       centroid /= nnodes;
     }
 
+    Eigen::Vector3d getCentroid() {
+      return centroid;
+    }
+
     void computeNormal( Eigen::Vector3d parentCentroid ) {
       normal.setZero();
       switch (dim) {
-        case 1: {//Element is a line
+        case 0: {//point1
+          normal(0) = 1;
+          break;
+        }
+        case 1: {//line2
           Eigen::Vector3d lineVec = pos.row(1) - pos.row(0);
           normal(0) = -lineVec( 1 );
           normal(1) = +lineVec( 0 );
@@ -140,15 +148,11 @@ class Element {
           break;
         }
         case 2: {
-          printf("Not implemented\n");
-          exit(EXIT_FAILURE);
-        }
-        case 3: {
-          printf("Not implemented\n");
+          printf("Normal computation for 2D els not implemented yet\n");
           exit(EXIT_FAILURE);
         }
         default: {
-          printf("Not implemented\n");
+          printf("This normal computation is not implemented yet.");
           exit(EXIT_FAILURE);
         }
       }
@@ -172,8 +176,7 @@ class Element {
         counter++;
       }
       // computations
-      e.computeCentroid();
-      e.computeNormal( centroid );
+      e.computeNormal( getCentroid() );
       return e;
     }
 
