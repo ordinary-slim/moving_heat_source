@@ -55,7 +55,7 @@ void Problem::initialize(py::dict &input) {
   // dirichlet BC
   if (input.contains("dirichletNodes")) {
     unknown.dirichletNodes = py::cast<vector<int>>(input["dirichletNodes"]);
-    unknown.dirichletValues = py::cast<vector<double>>(input["dirichletNodes"]);
+    unknown.dirichletValues = py::cast<vector<double>>(input["dirichletValues"]);
   }
 
 
