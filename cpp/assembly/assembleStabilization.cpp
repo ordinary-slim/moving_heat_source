@@ -14,8 +14,8 @@ void Problem::assembleStabilization() {
   asss_LHS.setZero();
   asss_RHS.setZero();
 
-  vector<T> LHS_coeffs;
-  LHS_coeffs.reserve( 3*mesh.nnodes );
+  vector<T> ASSS_lhsCoeffs;
+  ASSS_lhsCoeffs.reserve( 3*mesh.nnodes );
 
   double norm_advectionSpeed = advectionSpeed.norm();
 
@@ -23,6 +23,7 @@ void Problem::assembleStabilization() {
     return;
   }
 
+  double SCA = 2, SCD = 4;//stabilization cte advection / diffusion
   // numerical params
   double asss_lhs_ij, asss_rhs_i;
   double tau, advectionEstimate, diffusionEstimate;//stabilization parameter
@@ -44,14 +45,12 @@ void Problem::assembleStabilization() {
     h = e.getSizeAlongVector( advectionSpeed );
     advectionEstimate = h / SCA / (rho*cp*norm_advectionSpeed);
     tau = advectionEstimate;
-    /* TODO: Fix this code by finding right formulae
     if (k != 0) {
-      diffusionEstimate = pow(h, 2) / (4 * k);
+      diffusionEstimate = pow(h, 2) / (SCD * k);
       tau = 1 / ( 1/advectionEstimate + 1/diffusionEstimate );
     } else {
       tau = advectionEstimate;
     }
-    */
 
     // Loop LHS
     for (int inode = 0; inode < e.nnodes; inode++) {
@@ -62,7 +61,7 @@ void Problem::assembleStabilization() {
             e.GradBaseGpVals[inode][igp].dot( advectionSpeed ) *
             e.GradBaseGpVals[jnode][igp].dot( advectionSpeed );
         }
-        LHS_coeffs.push_back( T( e.con[inode], e.con[jnode], asss_lhs_ij ) );
+        ASSS_lhsCoeffs.push_back( T( e.con[inode], e.con[jnode], asss_lhs_ij ) );
       }
     }
 
@@ -80,8 +79,8 @@ void Problem::assembleStabilization() {
 
   }
 
-  asss_LHS.setFromTriplets( LHS_coeffs.begin(), LHS_coeffs.end() );
+  //asss_LHS.setFromTriplets( LHS_coeffs.begin(), LHS_coeffs.end() );
 
-  lhs += asss_LHS;
+  lhsCoeffs.insert( lhsCoeffs.end(), ASSS_lhsCoeffs.begin(), ASSS_lhsCoeffs.end());
   rhs += asss_RHS;
 }

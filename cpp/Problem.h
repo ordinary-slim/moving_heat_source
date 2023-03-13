@@ -12,8 +12,6 @@
 
 namespace py = pybind11;
 
-typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
-                                           //
 class Problem {
   public:
     mesh::Mesh mesh;
@@ -27,11 +25,12 @@ class Problem {
     bool isAdvection = false;
     bool isSteady    = false;
     bool isStabilized = false;
-    double SCA = 512;//stabilization cte advection
     Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
-    SpMat lhs;
-    SpMat M; // mass mat
+    Eigen::SparseMatrix<double> lhs;
+    vector<Eigen::Triplet<double>> lhsCoeffs;
+    Eigen::SparseMatrix<double> M; // mass mat
+    vector<Eigen::Triplet<double>> massCoeffs;
 
     // integrator
     TimeIntegratorHandler timeIntegrator;
@@ -51,6 +50,7 @@ class Problem {
     void assembleSpatialRHS();
     void assembleStabilization();//Only P1/Q1 for the moment!
     void assembleTime();
+    void forceDirichletNodes();
     void forceInactiveNodes();
     void preIterate();
     void postIterate();

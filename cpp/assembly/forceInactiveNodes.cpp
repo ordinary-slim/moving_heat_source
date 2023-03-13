@@ -21,7 +21,7 @@ void Problem::forceInactiveNodes() {
         rhs[ inode ] = unknown.values[ inode ];
       }
     }
-    I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
-    lhs += I;
+    //I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
+    lhsCoeffs.insert( lhsCoeffs.end(), InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
   }
 }

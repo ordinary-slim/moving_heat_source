@@ -53,7 +53,10 @@ void Problem::initialize(py::dict &input) {
   unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
 
   // dirichlet BC
-  vector<int> freeNodes(mesh.nnodes);
+  if (input.contains("dirichletNodes")) {
+    unknown.dirichletNodes = py::cast<vector<int>>(input["dirichletNodes"]);
+    unknown.dirichletValues = py::cast<vector<double>>(input["dirichletNodes"]);
+  }
 
 
   // material. dictionnary is not efficient + involved in assembly
@@ -81,10 +84,9 @@ void Problem::initialize(py::dict &input) {
     isSteady = py::cast<bool>(input["steadyState"]);
   }
 
-  // check for VMS stabilization
+  // check for ASSS stabilization
   if (input.contains("isStabilized")) {
     isStabilized = py::cast<bool>(input["isStabilized"]);
-    if (input.contains("StabilizationConstant")) { SCA = py::cast<double>(input["StabilizationConstant"]); };
   }
 
   // timeIntegrator

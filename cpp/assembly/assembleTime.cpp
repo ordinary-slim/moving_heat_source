@@ -18,7 +18,14 @@ void Problem::assembleTime() {
       timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
     }
     //Add time dependency
-    lhs += timeIntegrator.lhsCoeff * M / dt;
+    vector<Eigen::Triplet<double>> timeDerivCoeffs;
+    timeDerivCoeffs.resize( massCoeffs.size() );
+    for (int iMassEntry = 0; iMassEntry < massCoeffs.size(); ++iMassEntry) {
+      timeDerivCoeffs[iMassEntry] = Eigen::Triplet<double>( massCoeffs[iMassEntry].row(),
+                                                            massCoeffs[iMassEntry].col(),
+                                    timeIntegrator.lhsCoeff*massCoeffs[iMassEntry].value()/dt );
+    }
+    lhsCoeffs.insert( lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
     rhs += M * (unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
   }
 }

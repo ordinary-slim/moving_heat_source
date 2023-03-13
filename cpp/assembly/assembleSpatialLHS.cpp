@@ -16,8 +16,8 @@ void Problem::assembleSpatialLHS() {
   K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
   A.resize(mesh.nnodes, mesh.nnodes); // advection mat
 
-  vector<T> M_coeffs;
-  M_coeffs.reserve( 3*mesh.nnodes );
+  massCoeffs.clear();
+  massCoeffs.reserve( 3*mesh.nnodes );
   vector<T> K_coeffs;
   K_coeffs.reserve( 3*mesh.nnodes );
   vector<T> A_coeffs;
@@ -56,16 +56,15 @@ void Problem::assembleSpatialLHS() {
         k_ij *= k ;
         a_ij *= rho * cp;
 
-        M_coeffs.push_back( T( e.con[inode], e.con[jnode], m_ij ) );
+        massCoeffs.push_back( T( e.con[inode], e.con[jnode], m_ij ) );
         K_coeffs.push_back( T( e.con[inode], e.con[jnode], k_ij ) );
         A_coeffs.push_back( T( e.con[inode], e.con[jnode], a_ij ) );
       }
     }
   }
-  M.setFromTriplets( M_coeffs.begin(), M_coeffs.end() );
-  K.setFromTriplets( K_coeffs.begin(), K_coeffs.end() );
-  A.setFromTriplets( A_coeffs.begin(), A_coeffs.end() );
+  M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
 
-  lhs += K;
-  if (isAdvection) lhs += A;
+  lhsCoeffs.insert(lhsCoeffs.end(), K_coeffs.begin(), K_coeffs.end());
+  if (isAdvection) lhsCoeffs.insert(lhsCoeffs.end(), A_coeffs.begin(), A_coeffs.end());
+
 }

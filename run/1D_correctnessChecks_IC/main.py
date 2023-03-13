@@ -11,7 +11,7 @@ import meshio
 speed = 10
 bumper = 20
 Tfinal = bumper/speed/2
-maxIter = 100
+maxIter = 200
 
 def mesh(leftEnd, rightEnd, elDen):
     cell_type="line2"
@@ -46,7 +46,7 @@ if __name__=="__main__":
     pMRF_AdvecTrans = Problem("MRF_AdvecTrans")
     pMRF_AdvecTransHelper = Problem("AdvecTransHelper")
 
-    elDen = 20
+    elDen = 40
     leftEnd = -50.0
     rightEnd = +50.0
     boxDomain = [leftEnd, rightEnd]
@@ -89,7 +89,7 @@ if __name__=="__main__":
     # Initial condition
     # Different IC
     #f = lambda pos : abs(pos[0]+pos[1])
-    f = lambda pos : 25 + (1 / (1 +pos[0]**2) )
+    #f = lambda pos : 25 + (1 / (1 +pos[0]**2) )
     f = lambda pos : max(25, 26-abs(pos[0])/10)
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
         p.forceState( f )

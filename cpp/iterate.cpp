@@ -1,12 +1,5 @@
 #include <iostream>
-#include <vector>
-#include "mesh/Element.h"
 #include "Problem.h"
-#include <numeric>
-#include <algorithm>
-#include <Eigen/Core>
-#include <Eigen/Sparse>
-#include <string>
 
 void Problem::iterate() {
   // BEGIN ITERATION
@@ -27,9 +20,12 @@ void Problem::iterate() {
   // LHS & RHS, inactive nodes
   forceInactiveNodes();
 
+  //Dirichlet BC
+  forceDirichletNodes();
 
   //SOLVE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
   //Solve linear system
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {

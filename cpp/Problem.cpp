@@ -22,6 +22,8 @@ void Problem::preIterate() {
   rhs.resize( mesh.nnodes );
   lhs.setZero();
   rhs.setZero();
+  lhsCoeffs.clear();
+  //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
   mhs.updatePosition( dt );
   setTime( time + dt );
