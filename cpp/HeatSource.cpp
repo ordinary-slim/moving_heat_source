@@ -1,10 +1,7 @@
 #include <iostream>
 #include <Eigen/Core>
 #include <cmath>
-#include <vector>
-#include "mesh/Mesh.h"
-#include "mesh/Element.h"
-#include "heatSource.h"
+#include "HeatSource.h"
 
 double gaussianPowerDensity1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius) {
   double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x[0] - x0[0], 2)/pow(radius, 2));

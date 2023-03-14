@@ -3,7 +3,7 @@
 #include <string>
 #include "mesh/Mesh.h"
 #include "FEMFunction.h"
-#include "heatSource.h"
+#include "HeatSource.h"
 #include "timeIntegrator.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -19,7 +19,7 @@ class Problem {
     HeatSource mhs;
     map<string,double> material;
     double time = 0.0;
-    double dt;
+    double dt = 0.0;
     int iter;
 
     bool isAdvection = false;

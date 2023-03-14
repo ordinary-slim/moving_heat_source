@@ -9,8 +9,6 @@
 namespace py = pybind11;
 
 void Problem::initialize(py::dict &input) {
-  // tstepping
-  dt = py::cast<double>(input["dt"]);
   // MESH
   mesh.initializeMesh( input );
 
@@ -82,6 +80,9 @@ void Problem::initialize(py::dict &input) {
   // check for time dependency
   if (input.contains("steadyState")) {
     isSteady = py::cast<bool>(input["steadyState"]);
+  } else {
+    // tstepping
+    dt = py::cast<double>(input["dt"]);
   }
 
   // check for ASSS stabilization

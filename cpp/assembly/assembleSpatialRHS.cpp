@@ -21,7 +21,7 @@ void Problem::assembleSpatialRHS() {
     e = mesh.getElement( ielem );
     for (int inode = 0; inode < e.nnodes; ++inode) {
       r_i = 0;
-      for (int igp = 0; igp < e.nnodes; ++igp) {
+      for (int igp = 0; igp < e.ngpoints; ++igp) {
         x_gp = e.gpos.row( igp );
         r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol *
           mhs.powerDensity(x_gp, time, mhs.currentPosition, mhs.power, mhs.efficiency, mhs.radius);

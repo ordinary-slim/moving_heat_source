@@ -11,7 +11,7 @@ import meshio
 speed = 10
 bumper = 20
 Tfinal = bumper/speed/2
-maxIter = 200
+maxIter = 400
 
 def mesh(leftEnd, rightEnd, elDen):
     cell_type="line2"

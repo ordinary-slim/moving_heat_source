@@ -70,6 +70,8 @@ if __name__=="__main__":
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
         p.parseInput( inputFile )
 
+    print( "h = {} , dx = {}".format( points[1]-points[0], speed * pFRF.input["dt"] ) )
+
     #set MRF business ADVEC
     for p in [pMRF_Advec, pMRF_AdvecTrans, pMRF_AdvecTrans]:
         p.input["speedFRF_X"]  = speed

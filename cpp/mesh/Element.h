@@ -10,7 +10,8 @@ namespace mesh
 class Element {
   public:
     int nnodes, ngpoints;
-    Eigen::MatrixX3d pos, gpos;
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
+      pos, gpos;
     Eigen::VectorXi  con;
     std::vector<double> gpweight;
     double vol;

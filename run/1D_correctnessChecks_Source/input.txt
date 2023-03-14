@@ -3,12 +3,12 @@ power		200.0
 initialPositionX	  0.0
 initialPositionY		0.0
 initialPositionZ		0.0
-dt	0.01
+dt	0.02
 t		0.0
-Tfinal		5
+Tfinal	25
 maxIter		100
 rho		1
-conductivity		0.0
+conductivity		1.0
 specific_heat		1
 environmentTemperature		25
 plot 1
