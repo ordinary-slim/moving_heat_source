@@ -6,15 +6,11 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 typedef Eigen::Triplet<double> T;
 
 void Problem::assembleSpatialLHS() {
-  SpMat K; // stiffness mat
-  SpMat A; // advection mat
   // numerical params
   double m_ij, k_ij, a_ij, ip;
 
   // initialize data structures
   M.resize(mesh.nnodes, mesh.nnodes); // mass mat
-  K.resize(mesh.nnodes, mesh.nnodes); // stiffness mat
-  A.resize(mesh.nnodes, mesh.nnodes); // advection mat
 
   massCoeffs.clear();
   massCoeffs.reserve( 3*mesh.nnodes );
@@ -25,8 +21,6 @@ void Problem::assembleSpatialLHS() {
 
   // matrices assembly
   M.setZero();
-  K.setZero();
-  A.setZero();
 
   mesh::Element e;
   double rho = material["rho"];
