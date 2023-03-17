@@ -172,6 +172,14 @@ class ReferenceElement {
 
           if (openIntegration) {
             switch (ngpoints) {
+              case 4: {
+                double invSqrt3 = 1 / sqrt( 3.0 );
+                gpos << -invSqrt3, -invSqrt3, 0.0,
+                        -invSqrt3, +invSqrt3, 0.0,
+                        +invSqrt3, +invSqrt3, 0.0,
+                        +invSqrt3, -invSqrt3, 0.0;
+                gpweight = {1.0/4.0, 1.0/4.0, 1.0/4.0, 1.0/4.0};
+                break;}
               default:
                 printf("Open integration with %i not implemented for this element\n", ngpoints);
                 exit(-1);
