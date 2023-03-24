@@ -17,9 +17,9 @@ void Problem::initialize(py::dict &input) {
   mhs.power = py::cast<double>(input["power"]);
   if (input.contains("efficiency")) mhs.efficiency = py::cast<double>(input["efficiency"]);
 
-  mhs.speed[0] = py::cast<double>(input["speedX"]);
-  mhs.speed[1] = py::cast<double>(input["speedY"]);
-  mhs.speed[2] = py::cast<double>(input["speedZ"]);
+  mhs.speed[0] = py::cast<double>(input["HeatSourceSpeedX"]);
+  mhs.speed[1] = py::cast<double>(input["HeatSourceSpeedY"]);
+  mhs.speed[2] = py::cast<double>(input["HeatSourceSpeedZ"]);
   mhs.initialPosition[0] = py::cast<double>(input["initialPositionX"]);
   mhs.initialPosition[1] = py::cast<double>(input["initialPositionY"]);
   mhs.initialPosition[2] = py::cast<double>(input["initialPositionZ"]);

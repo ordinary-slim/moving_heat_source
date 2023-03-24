@@ -84,6 +84,9 @@ class Mesh {
       }
     }
 
+    void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
+      speedFRF = inputSpeedFRF;
+    }
     void setAABBs();
     int findOwnerElement( Eigen::Vector3d point );
 

@@ -9,6 +9,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         .def(py::init<>())
+        .def(py::init<Problem>())
         .def("initialize", &Problem::initialize)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("updateFRFpos", &Problem::updateFRFpos)
@@ -24,6 +25,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def("setPointers", &Problem::setPointers)
         .def("activateDomain", &Problem::activateDomain);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
@@ -38,6 +40,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("activeNodes", &mesh::Mesh::activeNodes)
         .def_readonly("activeElements", &mesh::Mesh::activeElements)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
+        .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())

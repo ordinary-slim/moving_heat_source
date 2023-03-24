@@ -27,12 +27,17 @@ class Problem(mhs.Problem):
             "quad4" : "quad",
             "triangle3" : "triangle",
         }
-    def __init__(self, caseName):
+    def __init__(self, caseName, problem=None):
         self.caseName= caseName
         self.input = {}
         self.iter = 0
         self.postFolder = "post_{}".format( caseName )
-        super().__init__()
+        if problem:
+            self.input = problem.input
+            super().__init__(problem)
+            self.setPointers()
+        else:
+            super().__init__()
 
     # PREPROCESSING
     # Process params
@@ -98,6 +103,12 @@ class Problem(mhs.Problem):
     def fakeIter(self):
         self.iter += 1
         super(Problem, self).preIterate()
+
+    def frf2mrf(self):
+        speed = self.mhs.speed
+        self.mesh.setSpeedFRF( speed )
+        self.setAdvectionSpeed( -speed )
+        self.mhs.setSpeed( np.zeros(3) )
 
     #POSTPROCESSING
     def writepos( self ):

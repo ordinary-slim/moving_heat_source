@@ -14,9 +14,9 @@ environmentTemperature		25
 plot 1
 timeIntegration 1
 sourceTerm 86
-speedX		0
-speedY		0
-speedZ		0
+HeatSourceSpeedX		0
+HeatSourceSpeedY		0
+HeatSourceSpeedZ		0
 advectionSpeedX 0.0
 advectionSpeedY 0.0
 advectionSpeedZ 0.0

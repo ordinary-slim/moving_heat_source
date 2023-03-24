@@ -35,10 +35,10 @@ def isInsideBox( mesh, box ):
 
 def setAdimR( adimR, p ):
     r = p.input["radius"]
-    speedX = max( abs(p.input["speedX"]), abs(p.input["advectionSpeedX"]))
-    speedY = max( abs(p.input["speedY"]), abs(p.input["advectionSpeedY"]))
-    speedZ = max( abs(p.input["speedZ"]), abs(p.input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
+    HeatSourceSpeedX = max( abs(p.input["HeatSourceSpeedX"]), abs(p.input["advectionSpeedX"]))
+    HeatSourceSpeedY = max( abs(p.input["HeatSourceSpeedY"]), abs(p.input["advectionSpeedY"]))
+    HeatSourceSpeedZ = max( abs(p.input["HeatSourceSpeedZ"]), abs(p.input["advectionSpeedZ"]))
+    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
     return (adimR * r / speed)
 
 if __name__=="__main__":
@@ -83,9 +83,9 @@ if __name__=="__main__":
     #set MRF business
     for p in [pNoTransportMRF, pTransportedMRF]:
         p.input["isAdvection"] = 1
-        p.input["advectionSpeedX"] = -pTransportedMRF.input["speedX"]
-        p.input["speedFRF_X"]      = -pTransportedMRF.input["speedX"]
-        p.input["speedX"] = 0.0
+        p.input["advectionSpeedX"] = -pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["speedFRF_X"]      = -pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["HeatSourceSpeedX"] = 0.0
 
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.initialize()

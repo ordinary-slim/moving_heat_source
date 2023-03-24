@@ -49,10 +49,10 @@ def computeAvElSize( p ):
 
 def setAdimR( adimR, p ):
     r = p.input["radius"]
-    speedX = max( abs(p.input["speedX"]), abs(p.input["advectionSpeedX"]))
-    speedY = max( abs(p.input["speedY"]), abs(p.input["advectionSpeedY"]))
-    speedZ = max( abs(p.input["speedZ"]), abs(p.input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
+    HeatSourceSpeedX = max( abs(p.input["HeatSourceSpeedX"]), abs(p.input["advectionSpeedX"]))
+    HeatSourceSpeedY = max( abs(p.input["HeatSourceSpeedY"]), abs(p.input["advectionSpeedY"]))
+    HeatSourceSpeedZ = max( abs(p.input["HeatSourceSpeedZ"]), abs(p.input["advectionSpeedZ"]))
+    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
     return (adimR * r / speed)
 
 def getMaxT( p ):
@@ -109,7 +109,7 @@ if __name__=="__main__":
 
     ##DEBUGGING
     #for p in [pFineFRF, pFRF]:
-        #p.input["speedX"] = 2*p.input["speedX"]
+        #p.input["HeatSourceSpeedX"] = 2*p.input["HeatSourceSpeedX"]
     ## adjust dt fine FRF
     #pFineFRF.input["dt"] = fine_dt / 2.0
     #fineStepsPerStep *= 2
@@ -119,14 +119,15 @@ if __name__=="__main__":
     #set MRF business NO TRANSPORT
     for p in [pNoTransportMRF,]:
         p.input["isAdvection"] = 1
-        p.input["advectionSpeedX"] = -pTransportedMRF.input["speedX"]
-        p.input["speedFRF_X"]      = pTransportedMRF.input["speedX"]
-        p.input["speedX"] = 0.0
+        p.input["advectionSpeedX"] = -pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["speedFRF_X"]      = pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["HeatSourceSpeedX"] = 0.0
     #set MRF business TRANSPORT
     for p in [pTransportedMRF]:
-        p.input["isAdvection"] = 0
-        p.input["speedFRF_X"]      = pTransportedMRF.input["speedX"]
-        p.input["speedX"] = 0.0
+        p.input["isAdvection"] = 1
+        p.input["advectionSpeedX"] = -pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["speedFRF_X"]      = pTransportedMRF.input["HeatSourceSpeedX"]
+        p.input["HeatSourceSpeedX"] = 0.0
 
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.initialize()

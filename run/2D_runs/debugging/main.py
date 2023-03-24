@@ -48,8 +48,8 @@ if __name__=="__main__":
 
     # Set advection FG
     fgProblem.input["isAdvection"] = 1
-    fgProblem.input["advectionSpeedX"] = -bgProblem.input["speedX"]
-    fgProblem.input["speedX"] = 0
+    fgProblem.input["advectionSpeedX"] = -bgProblem.input["HeatSourceSpeedX"]
+    fgProblem.input["HeatSourceSpeedX"] = 0
     fgProblem.input["power"] = 0
 
     for p in [fgProblem, bgProblem]:

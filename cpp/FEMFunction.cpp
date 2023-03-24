@@ -7,7 +7,7 @@ double FEMFunction::evaluateVal( Eigen::Vector3d point ) {
   // GET VALS OF SHAPE FUNCS AT POINT
   int idxOwnerEl = mesh->findOwnerElement( point );
   if (idxOwnerEl < 0) {// Point outside of mesh
-    return 0.0;
+    return -1;
   }
   mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
@@ -24,7 +24,7 @@ vector<double> FEMFunction::evaluateValNPrevVals( Eigen::Vector3d point ) {
   // GET VALS OF SHAPE FUNCS AT POINT
   int idxOwnerEl = mesh->findOwnerElement( point );
   if (idxOwnerEl < 0) {// Point outside of mesh
-    fill(vals.begin(), vals.end(), 0.0);
+    fill(vals.begin(), vals.end(), -1);
     return vals;
   }
   mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
@@ -43,7 +43,9 @@ void FEMFunction::getFromExternal( FEMFunction &extFEMFunc ){
   values.setZero();
   prevValues.setZero();
   vector<double> valsAtPoint( 1+prevValues.cols() );
+  cout << "Hello?" << endl;
   for (int inode = 0; inode < mesh->nnodes; inode++) {
+    // MOVE TO REFERENCE FRAME OF EXTERNAL
     posExt = mesh->pos.row(inode) + (mesh->shiftFRF - extFEMFunc.mesh->shiftFRF).transpose();
     valsAtPoint = extFEMFunc.evaluateValNPrevVals( posExt );
     values[inode] = valsAtPoint[0];

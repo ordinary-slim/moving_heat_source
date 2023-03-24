@@ -75,13 +75,13 @@ if __name__=="__main__":
     #set MRF business ADVEC
     for p in [pMRF_Advec, pMRF_AdvecTrans, pMRF_AdvecTrans]:
         p.input["speedFRF_X"]  = speed
-        p.input["speedX"] = -speed
+        p.input["HeatSourceSpeedX"] = -speed
         p.input["advectionSpeedX"] = -speed
         p.input["isStabilized"] = 1
     #set MRF business TRANSPORT
     for p in [pMRF_Trans, pMRF_AdvecTrans]:
         p.input["speedFRF_X"]  = speed
-        p.input["speedX"] = -speed
+        p.input["HeatSourceSpeedX"] = -speed
 
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
         p.initialize()

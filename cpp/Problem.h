@@ -39,8 +39,13 @@ class Problem {
       time = newTime;
       mhs.time = newTime;
     }
+    void setPointers(){
+      unknown.mesh = &mesh;
+    }
+
     void setAdvectionSpeed(Eigen::Vector3d inputAdvectionSpeed){
       advectionSpeed = inputAdvectionSpeed;
+      if (advectionSpeed.norm() > 1e-10) isAdvection = true;
     }
     void initialize(py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);

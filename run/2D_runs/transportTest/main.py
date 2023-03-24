@@ -41,10 +41,10 @@ def printSolutionActiveNodes( p ):
 
 def setAdimR( adimR, p ):
     r = p.input["radius"]
-    speedX = max( abs(p.input["speedX"]), abs(p.input["advectionSpeedX"]))
-    speedY = max( abs(p.input["speedY"]), abs(p.input["advectionSpeedY"]))
-    speedZ = max( abs(p.input["speedZ"]), abs(p.input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [speedX, speedY, speedZ] ) )
+    HeatSourceSpeedX = max( abs(p.input["HeatSourceSpeedX"]), abs(p.input["advectionSpeedX"]))
+    HeatSourceSpeedY = max( abs(p.input["HeatSourceSpeedY"]), abs(p.input["advectionSpeedY"]))
+    HeatSourceSpeedZ = max( abs(p.input["HeatSourceSpeedZ"]), abs(p.input["advectionSpeedZ"]))
+    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
     return (adimR * r / speed)
 
 if __name__=="__main__":
@@ -70,8 +70,8 @@ if __name__=="__main__":
 
     # Set advection FG
     mrfProblem.input["isAdvection"] = 1
-    mrfProblem.input["advectionSpeedX"] = -mrfProblem.input["speedX"]
-    mrfProblem.input["speedX"] = 0
+    mrfProblem.input["advectionSpeedX"] = -mrfProblem.input["HeatSourceSpeedX"]
+    mrfProblem.input["HeatSourceSpeedX"] = 0
 
     for p in [mrfTransporter, mrfProblem]:
         p.initialize()
