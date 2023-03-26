@@ -45,9 +45,12 @@ void Problem::initialize(py::dict &input) {
         break; }
   }
 
-  double environmentTemperature = py::cast<double>(input["environmentTemperature"]);
+  //timeIntegrator
+  timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
+
   // initialize unknown
-  unknown.mesh = &mesh;
+  double environmentTemperature = py::cast<double>(input["environmentTemperature"]);
+  unknown = FEMFunction( mesh, timeIntegrator.nstepsRequired );
   unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
 
   // dirichlet BC
@@ -91,10 +94,6 @@ void Problem::initialize(py::dict &input) {
   }
 
   // timeIntegrator
-  timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
-
-  // allocate storage for previous solutions
-  unknown.prevValues = Eigen::MatrixXd::Zero( mesh.nnodes, timeIntegrator.nstepsRequired );
   unknown.prevValues.col( 0 ) << unknown.values;
   ++timeIntegrator.nstepsStored;
 }

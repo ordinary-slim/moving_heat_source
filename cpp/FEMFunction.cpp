@@ -43,7 +43,6 @@ void FEMFunction::getFromExternal( FEMFunction &extFEMFunc ){
   values.setZero();
   prevValues.setZero();
   vector<double> valsAtPoint( 1+prevValues.cols() );
-  cout << "Hello?" << endl;
   for (int inode = 0; inode < mesh->nnodes; inode++) {
     // MOVE TO REFERENCE FRAME OF EXTERNAL
     posExt = mesh->pos.row(inode) + (mesh->shiftFRF - extFEMFunc.mesh->shiftFRF).transpose();
@@ -51,6 +50,18 @@ void FEMFunction::getFromExternal( FEMFunction &extFEMFunc ){
     values[inode] = valsAtPoint[0];
     for (int icol = 0; icol < prevValues.cols(); ++icol) {
       prevValues(inode, icol) = valsAtPoint[icol+1];
+    }
+  }
+}
+
+void FEMFunction::forceFromExternal( FEMFunction &extFEMFunc) {
+  FEMFunction fh = FEMFunction( *mesh, extFEMFunc.nStepsRequired );
+  fh.getFromExternal( extFEMFunc );
+  for (int inode = 0; inode < mesh->nnodes; inode++) {
+    if (fh.values(inode) >= 0) {//If interpolated
+      values(inode) = fh.values(inode);
+      dirichletNodes.push_back( inode );
+      dirichletValues.push_back( fh.values(inode) );
     }
   }
 }

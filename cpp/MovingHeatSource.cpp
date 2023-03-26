@@ -48,6 +48,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("evaluateVal", &FEMFunction::evaluateVal)
         .def("evaluateValNPrevVals", &FEMFunction::evaluateValNPrevVals)
         .def("getFromExternal", &FEMFunction::getFromExternal)
+        .def("forceFromExternal", &FEMFunction::forceFromExternal)
+        .def("releaseDirichlet", &FEMFunction::releaseDirichlet)
         .def_readonly("values", &FEMFunction::values);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)

@@ -70,14 +70,14 @@ if __name__=="__main__":
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
         p.parseInput( inputFile )
 
-    print( "h = {} , dx = {}".format( points[1]-points[0], speed * pFRF.input["dt"] ) )
+    print( "h = {} , dx = {}, dt = {}".format( points[1]-points[0], speed * pFRF.input["dt"], pFRF.input["dt"]) )
 
     #set MRF business ADVEC
     for p in [pMRF_Advec, pMRF_AdvecTrans, pMRF_AdvecTrans]:
         p.input["speedFRF_X"]  = speed
         p.input["HeatSourceSpeedX"] = -speed
         p.input["advectionSpeedX"] = -speed
-        p.input["isStabilized"] = 1
+        p.input["isStabilized"] = 0
     #set MRF business TRANSPORT
     for p in [pMRF_Trans, pMRF_AdvecTrans]:
         p.input["speedFRF_X"]  = speed
