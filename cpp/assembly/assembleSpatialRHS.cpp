@@ -5,9 +5,8 @@
 #include <vector>
 
 void Problem::assembleSpatialRHS() {
-  Eigen::VectorXd pulse; // source term
-  pulse.resize( mesh.nnodes ); // source term
-  pulse.setZero();
+  mhs.pulse.resize( mesh.nnodes ); // source term
+  mhs.pulse.setZero();
 
   double r_i;
   Eigen::Vector3d x_gp;
@@ -26,8 +25,17 @@ void Problem::assembleSpatialRHS() {
         r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol *
           mhs.powerDensity(x_gp, time, mhs.currentPosition, mhs.power, mhs.efficiency, mhs.radius);
       }
-      pulse[e.con[inode]] += r_i;
+      mhs.pulse[e.con[inode]] += r_i;
     }
   }
-  rhs += pulse;
+  rhs += mhs.pulse;
+
+  // DEBUGGING: For sending pulse to post
+  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  //Solve linear system
+  solver.compute( M );
+  if (not(solver.info() == Eigen::Success)) {
+    std::cout << "Singular matrix!" << std::endl;
+  }
+  mhs.pulse = solver.solve(mhs.pulse);
 }

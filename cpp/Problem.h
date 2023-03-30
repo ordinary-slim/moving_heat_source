@@ -63,6 +63,9 @@ class Problem {
       mesh.setActiveElements( inputActiveElements );
       //isAssembled = false;
     }
+    void setStabilization(bool stabilize) {
+      isStabilized = stabilize;
+    }
     };
 #define PROBLEM
 #endif

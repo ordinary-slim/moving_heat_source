@@ -177,6 +177,7 @@ class Element {
         counter++;
       }
       // computations
+      e.computeCentroid();
       e.computeNormal( getCentroid() );
       return e;
     }

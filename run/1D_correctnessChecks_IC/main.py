@@ -10,8 +10,7 @@ import meshio
 
 speed = 10
 bumper = 20
-Tfinal = bumper/speed/2
-maxIter = 400
+Tfinal = 2.0
 
 def mesh(leftEnd, rightEnd, elDen):
     cell_type="line2"
@@ -45,21 +44,24 @@ if __name__=="__main__":
     pMRF_TransHelper = Problem("TransHelper")
     pMRF_AdvecTrans = Problem("MRF_AdvecTrans")
     pMRF_AdvecTransHelper = Problem("AdvecTransHelper")
+    pFRF_Step  = Problem("FRFStep")
 
-    elDen = 40
-    leftEnd = -50.0
-    rightEnd = +50.0
+    elDen = 16
+    dt = 0.5
+    leftEnd = -25.0
+    rightEnd = +25.0
+    L = rightEnd - leftEnd
     boxDomain = [leftEnd, rightEnd]
     boxBG = [leftEnd-bumper, rightEnd+bumper]
     # FRF meshes
     points, cells, cell_type = mesh(boxDomain[0], boxDomain[1], elDen)
-    for p in [pFRF, pMRF_TransHelper, pMRF_AdvecTransHelper]:
+    for p in [pFRF, pMRF_TransHelper, pMRF_AdvecTransHelper, pFRF_Step]:
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]=cell_type
         #p.input["numberOfGaussPoints"]=3
 
-    # MRF meshes
+    # background meshes
     points, cells, cell_type = mesh(boxBG[0], boxBG[1], elDen)
     for p in [pMRF_Advec, pMRF_Trans, pMRF_AdvecTrans]:
         p.input["points"] = points
@@ -68,8 +70,9 @@ if __name__=="__main__":
         #p.input["numberOfGaussPoints"]=3
 
     #read input
-    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
+    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper, pFRF_Step]:
         p.parseInput( inputFile )
+        p.input["dt"] = dt
 
     #set MRF business TRANSPORT
     for p in [pMRF_Trans, pMRF_AdvecTrans]:
@@ -83,50 +86,51 @@ if __name__=="__main__":
         p.input["advectionSpeedX"] = -speed
         p.input["isStabilized"] = 1
 
-    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
+    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper, pFRF_Step]:
         p.initialize()
 
     # Initial condition
     # Different IC
     #f = lambda pos : abs(pos[0]+pos[1])
     #f = lambda pos : 25 + (1 / (1 +pos[0]**2) )
-    f = lambda pos : max(25, 26-abs(pos[0])/10)
-    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
+    #f = lambda pos : max(25, 26-abs(pos[0])/10)
+    # Sine with noise
+    A, B = 2, 0.05
+    freq = 1
+    np.random.seed(1)
+    f = lambda pos : A*np.sin(freq*2*np.pi/L*pos[0]) + B*np.random.normal(scale=8, size=pos[0].size)
+    for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper, pFRF_Step]:
         p.forceState( f )
+        p.writepos()
     #quickfix
 
     # FORWARD
-    iteration = 0
-    while ((pFRF.time < Tfinal)and(iteration < maxIter)):
-        iteration += 1
-        #FRF
-        pFRF.iterate()#assembly + solve
-        pFRF.writepos()
-        
+    postMRF = True
+    shift = None
+    while (pFRF.time < Tfinal):
         #Advected MRF
         pMRF_Advec.updateFRFpos()
-        #pdb.set_trace()
         pMRF_Advec.iterate()
         pMRF_Advec.writepos()
 
-        #Transported MRF
-        pMRF_Trans.updateFRFpos()
-        pMRF_Trans.unknown.getFromExternal( pMRF_TransHelper.unknown )
-        activeElements = isInside( pMRF_Trans.mesh, [leftEnd, rightEnd])
-        pMRF_Trans.activate( activeElements )
-        pMRF_Trans.iterate()
-        pMRF_TransHelper.fakeIter()
-        pMRF_TransHelper.unknown.getFromExternal( pMRF_Trans.unknown )
-        pMRF_Trans.writepos()
-        pMRF_TransHelper.writepos()
+        if postMRF:
+            shift=(-pMRF_Advec.mesh.shiftFRF)
 
-        #Advection + transport
-        pMRF_AdvecTrans.updateFRFpos()
-        pMRF_AdvecTrans.unknown.getFromExternal( pMRF_AdvecTransHelper.unknown )
-        activeElements = isInside( pMRF_AdvecTrans.mesh, [leftEnd, rightEnd])
-        pMRF_AdvecTrans.activate( activeElements )
-        pMRF_AdvecTrans.iterate()
-        pMRF_AdvecTransHelper.fakeIter()
-        pMRF_AdvecTransHelper.unknown.getFromExternal( pMRF_AdvecTrans.unknown )
-        pMRF_AdvecTrans.writepos()
-        pMRF_AdvecTransHelper.writepos()
+        #FRF
+        pFRF.iterate()#assembly + solve
+        pFRF.writepos(shift=shift)
+        
+        # Copy FRF into MRF using the copy constructor
+        pMRF_Step = Problem(  "MRFStep", problem=pFRF_Step )
+        # Change reference frame
+        pMRF_Step.frf2mrf(speed=np.array([speed, 0.0, 0.0], dtype=np.float64))
+        pMRF_Step.setStabilization(True)
+        pMRF_Step.updateFRFpos()
+        pMRF_Step.iterate()
+        pMRF_Step.writepos(shift=None)
+
+        # Force FRF and solve
+        pFRF_Step.unknown.forceFromExternal( pMRF_Step.unknown )
+        pFRF_Step.iterate()
+        pFRF_Step.unknown.releaseDirichlet()
+        pFRF_Step.writepos(shift=None)

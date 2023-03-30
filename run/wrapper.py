@@ -6,7 +6,7 @@ import sys
 sys.path.insert(1, '..')
 sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
-import os
+import os, shutil
 import numpy as np
 import meshio
 import pdb
@@ -36,6 +36,7 @@ class Problem(mhs.Problem):
             self.input = problem.input
             super().__init__(problem)
             self.setPointers()
+            self.iter = problem.iter
         else:
             super().__init__()
 
@@ -85,8 +86,12 @@ class Problem(mhs.Problem):
     def cleanupPrevPost(self):
         try:
             os.remove( self.caseName + ".pvd" )
-            os.removedirs( self.postFolder )
-        except OSError:
+        except FileNotFoundError:
+            pass
+
+        try:
+            shutil.rmtree( self.postFolder )
+        except FileNotFoundError:
             pass
 
     def activate(self, activeElements):
@@ -104,22 +109,41 @@ class Problem(mhs.Problem):
         self.iter += 1
         super(Problem, self).preIterate()
 
-    def frf2mrf(self):
-        speed = self.mhs.speed
+    def frf2mrf(self, speed=None):
+        if speed is None:
+            speed = self.mhs.speed
         self.mesh.setSpeedFRF( speed )
         self.setAdvectionSpeed( -speed )
         self.mhs.setSpeed( np.zeros(3) )
 
     #POSTPROCESSING
-    def writepos( self ):
+    def writepos( self, rf = "FRF", shift=None ):
+        '''
+        rf : reference frame, either FRF or MRF
+        '''
         os.makedirs(self.postFolder, exist_ok=True)
+
+        if   rf=="FRF":
+            pos = self.mesh.posFRF
+        elif rf=="MRF":
+            pos = self.mesh.pos
+        else:
+            print("Wrong value of rf")
+            exit()
+
+        # Debugging feature for correctness checks
+        if shift is not None:
+            pos = np.array( pos )
+            for irow in range(pos.shape[0]):
+                pos[irow,:] += shift
+
         #export
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
-            #self.mesh.pos,
-            self.mesh.posFRF,
+            pos,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
             point_data={"T": self.unknown.values,
+                        #"Pulse": self.mhs.pulse,
                         "ActiveNodes": self.mesh.activeNodes,},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )

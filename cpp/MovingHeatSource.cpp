@@ -26,6 +26,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def("setPointers", &Problem::setPointers)
+        .def("setStabilization", &Problem::setStabilization)
         .def("activateDomain", &Problem::activateDomain);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
@@ -75,6 +76,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition)
+        .def_readonly("pulse", &HeatSource::pulse)
         .def_readonly("speed", &HeatSource::speed)
         .def("setSpeed", &HeatSource::setSpeed);
 }
