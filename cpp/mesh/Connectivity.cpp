@@ -27,7 +27,7 @@ vector<vector<int>> getVertexSets_Dd( Eigen::VectorXi localCon_D0,
   switch (entD_elType){
     case line2:
       for (int inode = 0; inode < nnodes; inode++) {
-        vSet[inode] = localCon_D0[inode];
+        vSet[0] = localCon_D0[inode];
         vertexSets.push_back( vSet );
       }
       break;
