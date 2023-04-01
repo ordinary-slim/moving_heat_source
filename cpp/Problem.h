@@ -32,6 +32,10 @@ class Problem {
     Eigen::SparseMatrix<double> M; // mass mat
     vector<Eigen::Triplet<double>> massCoeffs;
 
+    // Neumann BC
+    std::vector<int> neumannFacets;
+    std::vector<double> neumannValues;
+
     // integrator
     TimeIntegratorHandler timeIntegrator;
 
@@ -55,6 +59,7 @@ class Problem {
     void assembleSpatialRHS();
     void assembleStabilization();//Only P1/Q1 for the moment!
     void assembleTime();
+    void assembleNeumann();
     void forceDirichletNodes();
     void forceInactiveNodes();
     void preIterate();

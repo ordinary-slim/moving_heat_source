@@ -26,6 +26,7 @@ class Mesh {
     Connectivity  con_FacetPoint;
     Connectivity  con_FacetCell;
     Connectivity  con_CellFacet;
+    vector<int>   boundaryFacets;
     vector<ElementType> elementTypes;
     vector<int> activeElements;
     vector<int> activeNodes;
@@ -59,8 +60,12 @@ class Mesh {
     Element getElement(int ielem) {
       return getEntity( ielem, con_CellPoint, refCellEl );
     }
-    Element getFacetElement(int ifacet) {
-      return getEntity( ifacet, con_FacetPoint, refFacetEl );
+    Element getBoundaryFacet(int ifacet) {
+      // Assumed that ifacet is a boundary facet
+      Element e = getEntity( ifacet, con_FacetPoint, refFacetEl );
+      Element parentEl = getElement( con_FacetCell.con( ifacet, 0 ) );
+      e.computeNormal( parentEl.getCentroid() );
+      return e;
     }
 
     void setActiveElements(vector<int> inputActiveElements ) {

@@ -53,11 +53,13 @@ void Problem::initialize(py::dict &input) {
   unknown = FEMFunction( mesh, timeIntegrator.nstepsRequired );
   unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
 
-  // dirichlet BC
+  // Dirichlet BC
   if (input.contains("dirichletNodes")) {
     unknown.dirichletNodes = py::cast<vector<int>>(input["dirichletNodes"]);
     unknown.dirichletValues = py::cast<vector<double>>(input["dirichletValues"]);
   }
+  // Neumann BC
+  // TODO: Think about how to eat this
 
 
   // material. dictionnary is not efficient + involved in assembly

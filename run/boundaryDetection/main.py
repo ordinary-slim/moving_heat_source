@@ -37,7 +37,7 @@ if __name__=="__main__":
              0.42,
              0.0] )
     owner = p.mesh.findOwnerElement( point )
-    if owner > 0:
+    if owner >= 0:
         isPointInside[owner] = 1
 
 

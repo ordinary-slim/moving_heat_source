@@ -23,7 +23,10 @@ void Problem::iterate() {
   // Proper assembly
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
 
-  //Overwrite dirichlet BC
+  // Neumann BC
+  assembleNeumann();
+
+  // Dirichlet BC
   forceDirichletNodes();
 
   //SOLVE

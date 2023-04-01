@@ -98,6 +98,15 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
 
   con_FacetCell = mesh::transpose(con_CellFacet);
 
+  // Build array of indices of boundary facets
+  //Check second element of con and decide
+  //TODO: Implement this in a cleaner way
+  for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
+    if (con_FacetCell.con(ifacet, 1) == -1) {
+      boundaryFacets.push_back( ifacet );
+    }
+  }
+
   // Build AABBs
   setAABBs();
 
