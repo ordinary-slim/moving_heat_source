@@ -32,6 +32,9 @@ class Connectivity {
     Eigen::VectorXi getLocalCon( int idx ) {
       return con.row( idx );
     }
+    std::vector<int> getLocalConVector( int idx ) {
+      return std::vector<int>( con.row(idx).data(), con.row(idx).data() + con.cols() );
+    }
 };
 
 Connectivity transpose(Connectivity inCon);

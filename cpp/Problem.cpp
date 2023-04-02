@@ -54,3 +54,33 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
   unknown.values = unknown.prevValues(Eigen::placeholders::all, 0);
   timeIntegrator.nstepsStored = pSols.cols();
 }
+
+void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux ) {
+  //TODO: Can I improve this search?
+  // For each facet, compare against each boundary facet
+  //
+  int  idxMatch;
+
+  for (vector<int> potentialFacet : neumannNodes ) {
+    std::sort( potentialFacet.begin(), potentialFacet.end() );
+    idxMatch = -1;
+    for (int iBFacet : mesh.boundaryFacets) {
+      vector<int> bFacetNodes = mesh.con_FacetPoint.getLocalConVector( iBFacet );
+      std::sort( bFacetNodes.begin(), bFacetNodes.end() );
+
+      // test if match
+      if (bFacetNodes == potentialFacet ) {
+        idxMatch = iBFacet;
+        cout << "face matched!" << endl;
+        break;
+      }
+    }
+    if (idxMatch >= 0) {
+      neumannFacets.push_back( idxMatch );
+      neumannFluxes.push_back( neumannFlux );
+    } else {
+      cout << "Not a boundary facet!" << endl;
+      exit(-1);
+    }
+  }
+}

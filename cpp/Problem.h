@@ -34,7 +34,7 @@ class Problem {
 
     // Neumann BC
     std::vector<int> neumannFacets;
-    std::vector<double> neumannValues;
+    std::vector<double> neumannFluxes;
 
     // integrator
     TimeIntegratorHandler timeIntegrator;
@@ -71,6 +71,7 @@ class Problem {
     void setStabilization(bool stabilize) {
       isStabilized = stabilize;
     }
+    void setNeumann( vector<vector<int>> otherNeumannFacets, double neumannFlux );
     };
 #define PROBLEM
 #endif
