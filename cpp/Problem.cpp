@@ -60,7 +60,6 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
   // For each facet, compare against each boundary facet
   //
   int  idxMatch;
-
   for (vector<int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
@@ -82,5 +81,34 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
       cout << "Not a boundary facet!" << endl;
       exit(-1);
     }
+  }
+}
+
+void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux ) {
+  //TODO: Is this a good idea?
+  double tolerance = 1e-7;
+  mesh::Element e;
+  bool isInPlane;
+  Eigen::Vector3d distance;
+  for (int iBFacet : mesh.boundaryFacets) {
+    isInPlane = false;
+    e = mesh.getBoundaryFacet( iBFacet );
+
+    // Test if normals are colinear
+    if ( normal.cross( e.normal ).norm() > tolerance) {
+      continue;
+    }
+    // Test if distance is perpendicular to normal
+    distance = e.getCentroid() - pointInPlane;
+    if (distance.norm() > tolerance) {
+      distance /= distance.norm();
+    }
+    if ( abs( distance.dot( normal) ) > tolerance ) {
+      continue;
+    }
+
+    // if all tests passed, add facet
+    neumannFacets.push_back( iBFacet );
+    neumannFluxes.push_back( neumannFlux );
   }
 }

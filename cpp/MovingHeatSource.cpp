@@ -27,7 +27,10 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
-        .def("setNeumann", &Problem::setNeumann)
+        .def("setNeumann", static_cast<void (Problem::*)(vector<vector<int>>, double)>(&Problem::setNeumann),
+            "Set Neumann condition from array of nodes.")
+        .def("setNeumann", static_cast<void (Problem::*)(Eigen::Vector3d, Eigen::Vector3d, double)>(&Problem::setNeumann),
+            "Set Neumann condition from plane.")
         .def("activateDomain", &Problem::activateDomain);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())

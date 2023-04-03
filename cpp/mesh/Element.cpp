@@ -3,6 +3,59 @@
 
 namespace mesh
 {
+void mesh::Element::computeLocRefMappings() {
+  // Build helper matrices
+  Eigen::Matrix3d X;
+  // Compute
+  X.setZero();
+  for (int inode = 0; inode<dim; inode++) {
+    X.row( inode )  = pos.row( inode+1 ) - pos.row( 0 );
+  }
+
+  // Obtain second vector
+  if (dim < 2) {
+    double tol = 1e-7;
+    //Eigen::Vector3d e1 = X.row( 0 );
+    Eigen::Vector3d e2;
+    // Try cross product with canonical basis
+    // Looking for a non-zero vector
+    e2 << 0.0, X(0,2), -X(0,1);// x1 x e1
+    if (e2.norm() < tol) {
+      e2 << -X(0,2), 0.0, X(0,0);// x1 x e2
+      if (e2.norm() < tol) {
+        e2 << X(0,1), -X(0,0), 0.0;// x1 x e3
+      }
+    }
+    e2 /= e2.norm();
+
+    X.row( 1 ) = e2;
+  }
+  if (dim < 3) {
+    X.row( 2 ) = X.row(0).cross( X.row(1) );// e1 x e2 = e3 <=> right handed
+    X.row( 2 ) /= X.row(2).norm();
+  }
+  X.transposeInPlace();
+  
+  // Compute local <-> reference mappings
+  ref2locMatrix = X * refEl->XI_inverse;
+  ref2locShift  = pos.row(0).transpose() - ref2locMatrix * refEl->pos.row(0).transpose() ;
+  loc2refMatrix = ref2locMatrix.inverse();
+  loc2refShift  = refEl->pos.row(0).transpose() - loc2refMatrix * pos.row(0).transpose();
+}
+
+void mesh::Element::computeDerivatives() {
+  Eigen::Matrix3d loc2refMatrix_T = loc2refMatrix.transpose();
+
+  // Compute volume
+  vol = refEl->vol * ref2locMatrix.determinant();
+
+  for (int inode = 0; inode < nnodes; inode++) {
+    for (int igp = 0; igp < ngpoints; igp++) {
+      GradBaseGpVals[inode][igp] = loc2refMatrix_T*(refEl->GradBaseGpVals[inode][igp]);
+    }
+  }
+}
+
 Element mesh::Element::getFacetElement( Eigen::VectorXi vertices, ReferenceElement &facetRefEl ) {
   Element e;
   e.setElementType( facetRefEl );

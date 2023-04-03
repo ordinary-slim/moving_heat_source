@@ -35,6 +35,7 @@ void Problem::iterate() {
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
+    exit(-1);
   }
   unknown.values = solver.solve(rhs);
 

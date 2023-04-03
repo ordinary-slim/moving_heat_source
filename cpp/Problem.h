@@ -72,6 +72,7 @@ class Problem {
       isStabilized = stabilize;
     }
     void setNeumann( vector<vector<int>> otherNeumannFacets, double neumannFlux );
+    void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     };
 #define PROBLEM
 #endif
