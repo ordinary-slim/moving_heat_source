@@ -56,7 +56,6 @@ void Problem::assembleSpatialLHS() {
       }
     }
   }
-  M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
 
   lhsCoeffs.insert(lhsCoeffs.end(), K_coeffs.begin(), K_coeffs.end());
   if (isAdvection) lhsCoeffs.insert(lhsCoeffs.end(), A_coeffs.begin(), A_coeffs.end());

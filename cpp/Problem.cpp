@@ -47,6 +47,15 @@ void Problem::postIterate() {
   unknown.prevValues = unknown.prevValues * perm;
 
   ++timeIntegrator.nstepsStored;
+
+  // POST OF PULSE
+  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  //Solve linear system
+  solver.compute( M );
+  if (not(solver.info() == Eigen::Success)) {
+    std::cout << "Singular matrix!" << std::endl;
+  }
+  mhs.pulse = solver.solve(mhs.pulse);
 }
 
 void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {

@@ -22,6 +22,7 @@ void Problem::iterate() {
 
   // Proper assembly
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+  M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
 
   // Neumann BC
   assembleNeumann();

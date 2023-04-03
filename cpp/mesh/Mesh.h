@@ -36,6 +36,9 @@ class Mesh {
     ReferenceElement refFacetEl;
     vector<AABB> elementAABBs;
 
+    void initializeMesh(pybind11::dict &input);
+    void setActiveElements(vector<int> inputActiveElements );
+
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
       Element e;
       e.setElementType( refEl );
@@ -68,27 +71,6 @@ class Mesh {
       return e;
     }
 
-    void setActiveElements(vector<int> inputActiveElements ) {
-      activeElements = inputActiveElements;
-      //Update activeNodes
-      fill( activeNodes.begin(), activeNodes.end(), 0 );
-      for (int ielem = 0; ielem < nels; ielem++) {
-        if (activeElements[ielem] == 1) {
-          Eigen::VectorXi locCon = con_CellPoint.getLocalCon( ielem );
-          //set to 1 nodes who belong to element
-          for (int locInode = 0; locInode < locCon.size(); locInode++){
-            activeNodes[ locCon[locInode] ] = 1;
-          }
-        }
-      }
-      if (std::find( activeElements.begin(), activeElements.end(), 0)
-          != activeElements.end() ) {
-        hasInactive = true;
-      } else {
-        hasInactive = false;
-      }
-    }
-
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
       speedFRF = inputSpeedFRF;
     }
@@ -106,7 +88,6 @@ class Mesh {
         cout << con_CellPoint.getLocalCon( i ) << endl;
       }
     }
-    void initializeMesh(pybind11::dict &input);
 };
 }
 #define MESH

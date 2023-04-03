@@ -30,12 +30,4 @@ void Problem::assembleSpatialRHS() {
   }
   rhs += mhs.pulse;
 
-  // DEBUGGING: For sending pulse to post
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  //Solve linear system
-  solver.compute( M );
-  if (not(solver.info() == Eigen::Success)) {
-    std::cout << "Singular matrix!" << std::endl;
-  }
-  mhs.pulse = solver.solve(mhs.pulse);
 }

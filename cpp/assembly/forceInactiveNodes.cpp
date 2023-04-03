@@ -23,5 +23,6 @@ void Problem::forceInactiveNodes() {
     }
     //I.setFromTriplets( InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
     lhsCoeffs.insert( lhsCoeffs.end(), InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
+    massCoeffs.insert( massCoeffs.end(), InacNodes_coeffs.begin(), InacNodes_coeffs.end() );
   }
 }
