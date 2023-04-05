@@ -9,14 +9,10 @@ void Problem::assembleSpatialLHS() {
   // numerical params
   double m_ij, k_ij, a_ij, ip;
 
-  // initialize data structures
-  M.resize(mesh.nnodes, mesh.nnodes); // mass mat
-
-  massCoeffs.clear();
-  massCoeffs.reserve( 3*mesh.nnodes );
   vector<T> K_coeffs;
-  K_coeffs.reserve( 3*mesh.nnodes );
   vector<T> A_coeffs;
+
+  K_coeffs.reserve( 3*mesh.nnodes );
   A_coeffs.reserve( 3*mesh.nnodes );
 
   // matrices assembly
@@ -60,4 +56,5 @@ void Problem::assembleSpatialLHS() {
   lhsCoeffs.insert(lhsCoeffs.end(), K_coeffs.begin(), K_coeffs.end());
   if (isAdvection) lhsCoeffs.insert(lhsCoeffs.end(), A_coeffs.begin(), A_coeffs.end());
 
+  M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
 }

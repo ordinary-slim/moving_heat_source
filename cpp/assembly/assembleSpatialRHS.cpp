@@ -5,7 +5,6 @@
 #include <vector>
 
 void Problem::assembleSpatialRHS() {
-  mhs.pulse.resize( mesh.nnodes ); // source term
   mhs.pulse.setZero();
 
   double r_i;

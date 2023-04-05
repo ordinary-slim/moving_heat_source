@@ -143,7 +143,7 @@ class Problem(mhs.Problem):
             pos,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
             point_data={"T": self.unknown.values,
-                        #"Pulse": self.mhs.pulse,
+                        "Pulse": self.mhs.pulse,
                         "ActiveNodes": self.mesh.activeNodes,},
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )

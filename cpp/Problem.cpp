@@ -23,6 +23,13 @@ void Problem::preIterate() {
   lhs.setZero();
   rhs.setZero();
   lhsCoeffs.clear();
+
+  // initialize data structures
+  M.resize(mesh.nnodes, mesh.nnodes); // mass mat
+
+  massCoeffs.clear();
+  massCoeffs.reserve( 3*mesh.nnodes );
+
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
   mhs.updatePosition( dt );

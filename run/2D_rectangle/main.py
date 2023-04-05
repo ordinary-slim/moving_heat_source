@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
@@ -9,7 +9,7 @@ import pdb
 
 def mesh(box):
     cell_type="quad4"
-    meshDen = 1
+    meshDen = 4
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
         np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
@@ -106,15 +106,6 @@ if __name__=="__main__":
     fineStepsPerStep = int( np.ceil( dt / approxFine_dt ) )
     fine_dt = dt / float( fineStepsPerStep )
     pFineFRF.input["dt"] = fine_dt
-
-    ##DEBUGGING
-    #for p in [pFineFRF, pFRF]:
-        #p.input["HeatSourceSpeedX"] = 2*p.input["HeatSourceSpeedX"]
-    ## adjust dt fine FRF
-    #pFineFRF.input["dt"] = fine_dt / 2.0
-    #fineStepsPerStep *= 2
-    ## adjust dt FRF
-    #pFRF.input["dt"] = setAdimR( adimR, pFRF )
 
     #set MRF business NO TRANSPORT
     for p in [pNoTransportMRF,]:

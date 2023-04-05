@@ -4,7 +4,10 @@
 void Problem::iterate() {
   // BEGIN ITERATION
   preIterate();
+
   // ASSEMBLY
+  // LHS & RHS, inactive nodes
+  forceInactiveNodes();
   // LHS, space
   assembleSpatialLHS();
   // RHS, space
@@ -17,12 +20,8 @@ void Problem::iterate() {
   // LHS & RHS, time
   assembleTime();
 
-  // LHS & RHS, inactive nodes
-  forceInactiveNodes();
-
   // Proper assembly
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
-  M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
 
   // Neumann BC
   assembleNeumann();

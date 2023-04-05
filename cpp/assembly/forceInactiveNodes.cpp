@@ -6,7 +6,7 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 typedef Eigen::Triplet<double> T;
 
 void Problem::forceInactiveNodes() {
-  // Has to be last step. Similar treatment to Dirichlet BC
+  // Similar treatment to Dirichlet BC
   if (mesh.hasInactive) {
     SpMat I; // inactive nodes
     I.resize(mesh.nnodes, mesh.nnodes); // inactive nodes

@@ -15,6 +15,8 @@ void Problem::initialize(py::dict &input) {
   // heat source
   mhs.radius = py::cast<double>(input["radius"]);
   mhs.power = py::cast<double>(input["power"]);
+  mhs.pulse.resize( mesh.nnodes );
+
   if (input.contains("efficiency")) mhs.efficiency = py::cast<double>(input["efficiency"]);
 
   mhs.speed[0] = py::cast<double>(input["HeatSourceSpeedX"]);
