@@ -12,6 +12,14 @@ void Problem::iterate() {
   assembleSpatialLHS();
   // RHS, space
   assembleSpatialRHS();
+
+  // Neumann BC
+  assembleNeumann();
+
+  // Convection BC
+  assembleConvectionLHS();
+  assembleConvectionRHS();
+
   // LHS & RHS, VMS
   if (isStabilized) {
     assembleStabilization();
@@ -22,9 +30,6 @@ void Problem::iterate() {
 
   // Proper assembly
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
-
-  // Neumann BC
-  assembleNeumann();
 
   // Dirichlet BC
   forceDirichletNodes();

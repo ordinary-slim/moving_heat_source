@@ -25,6 +25,7 @@ class Problem {
     bool isAdvection = false;
     bool isSteady    = false;
     bool isStabilized = false;
+    bool isConvection = false;
     Eigen::Vector3d advectionSpeed;
     Eigen::VectorXd rhs;
     Eigen::SparseMatrix<double> lhs;
@@ -35,6 +36,10 @@ class Problem {
     // Neumann BC
     std::vector<int> neumannFacets;
     std::vector<double> neumannFluxes;
+
+    // Convection BC
+    double Tenv;
+    std::vector<int> convectionFacets;
 
     // integrator
     TimeIntegratorHandler timeIntegrator;
@@ -55,8 +60,10 @@ class Problem {
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void updateFRFpos();
-    void assembleSpatialLHS();
-    void assembleSpatialRHS();
+    void assembleSpatialLHS();//mass, diffusion, advection
+    void assembleSpatialRHS();//source term
+    void assembleConvectionLHS();
+    void assembleConvectionRHS();
     void assembleStabilization();//Only P1/Q1 for the moment!
     void assembleTime();
     void assembleNeumann();

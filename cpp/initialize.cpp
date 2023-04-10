@@ -12,7 +12,17 @@ void Problem::initialize(py::dict &input) {
   // MESH
   mesh.initializeMesh( input );
 
-  // heat source
+  // MATERIAL
+  // TODO: Better DS!
+  material["rho"] = py::cast<double>(input["rho"]);
+  material["k"] = py::cast<double>(input["conductivity"]);
+  material["cp"] = py::cast<double>(input["specific_heat"]);
+  if (input.contains("convectionCoeff")) {
+    material["h"] = py::cast<double>(input["convectionCoeff"]);
+    isConvection = true;
+  }
+
+  // HEAT SOURCE
   mhs.radius = py::cast<double>(input["radius"]);
   mhs.power = py::cast<double>(input["power"]);
   mhs.pulse.resize( mesh.nnodes );
@@ -47,29 +57,41 @@ void Problem::initialize(py::dict &input) {
         break; }
   }
 
-  //timeIntegrator
+  // TIME DEPENDENCY
+  if (input.contains("steadyState")) {
+    isSteady = py::cast<bool>(input["steadyState"]);
+  } else {
+    // TSTEPPING
+    dt = py::cast<double>(input["dt"]);
+  }
+
+  // TIME INTEGRATOR
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
-
-  // initialize unknown
-  double environmentTemperature = py::cast<double>(input["environmentTemperature"]);
+  // INITIALIZE UNKNOWN
+  Tenv = py::cast<double>(input["environmentTemperature"]);
   unknown = FEMFunction( mesh, timeIntegrator.nstepsRequired );
-  unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, environmentTemperature );
+  unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, Tenv );
+  // update time integrator
+  unknown.prevValues.col( 0 ) << unknown.values;
+  ++timeIntegrator.nstepsStored;
 
-  // Dirichlet BC
+
+
+  // DIRICHLET BC
   if (input.contains("dirichletNodes")) {
     unknown.dirichletNodes = py::cast<vector<int>>(input["dirichletNodes"]);
     unknown.dirichletValues = py::cast<vector<double>>(input["dirichletValues"]);
   }
-  // Neumann BC
+
+  // NEUMANN BC
   // TODO: Think about how to eat this
 
+  // CONVECTION BC
+  if (input.contains("convectionCoeff")) {
+    convectionFacets = mesh.boundaryFacets;
+  }
 
-  // material. dictionnary is not efficient + involved in assembly
-  material["rho"] = py::cast<double>(input["rho"]);
-  material["k"] = py::cast<double>(input["conductivity"]);
-  material["cp"] = py::cast<double>(input["specific_heat"]);
-
-  // check for advection term
+  // ADVECTION
   if (input.contains("advectionSpeedX")) {
     advectionSpeed[0] = py::cast<double>(input["advectionSpeedX"]);
     advectionSpeed[1] = py::cast<double>(input["advectionSpeedY"]);
@@ -77,27 +99,16 @@ void Problem::initialize(py::dict &input) {
     if (advectionSpeed.norm() > 1e-10) isAdvection = true;
   }
 
-  // check for domain motion
+  // DOMAIN MOTION
   if (input.contains("speedFRF_X")) {
     mesh.speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
     mesh.speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);
     mesh.speedFRF[2] = py::cast<double>(input["speedFRF_Z"]);
   }
 
-  // check for time dependency
-  if (input.contains("steadyState")) {
-    isSteady = py::cast<bool>(input["steadyState"]);
-  } else {
-    // tstepping
-    dt = py::cast<double>(input["dt"]);
-  }
-
-  // check for ASSS stabilization
+  // ASSS STABILIZATION
   if (input.contains("isStabilized")) {
     isStabilized = py::cast<bool>(input["isStabilized"]);
   }
 
-  // timeIntegrator
-  unknown.prevValues.col( 0 ) << unknown.values;
-  ++timeIntegrator.nstepsStored;
 }
