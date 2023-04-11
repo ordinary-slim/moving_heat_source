@@ -6,13 +6,13 @@ initialPositionZ		0.0
 HeatSourceSpeedX		0
 HeatSourceSpeedY		0
 HeatSourceSpeedZ		0
-dt	0.1
+dt	0.5
 t		0.0
 rho		1
-conductivity		1
+conductivity		2
 specific_heat		1
 convectionCoeff 1
-environmentTemperature		5
+environmentTemperature		0
 timeIntegration 1
 sourceTerm 1
 isAdvection 0

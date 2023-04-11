@@ -16,7 +16,7 @@ import pdb
 def meshBox( box ):
     L = box[2] - box[0]
     H = box[3] - box[1]
-    meshDen = 2
+    meshDen = 1
     nx = L*meshDen
     ny = H*meshDen
     return mesh.create_rectangle(MPI.COMM_WORLD,
@@ -35,16 +35,16 @@ if __name__=="__main__":
 
     # PHYSICAL PARAMS
     rho	= fem.Constant( domain, PETSc.ScalarType( 1.0 ) )
-    k   = fem.Constant( domain, PETSc.ScalarType( 1.0 ) )
+    k   = fem.Constant( domain, PETSc.ScalarType( 2.0 ) )
     cp  = fem.Constant( domain, PETSc.ScalarType( 1.0 ) )
     h   = fem.Constant( domain, PETSc.ScalarType( 1.0 ) )#convection
-    Tenv= fem.Constant( domain, PETSc.ScalarType( 5.0 ) )
-    T0= fem.Constant( domain, PETSc.ScalarType( 10.0 ) )
+    Tenv= fem.Constant( domain, PETSc.ScalarType( 0.0 ) )
+    T0= fem.Constant( domain, PETSc.ScalarType( 25.0 ) )
 
-    time = 5.0
-    dt = 0.1
-    maxIter = 50
-    Tfinal = 5.0
+    time = 0.0
+    dt = 0.5
+    maxIter = 40
+    Tfinal = 20.0
 
     # Define solution and test space
     V = fem.FunctionSpace(domain, ("CG", 1))

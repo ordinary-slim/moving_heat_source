@@ -7,7 +7,7 @@ void Problem::assembleNeumann() {
   neumannRhs.setZero();
 
   double n_i;
-  double flux;
+  double normalDerivative;
   int ifacet;
   double k = material["k"];
 
@@ -15,14 +15,14 @@ void Problem::assembleNeumann() {
   for ( int i = 0; i < neumannFacets.size(); ++i) {
 
     ifacet = neumannFacets[i];
-    flux = neumannFluxes[i];
+    normalDerivative = - neumannFluxes[i] / k;
 
     e = mesh.getBoundaryFacet( ifacet );
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       n_i = 0;
       for (int igp = 0; igp < e.ngpoints; ++igp) {
-        n_i += e.gpweight[igp] * e.vol * k * e.BaseGpVals[inode][igp] * flux;
+        n_i += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * normalDerivative;
       }
       neumannRhs[e.con[inode]] += n_i;
     }

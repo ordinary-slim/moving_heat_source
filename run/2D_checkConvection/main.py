@@ -7,14 +7,14 @@ import meshzoo
 from wrapper import Problem
 import pdb
 
-maxIter = 50
-dt = 0.1
-Tfinal = 5
-initialT = 10
+maxIter = 40
+dt = 0.5
+Tfinal = 20
+initialT = 25
 
 def mesh(box):
     cell_type="quad4"
-    meshDen = 2
+    meshDen = 1
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
         np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
