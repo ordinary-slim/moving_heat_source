@@ -26,7 +26,7 @@ class Mesh {
     Connectivity  con_FacetPoint;
     Connectivity  con_FacetCell;
     Connectivity  con_CellFacet;
-    vector<int>   boundaryFacets;
+    vector<int>   boundaryFacets, boundaryFacetsParentEl;
     vector<ElementType> elementTypes;
     vector<int> activeElements;
     vector<int> activeNodes;
@@ -38,38 +38,10 @@ class Mesh {
 
     void initializeMesh(pybind11::dict &input);
     void setActiveElements(vector<int> inputActiveElements );
-
-    Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
-      Element e;
-      e.setElementType( refEl );
-
-      e.allocate();
-
-      // set connectivity
-      e.con = connectivity.getLocalCon( ient );
-      // set pos
-      for (int inode=0; inode < e.nnodes; inode++) {
-        e.pos.row(inode) = pos.row(e.con(inode));
-      }
-
-      // COMPUTATIONS
-      e.computeCentroid();
-      e.computeLocRefMappings();
-      e.computeNodalValues_Base();//COMMON BETWEEN ELS
-      e.computeNodalValues_GradBase();//UNCOMMON
-      return e;
-    }
-    
-    Element getElement(int ielem) {
-      return getEntity( ielem, con_CellPoint, refCellEl );
-    }
-    Element getBoundaryFacet(int ifacet) {
-      // Assumed that ifacet is a boundary facet
-      Element e = getEntity( ifacet, con_FacetPoint, refFacetEl );
-      Element parentEl = getElement( con_FacetCell.con( ifacet, 0 ) );
-      e.computeNormal( parentEl.getCentroid() );
-      return e;
-    }
+    void findBoundary();
+    Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl );
+    Element getElement(int ielem);
+    Element getBoundaryFacet(int ifacet);
 
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
       speedFRF = inputSpeedFRF;

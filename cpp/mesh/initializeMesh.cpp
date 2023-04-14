@@ -64,6 +64,7 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
 
   // reference element. no support for mixed s yet
 
+  //CONNECTIVITIES
   //Manually fill D0 connectivity fields
   con_CellPoint.oDim = refCellEl.dim;
   con_CellPoint.tDim = 0;
@@ -71,7 +72,6 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   con_CellPoint.nels_tDim = nnodes;
   con_CellPoint.oelType = refCellEl.elementType;
   con_CellPoint.telType = point1;
-  //CONNECTIVITIES
   printf("Nels = %i\n", nels);
   cout << "Building connectivities: " << endl;
   printf("Tranposition CellPoint -> PointCell\n");
@@ -98,15 +98,8 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
 
   con_FacetCell = mesh::transpose(con_CellFacet);
 
-  // Build array of indices of boundary facets
-  //Check second element of con and decide
-  //TODO: Implement this in a cleaner way
-  for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
-    if (con_FacetCell.con(ifacet, 1) == -1) {
-      boundaryFacets.push_back( ifacet );
-    }
-  }
-
+  findBoundary();
+  
   // Build AABBs
   setAABBs();
 

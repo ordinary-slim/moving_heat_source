@@ -16,6 +16,34 @@ def mesh():
     cells = cells.astype( int )
     return points, cells
 
+def specActive( p, center, d ):
+    activeEls = np.zeros( p.mesh.nels, dtype=int )
+    for iel in range( p.mesh.nels ) :
+        e = p.mesh.getElement( iel )
+        centroid = e.getCentroid()
+
+        if (np.linalg.norm( centroid  - center ) < d):
+            activeEls[iel] = 1
+
+    return activeEls
+
+
+def specWritePos( p, iter ):
+    auxIsBoun = np.zeros( p.mesh.con_FacetPoint.nels_oDim )
+    auxIsBoun[ p.mesh.boundaryFacets ] = 1.0
+    # write post
+    postMesh = meshio.Mesh(
+        p.mesh.pos,
+        #[ ("triangle", p.mesh.con_CellPoint.con), ],
+        [ ("line", p.mesh.con_FacetPoint.con), ],
+        #point_data={"BoundaryNodes": bNodes},
+        cell_data={"isBoun":[auxIsBoun]},
+    )
+
+    postMesh.write(
+        "tmp_{}.vtu".format( iter ),  # str, os.PathLike, or buffer/open file
+    )
+
 if __name__=="__main__":
     inputFile = "input.txt"
 
@@ -31,6 +59,7 @@ if __name__=="__main__":
 
     p.initialize()
 
+    '''
     isPointInside = np.zeros( p.mesh.nels )
     point = np.array(
             [0.75,
@@ -39,28 +68,13 @@ if __name__=="__main__":
     owner = p.mesh.findOwnerElement( point )
     if owner >= 0:
         isPointInside[owner] = 1
-
-
     '''
-    #build boun nodes
-    bNodes = np.zeros( p.mesh.nnodes )
-    #pdb.set_trace()
-    bFacets = np.zeros(p.mesh.con_FacetCell.con.shape[0])
-    for ifacet in range( p.mesh.con_FacetCell.con.shape[0] ):
-        bFacets[ifacet] = 1*(len([icell for icell in p.mesh.con_FacetCell.con[ifacet]
-                                 if not(icell==-1)]) == 1)
-     '''
 
-
-    # write post
-    postMesh = meshio.Mesh(
-        p.mesh.pos,
-        [ ("triangle", p.mesh.con_CellPoint.con), ],
-        #[ ("line", p.mesh.con_FacetPoint.con), ],
-        #point_data={"BoundaryNodes": bNodes},
-        cell_data={"isPointInside":[isPointInside]},
-    )
-
-    postMesh.write(
-        "tmp.vtu",  # str, os.PathLike, or buffer/open file
-    )
+    numIter = 10
+    R0 = 0.0
+    Rfinal = 1.0
+    for iter in range( 10 ):
+        R = R0 + (iter+1.0)/numIter*(Rfinal - R0)
+        activeEls = specActive(p, np.zeros(3), R)
+        p.activate( activeEls )
+        specWritePos( p, iter )

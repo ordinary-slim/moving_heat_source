@@ -77,6 +77,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("elementType", &mesh::Element::elementType)
         .def_readonly("GradBaseGpVals", &mesh::Element::GradBaseGpVals)
         .def("computeDerivatives", &mesh::Element::computeDerivatives)
+        .def("getCentroid", &mesh::Element::getCentroid)
         .def("getSizeAlongVector", &mesh::Element::getSizeAlongVector);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
