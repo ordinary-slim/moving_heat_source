@@ -18,6 +18,7 @@ class ReferenceElement {
 
     // Array of shape funcs
     std::vector<std::function<double(Eigen::Vector3d)>> shapeFuns;
+    std::vector<std::function<Eigen::Vector3d(Eigen::Vector3d)>> gradShapeFuns;
 
     ReferenceElement(){}
     ReferenceElement( ElementType elType, int ngps = -1 ) {
@@ -55,7 +56,7 @@ class ReferenceElement {
             fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
           }
 
-          GradBaseGpVals[0][0] << 1.0, 0.0, 0.0;
+          gradShapeFuns[0] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(+1.0, 0.0, 0.0); };
           break;
         case line2:
           /*
@@ -90,10 +91,8 @@ class ReferenceElement {
             fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
           }
 
-          for (int igp = 0; igp < ngpoints; igp++) {
-            GradBaseGpVals[0][igp] << -0.5, 0.0, 0.0;
-            GradBaseGpVals[1][igp] << +0.5, 0.0, 0.0;
-          }
+          gradShapeFuns[0] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(-0.5, 0.0, 0.0); };
+          gradShapeFuns[1] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(+0.5, 0.0, 0.0); };
           break;
         case triangle3:
           /*
@@ -130,11 +129,10 @@ class ReferenceElement {
             fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
           }
 
-          for (int igp = 0; igp < ngpoints; igp++) {
-            GradBaseGpVals[0][igp] << -1.0, -1.0, 0.0;
-            GradBaseGpVals[1][igp] << +1.0, 0.0, 0.0;
-            GradBaseGpVals[2][igp] << 0.0, +1.0, 0.0;
-          }
+          gradShapeFuns[0] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(-1.0, -1.0, 0.0); };
+          gradShapeFuns[1] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(+1.0, 0.0, 0.0); };
+          gradShapeFuns[2] = [](Eigen::Vector3d Xi) { return Eigen::Vector3d(0.0, +1.0, 0.0); };
+
           break;
         case quad4:
           /*
@@ -189,31 +187,18 @@ class ReferenceElement {
             fill( gpweight.begin(), gpweight.end(), 1.0 / nnodes );
           }
 
-          {
-            //auto here is std::function<Eigen::Vector3d(Eigen::Vector3d)>
-            auto GradBase1 = [](Eigen::Vector3d Xi) {
-              return Eigen::Vector3d(+0.25*(1+Xi(1)), +0.25*(1+Xi(0)), 0.0);
-            };
-            auto GradBase2 = [](Eigen::Vector3d Xi) {
-              return Eigen::Vector3d(-0.25*(1+Xi(1)), 0.25*(1-Xi(0)), 0.0);
-            };
-            auto GradBase3 = [](Eigen::Vector3d Xi) {
-              return Eigen::Vector3d(-0.25*(1-Xi(1)), -0.25*(1-Xi(0)), 0.0);
-            };
-            auto GradBase4 = [](Eigen::Vector3d Xi) {
-              return Eigen::Vector3d(0.25*(1-Xi(1)), -0.25*(1+Xi(0)), 0.0);
-            };
-            std::vector<std::function<Eigen::Vector3d(Eigen::Vector3d)>> GradBaseFuns = {GradBase1,
-                                                                                        GradBase2,
-                                                                                        GradBase3,
-                                                                                        GradBase4};
-            for (int inode = 0; inode < nnodes; inode++) {
-              for (int igp = 0; igp < ngpoints; igp++) {
-                GradBaseGpVals[inode][igp] = GradBaseFuns[inode]( gpos.row(igp) );
-              }
-            }
-          break;
-          }
+          gradShapeFuns[0] = [](Eigen::Vector3d Xi) {
+            return Eigen::Vector3d(+0.25*(1+Xi(1)), +0.25*(1+Xi(0)), 0.0);
+          };
+          gradShapeFuns[1] = [](Eigen::Vector3d Xi) {
+            return Eigen::Vector3d(-0.25*(1+Xi(1)), 0.25*(1-Xi(0)), 0.0);
+          };
+          gradShapeFuns[2] = [](Eigen::Vector3d Xi) {
+            return Eigen::Vector3d(-0.25*(1-Xi(1)), -0.25*(1-Xi(0)), 0.0);
+          };
+          gradShapeFuns[3] = [](Eigen::Vector3d Xi) {
+            return Eigen::Vector3d(0.25*(1-Xi(1)), -0.25*(1+Xi(0)), 0.0);
+          };
           break;
         default:
           printf("Unknown element type\n");
@@ -226,12 +211,18 @@ class ReferenceElement {
           BaseGpVals[inode][igpoin] = shapeFuns[inode]( gpos.row( igpoin ) );
         }
       }
-      // TODO: Move computation of GradBaseGpVals here
+      // Compute GradBaseGpVals
+      for (int inode = 0; inode < nnodes; inode++) {
+        for (int igp = 0; igp < ngpoints; igp++) {
+          GradBaseGpVals[inode][igp] = gradShapeFuns[inode]( gpos.row(igp) );
+        }
+      }
     }
   void allocate(int nnodes, int ngpoints ) {
     // allocate pos, shapeFuns, gpos, GradBaseGpVals
     pos.resize(nnodes, 3);
     shapeFuns.resize(nnodes);
+    gradShapeFuns.resize(nnodes);
 
     gpos.resize(ngpoints, 3);
     // Quadrature weights

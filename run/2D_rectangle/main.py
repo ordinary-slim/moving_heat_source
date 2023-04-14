@@ -72,7 +72,7 @@ if __name__=="__main__":
     inputFile = "input.txt"
     boxRef = [-16, 16, -5, 5]
     boxInac = [-32, 32, -5, 5]
-    adimR = 0.5
+    adimR = 1
 
     pFineFRF         = Problem("fineFRF")
     pFRF             = Problem("FRF")
@@ -129,9 +129,11 @@ if __name__=="__main__":
     # FORWARD
     for iteration in range(maxIter):
         #fine problem
+        '''
         for istep in range(fineStepsPerStep):
             pFineFRF.iterate()
         pFineFRF.writepos()
+        '''
 
         #iter FRF
         pFRF.iterate()#assembly + solve

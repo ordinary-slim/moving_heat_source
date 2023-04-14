@@ -23,8 +23,9 @@ class FEMFunction{
       prevValues = Eigen::MatrixXd::Zero( mesh->nnodes, nStepsRequired );
     }
 
-    double evaluateVal( Eigen::Vector3d point );
-    vector<double> evaluateValNPrevVals( Eigen::Vector3d point );
+    double evalVal( Eigen::Vector3d point );
+    Eigen::Vector3d evalGrad( Eigen::Vector3d point );
+    vector<double> evalValNPrevVals( Eigen::Vector3d point );
     void getFromExternal(FEMFunction &extFEMFunc );
     void forceFromExternal(FEMFunction &extFEMFunc);
     void releaseDirichlet(){

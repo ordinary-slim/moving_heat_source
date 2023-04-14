@@ -75,8 +75,10 @@ Element mesh::Element::getFacetElement( Eigen::VectorXi vertices, ReferenceEleme
   return e;
 }
 
-Eigen::VectorXd mesh::Element::evaluateShaFuns( Eigen::Vector3d pos ) {
-  // Evaluate shape funcs at a point
+Eigen::VectorXd mesh::Element::evalShaFuns( Eigen::Vector3d pos ) {
+  /*
+  Evaluate shape funcs at a point
+  */
   Eigen::VectorXd shaFunsVals( nnodes );
   
   // Map to reference element
@@ -88,6 +90,24 @@ Eigen::VectorXd mesh::Element::evaluateShaFuns( Eigen::Vector3d pos ) {
   }
 
   return shaFunsVals;
+}
+
+Dense3ColMat mesh::Element::evalGradShaFuns( Eigen::Vector3d pos ) {
+  /*
+  Evaluate grad shape funcs at a point
+  */
+  Dense3ColMat gradShaFuns( nnodes, 3 );
+  
+  // Map to reference element
+  Eigen::Vector3d xi = map_loc2ref( pos );
+
+  Eigen::Matrix3d loc2refMatrix_T = loc2refMatrix.transpose();
+  // Evaluate grad of sha funs in reference element
+  for (int inode = 0; inode < nnodes; inode++) {
+    gradShaFuns.row(inode) = loc2refMatrix_T * refEl->gradShapeFuns[inode]( xi );
+  }
+
+  return gradShaFuns;
 }
 
 void mesh::Element::computeNormal( Eigen::Vector3d parentCentroid ) {

@@ -5,13 +5,14 @@
 #include <algorithm>
 #include "RefElement.h"
 
+typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> Dense3ColMat;
+
 namespace mesh
 {
 class Element {
   public:
     int nnodes, ngpoints;
-    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
-      pos, gpos;
+    Dense3ColMat pos, gpos;
     Eigen::VectorXi  con;
     std::vector<double> gpweight;
     double vol;
@@ -98,7 +99,8 @@ class Element {
     void computeCentroid();
     void computeNormal( Eigen::Vector3d parentCentroid );
     Element getFacetElement( Eigen::VectorXi vertices, ReferenceElement &facetRefEl );
-    Eigen::VectorXd evaluateShaFuns( Eigen::Vector3d pos );
+    Eigen::VectorXd evalShaFuns( Eigen::Vector3d pos );
+    Dense3ColMat evalGradShaFuns( Eigen::Vector3d pos );
     double getSizeAlongVector( Eigen::Vector3d vector );
 };
 }

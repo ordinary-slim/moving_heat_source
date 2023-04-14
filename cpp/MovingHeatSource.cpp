@@ -50,8 +50,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())
         .def(py::init<>())
-        .def("evaluateVal", &FEMFunction::evaluateVal)
-        .def("evaluateValNPrevVals", &FEMFunction::evaluateValNPrevVals)
+        .def("evalVal", &FEMFunction::evalVal)
+        .def("evalValNPrevVals", &FEMFunction::evalValNPrevVals)
+        .def("evalGrad", &FEMFunction::evalGrad)
         .def("getFromExternal", &FEMFunction::getFromExternal)
         .def("forceFromExternal", &FEMFunction::forceFromExternal)
         .def("releaseDirichlet", &FEMFunction::releaseDirichlet)
