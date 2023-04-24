@@ -1,2 +1,7 @@
 __pycache__
 post*
+nohup.out
+*.pvd
+*.vtu
+*.sh
+*.pvsm

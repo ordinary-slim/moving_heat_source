@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <vector>
 
-class FEMFunction{
+class Function{
   public:
     mesh::Mesh* mesh;
     Eigen::VectorXd values;
@@ -13,10 +13,10 @@ class FEMFunction{
     std::vector<double> dirichletValues;
     int nStepsRequired = 0;
 
-    FEMFunction(){
+    Function(){
     }
 
-    FEMFunction(mesh::Mesh &otherMesh, int otherNStepsRequired){
+    Function(mesh::Mesh &otherMesh, int otherNStepsRequired){
       mesh = &otherMesh;
       nStepsRequired = otherNStepsRequired;
       values = Eigen::VectorXd::Zero( mesh->nnodes );
@@ -26,8 +26,8 @@ class FEMFunction{
     double evalVal( Eigen::Vector3d point );
     Eigen::Vector3d evalGrad( Eigen::Vector3d point );
     vector<double> evalValNPrevVals( Eigen::Vector3d point );
-    void getFromExternal(FEMFunction &extFEMFunc );
-    void forceFromExternal(FEMFunction &extFEMFunc);
+    void getFromExternal(Function &extFEMFunc );
+    void forceFromExternal(Function &extFEMFunc);
     void releaseDirichlet(){
       dirichletNodes.clear();
       dirichletValues.clear();

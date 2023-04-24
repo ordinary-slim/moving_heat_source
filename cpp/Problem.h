@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include "mesh/Mesh.h"
-#include "FEMFunction.h"
+#include "Function.h"
 #include "HeatSource.h"
 #include "timeIntegrator.h"
 #include <Eigen/Core>
@@ -15,7 +15,7 @@ namespace py = pybind11;
 class Problem {
   public:
     mesh::Mesh mesh;
-    FEMFunction unknown;
+    Function unknown;
     HeatSource mhs;
     map<string,double> material;
     double time = 0.0;

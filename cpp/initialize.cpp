@@ -69,7 +69,7 @@ void Problem::initialize(py::dict &input) {
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
-  unknown = FEMFunction( mesh, timeIntegrator.nstepsRequired );
+  unknown = Function( mesh, timeIntegrator.nstepsRequired );
   unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, Tenv );
   // update time integrator
   unknown.prevValues.col( 0 ) << unknown.values;

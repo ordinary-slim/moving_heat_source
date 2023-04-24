@@ -1,8 +1,8 @@
-#include "FEMFunction.h"
+#include "Function.h"
 
-double FEMFunction::evalVal( Eigen::Vector3d point ) {
+double Function::evalVal( Eigen::Vector3d point ) {
   /*
-  Output val of FEMFunction at input point
+  Output val of Function at input point
   TODO: Nest this in evalValNPrevVals
   */
   double val = 0;
@@ -20,9 +20,9 @@ double FEMFunction::evalVal( Eigen::Vector3d point ) {
   return val;
 }
 
-Eigen::Vector3d FEMFunction::evalGrad( Eigen::Vector3d point ) {
+Eigen::Vector3d Function::evalGrad( Eigen::Vector3d point ) {
   /*
-  Output gradient of FEMFunction @ input point
+  Output gradient of Function @ input point
   */
   Eigen::Vector3d grad;
   grad.setZero();
@@ -43,13 +43,13 @@ Eigen::Vector3d FEMFunction::evalGrad( Eigen::Vector3d point ) {
   return grad;
 }
 
-vector<double> FEMFunction::evalValNPrevVals( Eigen::Vector3d point ) {
+vector<double> Function::evalValNPrevVals( Eigen::Vector3d point ) {
   /*
-  Output val and previous vals of FEMFunction at input point
+  Output val and previous vals of Function at input point
   */
   vector<double> vals(1+prevValues.cols());
 
-  // GET VALS OF SHAPE FUNCS AT POINT
+  // Get values of shape funcs at point
   int idxOwnerEl = mesh->findOwnerElement( point );
   if (idxOwnerEl < 0) {// Point outside of mesh
     fill(vals.begin(), vals.end(), -1);
@@ -66,7 +66,7 @@ vector<double> FEMFunction::evalValNPrevVals( Eigen::Vector3d point ) {
   return vals;
 }
 
-void FEMFunction::getFromExternal( FEMFunction &extFEMFunc ){
+void Function::getFromExternal( Function &extFEMFunc ){
   Eigen::Vector3d posExt;
   values.setZero();
   prevValues.setZero();
@@ -82,8 +82,8 @@ void FEMFunction::getFromExternal( FEMFunction &extFEMFunc ){
   }
 }
 
-void FEMFunction::forceFromExternal( FEMFunction &extFEMFunc) {
-  FEMFunction fh = FEMFunction( *mesh, extFEMFunc.nStepsRequired );
+void Function::forceFromExternal( Function &extFEMFunc) {
+  Function fh = Function( *mesh, extFEMFunc.nStepsRequired );
   fh.getFromExternal( extFEMFunc );
   for (int inode = 0; inode < mesh->nnodes; inode++) {
     if (fh.values(inode) >= 0) {//If interpolated

@@ -2,8 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [x] Store GradBaseFuns
-- [x] Add EvalGrad to FEMFunc class
+- [ ] External active nodes FEMFunc
+- [ ] Rework prevVals of FEMFunc as separate FEMFunc
 - [ ] Cell connectivity stored in uint to match meshzoo library
 
 Dependencies:

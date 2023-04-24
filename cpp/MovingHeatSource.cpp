@@ -48,15 +48,15 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
-    py::class_<FEMFunction>(m, "FEMFunction", py::dynamic_attr())
+    py::class_<Function>(m, "Function", py::dynamic_attr())
         .def(py::init<>())
-        .def("evalVal", &FEMFunction::evalVal)
-        .def("evalValNPrevVals", &FEMFunction::evalValNPrevVals)
-        .def("evalGrad", &FEMFunction::evalGrad)
-        .def("getFromExternal", &FEMFunction::getFromExternal)
-        .def("forceFromExternal", &FEMFunction::forceFromExternal)
-        .def("releaseDirichlet", &FEMFunction::releaseDirichlet)
-        .def_readonly("values", &FEMFunction::values);
+        .def("evalVal", &Function::evalVal)
+        .def("evalValNPrevVals", &Function::evalValNPrevVals)
+        .def("evalGrad", &Function::evalGrad)
+        .def("getFromExternal", &Function::getFromExternal)
+        .def("forceFromExternal", &Function::forceFromExternal)
+        .def("releaseDirichlet", &Function::releaseDirichlet)
+        .def_readonly("values", &Function::values);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)
         .def_readonly("nels_oDim", &mesh::Connectivity::nels_oDim)

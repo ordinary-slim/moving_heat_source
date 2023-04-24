@@ -1,5 +1,5 @@
 #include "Problem.h"
-#include "FEMFunction.h"
+#include "Function.h"
 #include "mesh/Mesh.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include <Eigen/Core>
