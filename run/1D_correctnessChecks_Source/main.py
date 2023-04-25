@@ -86,8 +86,8 @@ if __name__=="__main__":
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:
         p.initialize()
 
-    pMRF_TransHelper.unknown.getFromExternal(  pMRF_Trans.unknown )
-    pMRF_AdvecTransHelper.unknown.getFromExternal(  pMRF_AdvecTrans.unknown )
+    pMRF_TransHelper.unknown.interpolate(  pMRF_Trans.unknown )
+    pMRF_AdvecTransHelper.unknown.interpolate(  pMRF_AdvecTrans.unknown )
 
     # FORWARD
     while (pFRF.time < Tfinal):
@@ -103,23 +103,23 @@ if __name__=="__main__":
 
         #Transported MRF
         pMRF_Trans.updateFRFpos()
-        pMRF_Trans.unknown.getFromExternal( pMRF_TransHelper.unknown )
+        pMRF_Trans.unknown.interpolate( pMRF_TransHelper.unknown )
         activeElements = isInside( pMRF_Trans.mesh, [leftEnd, rightEnd])
         pMRF_Trans.activate( activeElements )
         pMRF_Trans.iterate()
         pMRF_TransHelper.fakeIter()
-        pMRF_TransHelper.unknown.getFromExternal( pMRF_Trans.unknown )
+        pMRF_TransHelper.unknown.interpolate( pMRF_Trans.unknown )
         pMRF_Trans.writepos()
         pMRF_TransHelper.writepos()
 
         #Advection + transport
         pMRF_AdvecTrans.updateFRFpos()
-        pMRF_AdvecTrans.unknown.getFromExternal( pMRF_AdvecTransHelper.unknown )
+        pMRF_AdvecTrans.unknown.interpolate( pMRF_AdvecTransHelper.unknown )
         activeElements = isInside( pMRF_AdvecTrans.mesh, [leftEnd, rightEnd])
         pMRF_AdvecTrans.activate( activeElements )
         pMRF_AdvecTrans.iterate()
         pMRF_AdvecTransHelper.fakeIter()
-        pMRF_AdvecTransHelper.unknown.getFromExternal( pMRF_AdvecTrans.unknown )
+        pMRF_AdvecTransHelper.unknown.interpolate( pMRF_AdvecTrans.unknown )
         pMRF_AdvecTrans.writepos()
         pMRF_AdvecTransHelper.writepos()
 

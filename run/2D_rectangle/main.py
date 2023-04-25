@@ -33,20 +33,6 @@ def isInsideBox( mesh, box ):
         activeElements.append(isInside)
     return activeElements
 
-def computeAvElSize( p ):
-    #double counting!
-    accumulation = 0
-    N = 0
-    points = p.input["points"]
-    con    = p.input["cells"]
-    for ielem in range(con.shape[0]):
-        #compute size
-        for inode in range( con.shape[1] ):
-            accumulation += np.linalg.norm(
-                points[con[ielem][(inode+1)%con.shape[1]]] - points[con[ielem][inode]])
-    N = con.size
-    return accumulation / float( N )
-
 def setAdimR( adimR, p ):
     r = p.input["radius"]
     HeatSourceSpeedX = max( abs(p.input["HeatSourceSpeedX"]), abs(p.input["advectionSpeedX"]))
@@ -123,7 +109,10 @@ if __name__=="__main__":
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.initialize()
 
-    pMRFTransporter.unknown.getFromExternal(  pTransportedMRF.unknown )
+    pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
+    mhs.interpolate( pMRFTransporter.prevVals, pTransportedMRF.prevVals )
+    for tF, sF in zip(pMRFTransporter.prevVals, pTransportedMRF.prevVals):
+        tF.interpolate( sF )
 
     maxIter = pFRF.input["maxIter"]
     # FORWARD
@@ -157,7 +146,10 @@ if __name__=="__main__":
 
         #iter transportedMRF
         pTransportedMRF.updateFRFpos()
-        pTransportedMRF.unknown.getFromExternal( pMRFTransporter.unknown )
+        pTransportedMRF.unknown.interpolate( pMRFTransporter.unknown )
+        for tF, sF in zip(pTransportedMRF.prevVals, pMRFTransporter.prevVals):
+            tF.interpolate( sF )
+
         activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
         pTransportedMRF.activate( activeElements )
         print("---BEFORE-----------")
@@ -171,29 +163,8 @@ if __name__=="__main__":
         #pdb.set_trace()
 
         pMRFTransporter.fakeIter()
-        pMRFTransporter.unknown.getFromExternal( pTransportedMRF.unknown )
+        pMRFTransporter.unknown.interpolate( pTransportedMRF.unknown )
+        for tF, sF in zip(pMRFTransporter.prevVals, pTransportedMRF.prevVals):
+            tF.interpolate( sF )
         pTransportedMRF.writepos()
         pMRFTransporter.writepos()
-
-
-    '''
-    pTransportedMRF.setAdvectionSpeed( -pTransportedMRF.advectionSpeed )
-    pFineFRF.mhs.setSpeed( -pFineFRF.mhs.speed )
-    pFRF.mhs.setSpeed( -pFRF.mhs.speed )
-
-    # BACKWARDS
-    for iteration in range(maxIter):
-        #fine problem
-        for istep in range(fineStepsPerStep):
-            pFineFRF.iterate()
-        pFineFRF.writepos()
-
-        #for p in [problemMRF_act]:
-        for p in [pFRF, pTransportedMRF]:
-            p.updateFRFpos()#get tn+1 positions (not tn)
-            activeElements = isInsideBox( p.mesh, boxRef )#active tn+1 positions
-            p.activate( activeElements )#activation
-            p.iterate()#assembly + solve
-            p.writepos()
-
-    '''

@@ -2,36 +2,44 @@
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
+#include <list>
 #include <vector>
 
+namespace fem
+{
 class Function{
   public:
     mesh::Mesh* mesh;
     Eigen::VectorXd values;
-    Eigen::MatrixXd prevValues;//col 0 is previous it, col 1 is prev prev it, etc
     std::vector<int> dirichletNodes;
     std::vector<double> dirichletValues;
-    int nStepsRequired = 0;
 
     Function(){
     }
 
-    Function(mesh::Mesh &otherMesh, int otherNStepsRequired){
+    Function(mesh::Mesh &otherMesh, Eigen::VectorXd otherValues = Eigen::VectorXd()){
       mesh = &otherMesh;
-      nStepsRequired = otherNStepsRequired;
-      values = Eigen::VectorXd::Zero( mesh->nnodes );
-      prevValues = Eigen::MatrixXd::Zero( mesh->nnodes, nStepsRequired );
+      if (otherValues.size() == 0) {
+        values = Eigen::VectorXd::Zero( mesh->nnodes );
+      } else {
+        if (otherValues.size() != mesh->nnodes) {
+          cout << "Wrong vals mesh pair in Function construction!" << endl;
+          exit(-1);
+        }
+        values = otherValues;
+      }
     }
 
-    double evalVal( Eigen::Vector3d point );
+    double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evalGrad( Eigen::Vector3d point );
-    vector<double> evalValNPrevVals( Eigen::Vector3d point );
-    void getFromExternal(Function &extFEMFunc );
-    void forceFromExternal(Function &extFEMFunc);
+    void interpolate(Function &extFEMFunc );
+    void interpolate2dirichlet(Function &extFEMFunc);
     void releaseDirichlet(){
       dirichletNodes.clear();
       dirichletValues.clear();
     }
 };
+void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
+}
 #define FEMFUNC
 #endif

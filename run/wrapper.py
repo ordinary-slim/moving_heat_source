@@ -108,6 +108,10 @@ class Problem(mhs.Problem):
     def fakeIter(self):
         self.iter += 1
         super(Problem, self).preIterate()
+        print( "{} fake iter# {}, time={}".format(
+            self.caseName,
+            self.iter,
+            self.time) )
 
     def frf2mrf(self, speed=None):
         if speed is None:

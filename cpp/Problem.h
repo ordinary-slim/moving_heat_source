@@ -1,6 +1,7 @@
 #ifndef PROBLEM
 #include <map>
 #include <string>
+#include <list>
 #include "mesh/Mesh.h"
 #include "Function.h"
 #include "HeatSource.h"
@@ -15,7 +16,8 @@ namespace py = pybind11;
 class Problem {
   public:
     mesh::Mesh mesh;
-    Function unknown;
+    fem::Function unknown;
+    list<fem::Function> previousValues;
     HeatSource mhs;
     map<string,double> material;
     double time = 0.0;

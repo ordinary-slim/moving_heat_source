@@ -26,6 +26,11 @@ void Problem::assembleTime() {
                                     timeIntegrator.lhsCoeff*massCoeffs[iMassEntry].value()/dt );
     }
     lhsCoeffs.insert( lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
-    rhs += M * (unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, timeIntegrator.rhsCoeff.size() - 1)) * timeIntegrator.rhsCoeff) / dt;
+
+    int prevValCounter = 0;
+    for (fem::Function prevFun: previousValues) {
+      rhs += M * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
+      ++prevValCounter;
+    }
   }
 }

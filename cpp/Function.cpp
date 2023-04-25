@@ -1,9 +1,11 @@
+#include <list>
 #include "Function.h"
 
-double Function::evalVal( Eigen::Vector3d point ) {
+namespace fem
+{
+double Function::evaluate( Eigen::Vector3d point ) const {
   /*
   Output val of Function at input point
-  TODO: Nest this in evalValNPrevVals
   */
   double val = 0;
 
@@ -43,48 +45,49 @@ Eigen::Vector3d Function::evalGrad( Eigen::Vector3d point ) {
   return grad;
 }
 
-vector<double> Function::evalValNPrevVals( Eigen::Vector3d point ) {
-  /*
-  Output val and previous vals of Function at input point
-  */
-  vector<double> vals(1+prevValues.cols());
 
-  // Get values of shape funcs at point
-  int idxOwnerEl = mesh->findOwnerElement( point );
-  if (idxOwnerEl < 0) {// Point outside of mesh
-    fill(vals.begin(), vals.end(), -1);
-    return vals;
-  }
-  mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
-  Eigen::VectorXd shaFunVals = e.evalShaFuns( point );
+void Function::interpolate( Function &extFEMFunc ){
 
-  vals[0] = values( e.con ).dot( shaFunVals );
-  for (int icol=0; icol < prevValues.cols(); ++icol) {
-    vals[icol+1] = prevValues( e.con, icol ).dot( shaFunVals );
-  }
-
-  return vals;
-}
-
-void Function::getFromExternal( Function &extFEMFunc ){
   Eigen::Vector3d posExt;
-  values.setZero();
-  prevValues.setZero();
-  vector<double> valsAtPoint( 1+prevValues.cols() );
+  values.setZero();//TODO: Rethink!
+
   for (int inode = 0; inode < mesh->nnodes; inode++) {
-    // MOVE TO REFERENCE FRAME OF EXTERNAL
+    // Move to reference frame of external
     posExt = mesh->pos.row(inode) + (mesh->shiftFRF - extFEMFunc.mesh->shiftFRF).transpose();
-    valsAtPoint = extFEMFunc.evalValNPrevVals( posExt );
-    values[inode] = valsAtPoint[0];
-    for (int icol = 0; icol < prevValues.cols(); ++icol) {
-      prevValues(inode, icol) = valsAtPoint[icol+1];
-    }
+    values[inode] = extFEMFunc.evaluate( posExt );
   }
 }
 
-void Function::forceFromExternal( Function &extFEMFunc) {
-  Function fh = Function( *mesh, extFEMFunc.nStepsRequired );
-  fh.getFromExternal( extFEMFunc );
+void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions ) {
+  // Check same size
+  if (targetFunctions.size() != sourceFunctions.size() ){
+    cout << "Mismatch in number of funs to interpolate" << endl;
+    exit(-1);
+  }
+  // Extract adress to target mesh and source mesh
+  std::list<Function>::iterator targetFunsIterator = targetFunctions.begin();
+  std::list<Function>::const_iterator sourceFunsIterator = sourceFunctions.begin();
+  mesh::Mesh *targetMesh = targetFunsIterator->mesh;
+  mesh::Mesh *sourceMesh = sourceFunsIterator->mesh;
+
+  Eigen::Vector3d posExt;
+  for (int inode = 0; inode < targetMesh->nnodes; inode++) {
+    // Move to reference frame of external
+    posExt = targetMesh->pos.row(inode) + (targetMesh->shiftFRF - sourceMesh->shiftFRF).transpose();
+    while (targetFunsIterator != targetFunctions.end() ) {
+      targetFunsIterator->values[inode] = sourceFunsIterator->evaluate( posExt );
+      ++sourceFunsIterator;
+      ++targetFunsIterator;
+    }
+    // Reset iterators
+    targetFunsIterator = targetFunctions.begin();
+    sourceFunsIterator = sourceFunctions.begin();
+  }
+}
+
+void Function::interpolate2dirichlet( Function &extFEMFunc) {
+  Function fh = Function( *mesh );
+  fh.interpolate( extFEMFunc );
   for (int inode = 0; inode < mesh->nnodes; inode++) {
     if (fh.values(inode) >= 0) {//If interpolated
       values(inode) = fh.values(inode);
@@ -92,4 +95,5 @@ void Function::forceFromExternal( Function &extFEMFunc) {
       dirichletValues.push_back( fh.values(inode) );
     }
   }
+}
 }

@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../../Release/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
@@ -81,20 +81,20 @@ if __name__=="__main__":
 
 
     # CORRECT
-    #mrfTransporter.unknown.getFromExternal(  mrfProblem.unknown )
+    #mrfTransporter.unknown.interpolate(  mrfProblem.unknown )
     # DEBUGGING
     mrfTransporter.forceState( f )
 
     # MARCH FG, INTERPOLATE BACK TO BG
     for it in range(mrfTransporter.input["maxIter"]):
         mrfProblem.updateFRFpos()
-        mrfProblem.unknown.getFromExternal( mrfTransporter.unknown )
+        mrfProblem.unknown.interpolate( mrfTransporter.unknown )
         activeElements = isInsideBox( mrfProblem.mesh, frfBox )
         mrfProblem.activate( activeElements )
 
         mrfProblem.fakeIter()
 
         mrfTransporter.fakeIter()
-        mrfTransporter.unknown.getFromExternal( mrfProblem.unknown )
+        mrfTransporter.unknown.interpolate( mrfProblem.unknown )
         mrfProblem.writepos()
         mrfTransporter.writepos()

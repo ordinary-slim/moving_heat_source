@@ -41,17 +41,10 @@ void Problem::preIterate() {
 void Problem::postIterate() {
   /* End iteration operations */
   // STORE last timestep for time-integratino
-  // Overwrite last column of unknown.prevValues
-  unknown.prevValues.col( unknown.prevValues.cols()-1 ) << unknown.values;
-  // Permutate N-1, 0, ..., N-2
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(timeIntegrator.nstepsRequired);
-  Eigen::VectorXi indices(timeIntegrator.nstepsRequired);
-  indices[0] = indices.size() -  1 ;
-  for (int i = 1; i < indices.size(); i++) {
-    indices[i] = i-1;
+  previousValues.push_front( unknown );
+  if (previousValues.size() > timeIntegrator.nstepsRequired) {
+    previousValues.pop_back();
   }
-  perm.indices() = indices;
-  unknown.prevValues = unknown.prevValues * perm;
 
   ++timeIntegrator.nstepsStored;
 
@@ -66,8 +59,13 @@ void Problem::postIterate() {
 }
 
 void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
-  unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, pSols.cols()-1)) = pSols;
-  unknown.values = unknown.prevValues(Eigen::placeholders::all, 0);
+  //unknown.prevValues(Eigen::placeholders::all, Eigen::seq( 0, pSols.cols()-1)) = pSols;
+  previousValues.clear();
+  for (int icol = 0; icol < pSols.cols(); ++icol) {
+    //Convert icol to Function
+    previousValues.push_back( fem::Function(mesh, pSols(Eigen::placeholders::all, icol)) );
+  }
+  unknown = fem::Function(mesh, pSols(Eigen::placeholders::all, 0));
   timeIntegrator.nstepsStored = pSols.cols();
 }
 

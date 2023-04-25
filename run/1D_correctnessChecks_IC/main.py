@@ -130,7 +130,7 @@ if __name__=="__main__":
         pMRF_Step.writepos(shift=None)
 
         # Force FRF and solve
-        pFRF_Step.unknown.forceFromExternal( pMRF_Step.unknown )
+        pFRF_Step.unknown.interpolate2dirichlet( pMRF_Step.unknown )
         pFRF_Step.iterate()
         pFRF_Step.unknown.releaseDirichlet()
         pFRF_Step.writepos(shift=None)

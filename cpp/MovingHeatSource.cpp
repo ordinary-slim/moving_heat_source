@@ -19,6 +19,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def_readonly("unknown", &Problem::unknown)
+        .def_readwrite("previousValues", &Problem::previousValues)
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("mesh", &Problem::mesh)
         .def_readwrite("time", &Problem::time)
@@ -48,15 +49,17 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
-    py::class_<Function>(m, "Function", py::dynamic_attr())
+    py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<>())
-        .def("evalVal", &Function::evalVal)
-        .def("evalValNPrevVals", &Function::evalValNPrevVals)
-        .def("evalGrad", &Function::evalGrad)
-        .def("getFromExternal", &Function::getFromExternal)
-        .def("forceFromExternal", &Function::forceFromExternal)
-        .def("releaseDirichlet", &Function::releaseDirichlet)
-        .def_readonly("values", &Function::values);
+        .def("evaluate", &fem::Function::evaluate)
+        .def("evalGrad", &fem::Function::evalGrad)
+        .def("interpolate", &fem::Function::interpolate)
+        .def("interpolate2dirichlet", &fem::Function::interpolate2dirichlet)
+        .def("releaseDirichlet", &fem::Function::releaseDirichlet)
+        .def_readonly("values", &fem::Function::values);
+    //This export won't work unless list<Function> is made into
+    //an opaque type or interpolate is wrapped into something else
+    //m.def( "interpolate", &fem::interpolate, "interpolate list of sourceFunctions to targetFunctions" );
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def_readonly("con", &mesh::Connectivity::con)
         .def_readonly("nels_oDim", &mesh::Connectivity::nels_oDim)
