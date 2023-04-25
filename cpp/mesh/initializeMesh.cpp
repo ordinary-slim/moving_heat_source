@@ -66,6 +66,7 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
 
   //CONNECTIVITIES
   //Manually fill D0 connectivity fields
+  //Very unsafe! Need privatization
   con_CellPoint.oDim = refCellEl.dim;
   con_CellPoint.tDim = 0;
   con_CellPoint.nels_oDim = nels;

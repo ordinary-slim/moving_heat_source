@@ -6,6 +6,9 @@
 namespace mesh
 {
 class Connectivity {
+  /*
+   * Connectivity mesh entitites oDim -> tDim
+  */
   public:
     int oDim = -1;
     int tDim = -1;
