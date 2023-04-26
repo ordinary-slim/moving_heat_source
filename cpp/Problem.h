@@ -73,9 +73,13 @@ class Problem {
     void forceInactiveNodes();
     void preIterate();
     void postIterate();
-    void activateDomain(vector<int> inputActiveElements ) {
-      mesh.setActiveElements( inputActiveElements );
-      //isAssembled = false;
+    void setActiveElements(vector<int> otherActiveElements ) {
+      mesh.setActiveElements( otherActiveElements );
+      //POS ACTIVATION OPS
+    }
+    void setActiveNodes(vector<int> otherActiveNodes ) {
+      mesh.setActiveNodes( otherActiveNodes );
+      //POS ACTIVATION OPS
     }
     void setStabilization(bool stabilize) {
       isStabilized = stabilize;

@@ -32,7 +32,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from array of nodes.")
         .def("setNeumann", static_cast<void (Problem::*)(Eigen::Vector3d, Eigen::Vector3d, double)>(&Problem::setNeumann),
             "Set Neumann condition from plane.")
-        .def("activateDomain", &Problem::activateDomain);
+        .def("setActiveElements", &Problem::setActiveElements)
+        .def("setActiveNodes", &Problem::setActiveNodes);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &mesh::Mesh::pos)
@@ -51,6 +52,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<>())
+        .def(py::init<mesh::Mesh&>())
+        .def(py::init<mesh::Mesh&, const Eigen::VectorXd&>())
         .def("evaluate", &fem::Function::evaluate)
         .def("evalGrad", &fem::Function::evalGrad)
         .def("interpolate", &fem::Function::interpolate)

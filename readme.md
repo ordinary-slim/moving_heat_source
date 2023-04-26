@@ -2,10 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] MeshFunction
-- [ ] MeshFunction -> fem::Function
-- [ ] fem::Function -> MeshFunction
-- [ ] Active/Deactivate from MeshFunction
+- [x] activeElements from activeNodes
+- [x] Active/Deactivate from MeshFunction
 - [ ] 2 main loops
 - [ ] 1 main loop
 - [ ] Inner assembly routine into a single routine
@@ -13,6 +11,7 @@ To-do:
 - [ ] Cell connectivity stored in uint to match meshzoo library
 - [ ] Privatize attributes!
 - [ ] Timer
+- [ ] Get pointer to connectivity instead of copying
 
 Dependencies:
 

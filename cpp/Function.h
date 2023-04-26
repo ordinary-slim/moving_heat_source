@@ -17,7 +17,7 @@ class Function{
     Function(){
     }
 
-    Function(mesh::Mesh &otherMesh, Eigen::VectorXd otherValues = Eigen::VectorXd()){
+    Function(mesh::Mesh &otherMesh, const Eigen::VectorXd &otherValues = Eigen::VectorXd()){
       mesh = &otherMesh;
       if (otherValues.size() == 0) {
         values = Eigen::VectorXd::Zero( mesh->nnodes );

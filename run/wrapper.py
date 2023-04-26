@@ -94,9 +94,6 @@ class Problem(mhs.Problem):
         except FileNotFoundError:
             pass
 
-    def activate(self, activeElements):
-        self.activateDomain( activeElements )
-
     def iterate(self):
         self.iter += 1
         super(Problem, self).iterate()
@@ -121,7 +118,11 @@ class Problem(mhs.Problem):
         self.mhs.setSpeed( np.zeros(3) )
 
     #POSTPROCESSING
-    def writepos( self, rf = "FRF", shift=None ):
+    def writepos( self,
+                 rf = "FRF",
+                 shift=None,
+                 functions={},
+                 ):
         '''
         rf : reference frame, either FRF or MRF
         '''
@@ -141,14 +142,19 @@ class Problem(mhs.Problem):
             for irow in range(pos.shape[0]):
                 pos[irow,:] += shift
 
+        point_data={"T": self.unknown.values,
+                    "Pulse": self.mhs.pulse,
+                    "ActiveNodes": self.mesh.activeNodes,
+                    }
+        for label, fun in functions.items():
+            point_data[label] = fun.values
+
         #export
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
             pos,
             [ (cell_type, self.mesh.con_CellPoint.con), ],
-            point_data={"T": self.unknown.values,
-                        "Pulse": self.mhs.pulse,
-                        "ActiveNodes": self.mesh.activeNodes,},
+            point_data=point_data,
             cell_data={"ActiveElements":[self.mesh.activeElements]},
         )
 

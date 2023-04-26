@@ -110,8 +110,7 @@ if __name__=="__main__":
         p.initialize()
 
     pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
-    mhs.interpolate( pMRFTransporter.prevVals, pTransportedMRF.prevVals )
-    for tF, sF in zip(pMRFTransporter.prevVals, pTransportedMRF.prevVals):
+    for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
         tF.interpolate( sF )
 
     maxIter = pFRF.input["maxIter"]
@@ -131,7 +130,7 @@ if __name__=="__main__":
         #iter NoTransportMRF
         pNoTransportMRF.updateFRFpos()
         activeElements = isInsideBox( pNoTransportMRF.mesh, boxRef )
-        pNoTransportMRF.activate( activeElements )
+        pNoTransportMRF.setActiveElements( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pNoTransportMRF )
         print("--------------------")
@@ -147,11 +146,11 @@ if __name__=="__main__":
         #iter transportedMRF
         pTransportedMRF.updateFRFpos()
         pTransportedMRF.unknown.interpolate( pMRFTransporter.unknown )
-        for tF, sF in zip(pTransportedMRF.prevVals, pMRFTransporter.prevVals):
+        for tF, sF in zip(pTransportedMRF.previousValues, pMRFTransporter.previousValues):
             tF.interpolate( sF )
 
         activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
-        pTransportedMRF.activate( activeElements )
+        pTransportedMRF.setActiveElements( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pTransportedMRF )
         print("--------------------")
@@ -164,7 +163,7 @@ if __name__=="__main__":
 
         pMRFTransporter.fakeIter()
         pMRFTransporter.unknown.interpolate( pTransportedMRF.unknown )
-        for tF, sF in zip(pMRFTransporter.prevVals, pTransportedMRF.prevVals):
+        for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
             tF.interpolate( sF )
         pTransportedMRF.writepos()
         pMRFTransporter.writepos()

@@ -22,6 +22,7 @@ class Mesh {
     Eigen::Vector3d shiftFRF;//pos + shift = posFRF
     Eigen::Vector3d speedFRF;//domain speed with respect to FRF
     Connectivity  con_CellPoint;
+    Connectivity  con_PointCell;
     Connectivity  con_CellCell;
     Connectivity  con_FacetPoint;
     Connectivity  con_FacetCell;
@@ -37,7 +38,10 @@ class Mesh {
     vector<AABB> elementAABBs;
 
     void initializeMesh(pybind11::dict &input);
-    void setActiveElements(vector<int> inputActiveElements );
+    void setActiveElements(const vector<int> &otherActiveElements );
+    void setActiveNodes(const vector<int> &otherActiveNodes );
+    void updateActiveNodes();
+    void updateActiveElements();
     void findBoundary();
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl );
     Element getElement(int ielem);

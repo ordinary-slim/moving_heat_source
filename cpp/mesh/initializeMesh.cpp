@@ -78,7 +78,7 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   printf("Tranposition CellPoint -> PointCell\n");
   auto begin = std::chrono::steady_clock::now();
 
-  Connectivity con_PointCell = mesh::transpose( con_CellPoint );
+  con_PointCell = mesh::transpose( con_CellPoint );
 
   auto end = std::chrono::steady_clock::now();
   std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;;

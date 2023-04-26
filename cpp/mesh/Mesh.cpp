@@ -96,25 +96,71 @@ void mesh::Mesh::setAABBs() {
   std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 }
 
-void mesh::Mesh::setActiveElements(vector<int> inputActiveElements ) {
-  activeElements = inputActiveElements;
-  //Update activeNodes
-  fill( activeNodes.begin(), activeNodes.end(), 0 );
-  for (int ielem = 0; ielem < nels; ielem++) {
-    if (activeElements[ielem] == 1) {
-      Eigen::VectorXi locCon = con_CellPoint.getLocalCon( ielem );
-      //set to 1 nodes who belong to element
-      for (int locInode = 0; locInode < locCon.size(); locInode++){
-        activeNodes[ locCon[locInode] ] = 1;
+void mesh::Mesh::updateActiveNodes() {
+  /*
+   * Update activeNodes after a change in activeElements
+   * If a node belongs to an active element, set it to active.
+   */
+  Eigen::VectorXi incidentElements;
+  for (int inode = 0; inode < nnodes; ++inode) {
+    activeNodes[inode] = 0;
+    incidentElements = con_PointCell.getLocalCon( inode );
+    for ( auto p_ielem = incidentElements.begin();
+        (p_ielem != incidentElements.end())&&(*p_ielem != -1);
+          ++p_ielem ) {
+      if (activeElements[*p_ielem] == 1) {
+        activeNodes[inode] = 1;
+        break;
       }
     }
   }
-  if (std::find( activeElements.begin(), activeElements.end(), 0)
-      != activeElements.end() ) {
-    hasInactive = true;
+}
+
+void mesh::Mesh::updateActiveElements() {
+  /*
+   * Update activeElements after a change in activeNodes
+   * If all the nodes of an element are active, activate it.
+   */
+  Eigen::VectorXi incidentNodes;
+  bool allNodesActive;
+  for (int ielem = 0; ielem < nels; ++ielem) {
+    activeElements[ielem] = 0;
+    incidentNodes = con_CellPoint.getLocalCon( ielem );
+    allNodesActive = true;
+    for ( auto p_inode = incidentNodes.begin();
+        (p_inode != incidentNodes.end())&&(*p_inode != -1);
+          ++p_inode ) {
+
+      if (activeNodes[*p_inode] == 0) {
+        allNodesActive = false;
+        break;
+      }
+    }
+    if (allNodesActive) {
+      activeElements[ielem] = 1;
+    }
+  }
+}
+
+bool checkHasInactive( const vector<int> &activeElements ) {
+  return (std::find( activeElements.begin(), activeElements.end(), 0) != activeElements.end() );
+}
+
+void mesh::Mesh::setActiveElements(const vector<int> &otherActiveElements ) {
+  activeElements = otherActiveElements;
+  updateActiveNodes();
+  hasInactive = checkHasInactive(activeElements);
+  if (hasInactive) {
     findBoundary();
-  } else {
-    hasInactive = false;
+  }
+}
+
+void mesh::Mesh::setActiveNodes(const vector<int> &otherActiveNodes ) {
+  activeNodes = otherActiveNodes;
+  updateActiveElements();
+  hasInactive = checkHasInactive(activeElements);
+  if (hasInactive) {
+    findBoundary();
   }
 }
 
@@ -131,11 +177,13 @@ void mesh::Mesh::findBoundary() {
   int lastVisitedActiveEl;
   for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
     activeElsPerFacet = 0;
-    for (int iel = 0; iel < con_FacetCell.con.cols(); ++iel) {
-      if (con_FacetCell.con(ifacet, iel) == -1) { break; }
+    Eigen::VectorXi incidentElements = con_FacetCell.getLocalCon( ifacet );
+    for ( auto p_ielem = incidentElements.begin();
+        (p_ielem != incidentElements.end())&&(*p_ielem != -1);
+          ++p_ielem ) {
       
-      if (activeElements[ con_FacetCell.con(ifacet, iel) ]) {
-        lastVisitedActiveEl = con_FacetCell.con(ifacet, iel);
+      if (activeElements[ *p_ielem ]) {
+        lastVisitedActiveEl = *p_ielem;
         ++activeElsPerFacet;
       }
     }
