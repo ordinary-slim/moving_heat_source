@@ -43,16 +43,15 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   py::array cells    = input["cells"];
   nels          = cells.shape(0);
   nnodes_per_el = cells.shape(1);
-  con_CellPoint.con.resize( nels, nnodes_per_el );
+  con_CellPoint.con.resize( nels );
   elementTypes.resize( nels );
   activeElements.resize( nels );
   activeNodes.resize( nnodes );
-  con_CellPoint.con.setOnes();
-  con_CellPoint.con *= -1;
   auto aux_cells = cells.unchecked<int>();//Receiving uint here breaks code
   for ( int icell = 0; icell < nels; icell++) {
+    con_CellPoint.con[icell].resize( nnodes_per_el );
     for ( int inode = 0; inode < nnodes_per_el; inode++) {
-      con_CellPoint.con(icell, inode) =  aux_cells(icell, inode);
+      con_CellPoint.con[icell][inode] =  aux_cells(icell, inode);
     }
   }
   std::fill (elementTypes.begin(), elementTypes.end(), 

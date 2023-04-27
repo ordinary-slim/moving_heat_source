@@ -46,9 +46,9 @@ void Problem::assembleSpatialLHS() {
         k_ij *= k ;
         a_ij *= rho * cp;
 
-        massCoeffs.push_back( T( e.con[inode], e.con[jnode], m_ij ) );
-        K_coeffs.push_back( T( e.con[inode], e.con[jnode], k_ij ) );
-        A_coeffs.push_back( T( e.con[inode], e.con[jnode], a_ij ) );
+        massCoeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], m_ij ) );
+        K_coeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], k_ij ) );
+        A_coeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], a_ij ) );
       }
     }
   }

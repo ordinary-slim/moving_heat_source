@@ -16,12 +16,11 @@ class Connectivity {
     int nels_tDim = -1;
     ElementType oelType;
     ElementType telType;
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic,
-      Eigen::RowMajor> con;// connectivy
+    std::vector<std::vector<int>> con;// connectivy
 
     Connectivity() {}
 
-    Connectivity( Eigen::MatrixXi in_con, int in_oDim, int in_tDim, int in_nels_oDim, int in_nels_tDim,
+    Connectivity( std::vector<std::vector<int>> in_con, int in_oDim, int in_tDim, int in_nels_oDim, int in_nels_tDim,
         ElementType in_oelType, ElementType in_telType) {
       con = in_con;
       oDim = in_oDim;
@@ -32,12 +31,14 @@ class Connectivity {
       telType = in_telType;
     }
 
-    Eigen::VectorXi getLocalCon( int idx ) {
-      return con.row( idx );
+    std::vector<int>* getLocalCon( int idx ) {
+      return &con[ idx ];
     }
+    /*
     std::vector<int> getLocalConVector( int idx ) {
       return std::vector<int>( con.row(idx).data(), con.row(idx).data() + con.cols() );
     }
+    */
 };
 
 Connectivity transpose(Connectivity inCon);

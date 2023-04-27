@@ -78,11 +78,11 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
     for (int iBFacet : mesh.boundaryFacets) {
-      vector<int> bFacetNodes = mesh.con_FacetPoint.getLocalConVector( iBFacet );
-      std::sort( bFacetNodes.begin(), bFacetNodes.end() );
+      vector<int>* bFacetNodes = mesh.con_FacetPoint.getLocalCon( iBFacet );
+      std::sort( bFacetNodes->begin(), bFacetNodes->end() );
 
       // test if match
-      if (bFacetNodes == potentialFacet ) {
+      if (*bFacetNodes == potentialFacet ) {
         idxMatch = iBFacet;
         cout << "face matched!" << endl;
         break;

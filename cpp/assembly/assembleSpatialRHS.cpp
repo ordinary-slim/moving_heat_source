@@ -24,7 +24,7 @@ void Problem::assembleSpatialRHS() {
         r_i += e.gpweight[igp] * e.BaseGpVals[inode][igp] * e.vol *
           mhs.powerDensity(x_gp, time, mhs.currentPosition, mhs.power, mhs.efficiency, mhs.radius);
       }
-      mhs.pulse[e.con[inode]] += r_i;
+      mhs.pulse[(*e.con)[inode]] += r_i;
     }
   }
   rhs += mhs.pulse;

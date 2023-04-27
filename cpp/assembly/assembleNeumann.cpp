@@ -24,7 +24,7 @@ void Problem::assembleNeumann() {
       for (int igp = 0; igp < e.ngpoints; ++igp) {
         n_i += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * normalDerivative;
       }
-      neumannRhs[e.con[inode]] += n_i;
+      neumannRhs[(*e.con)[inode]] += n_i;
     }
   }
 

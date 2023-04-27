@@ -12,6 +12,7 @@ To-do:
 - [ ] Privatize attributes!
 - [ ] Timer
 - [ ] Get pointer to connectivity instead of copying
+- [ ] Protect con from e.con
 
 Dependencies:
 

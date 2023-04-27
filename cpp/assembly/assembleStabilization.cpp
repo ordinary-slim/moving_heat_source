@@ -61,7 +61,7 @@ void Problem::assembleStabilization() {
             e.GradBaseGpVals[inode][igp].dot( advectionSpeed ) *
             e.GradBaseGpVals[jnode][igp].dot( advectionSpeed );
         }
-        ASSS_lhsCoeffs.push_back( T( e.con[inode], e.con[jnode], asss_lhs_ij ) );
+        ASSS_lhsCoeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], asss_lhs_ij ) );
       }
     }
 
@@ -74,7 +74,7 @@ void Problem::assembleStabilization() {
         asss_rhs_i += (e.gpweight[igp] * e.vol) * tau * f_xgp *
           e.GradBaseGpVals[inode][igp].dot( advectionSpeed );;
       }
-      asss_RHS[e.con[inode]] += asss_rhs_i;
+      asss_RHS[(*e.con)[inode]] += asss_rhs_i;
     }
 
   }

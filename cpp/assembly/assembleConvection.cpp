@@ -26,7 +26,7 @@ void Problem::assembleConvectionLHS() {
           c_ij += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * e.BaseGpVals[jnode][igp];
         }
         c_ij *= h / k;
-        C_coeffs.push_back( T( e.con[inode], e.con[jnode], c_ij ) );
+        C_coeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], c_ij ) );
       }
     }
   }
@@ -59,7 +59,7 @@ void Problem::assembleConvectionRHS() {
         c_i += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * Tenv;
       }
       c_i *= h / k;
-      convectionRhs[e.con[inode]] += c_i;
+      convectionRhs[(*e.con)[inode]] += c_i;
     }
   }
   rhs += convectionRhs;

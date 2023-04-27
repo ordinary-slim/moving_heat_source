@@ -56,7 +56,7 @@ void mesh::Element::computeDerivatives() {
   }
 }
 
-Element mesh::Element::getFacetElement( Eigen::VectorXi vertices, ReferenceElement &facetRefEl ) {
+Element mesh::Element::getFacetElement( std::vector<int>* vertices, ReferenceElement &facetRefEl ) {
   Element e;
   e.setElementType( facetRefEl );
   e.allocate();
@@ -64,8 +64,8 @@ Element mesh::Element::getFacetElement( Eigen::VectorXi vertices, ReferenceEleme
   // positions
   int locInode;
   int counter = 0;
-  for (int globInode : vertices ) {
-    locInode = std::find(con.begin(), con.end(), globInode) - con.begin();
+  for (int globInode : *vertices ) {
+    locInode = std::find(con->begin(), con->end(), globInode) - con->begin();
     e.pos.row( counter ) = pos.row( locInode );
     counter++;
   }

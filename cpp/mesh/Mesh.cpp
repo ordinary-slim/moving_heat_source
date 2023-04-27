@@ -22,7 +22,7 @@ Element Mesh::getEntity(int ient, Connectivity &connectivity, ReferenceElement &
   e.con = connectivity.getLocalCon( ient );
   // set pos
   for (int inode=0; inode < e.nnodes; inode++) {
-    e.pos.row(inode) = pos.row(e.con(inode));
+    e.pos.row(inode) = pos.row((*e.con)[inode]);
   }
 
   // COMPUTATIONS
@@ -55,7 +55,7 @@ int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
   }
 
   //Narrow Phase
-  Eigen::VectorXi facets;
+  vector<int>* facets;
   Element cellEl;
   Element facetEl;
 
@@ -63,7 +63,7 @@ int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
     bool isInside = true;
     cellEl = getElement( ielem );
     facets = con_CellFacet.getLocalCon( ielem );
-    for ( int ifacet : facets ) {
+    for ( int ifacet : *facets ) {
       facetEl = cellEl.getFacetElement( con_FacetPoint.getLocalCon(ifacet),
                                         refFacetEl);
 
@@ -101,13 +101,11 @@ void mesh::Mesh::updateActiveNodes() {
    * Update activeNodes after a change in activeElements
    * If a node belongs to an active element, set it to active.
    */
-  Eigen::VectorXi incidentElements;
+  vector<int>* incidentElements;
   for (int inode = 0; inode < nnodes; ++inode) {
     activeNodes[inode] = 0;
     incidentElements = con_PointCell.getLocalCon( inode );
-    for ( auto p_ielem = incidentElements.begin();
-        (p_ielem != incidentElements.end())&&(*p_ielem != -1);
-          ++p_ielem ) {
+    for ( auto p_ielem = incidentElements->begin(); (p_ielem != incidentElements->end())&&(*p_ielem != -1); ++p_ielem ) {
       if (activeElements[*p_ielem] == 1) {
         activeNodes[inode] = 1;
         break;
@@ -121,15 +119,13 @@ void mesh::Mesh::updateActiveElements() {
    * Update activeElements after a change in activeNodes
    * If all the nodes of an element are active, activate it.
    */
-  Eigen::VectorXi incidentNodes;
+  vector<int>* incidentNodes;
   bool allNodesActive;
   for (int ielem = 0; ielem < nels; ++ielem) {
     activeElements[ielem] = 0;
     incidentNodes = con_CellPoint.getLocalCon( ielem );
     allNodesActive = true;
-    for ( auto p_inode = incidentNodes.begin();
-        (p_inode != incidentNodes.end())&&(*p_inode != -1);
-          ++p_inode ) {
+    for ( auto p_inode = incidentNodes->begin(); (p_inode != incidentNodes->end())&&(*p_inode != -1); ++p_inode ) {
 
       if (activeNodes[*p_inode] == 0) {
         allNodesActive = false;
@@ -177,10 +173,8 @@ void mesh::Mesh::findBoundary() {
   int lastVisitedActiveEl;
   for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
     activeElsPerFacet = 0;
-    Eigen::VectorXi incidentElements = con_FacetCell.getLocalCon( ifacet );
-    for ( auto p_ielem = incidentElements.begin();
-        (p_ielem != incidentElements.end())&&(*p_ielem != -1);
-          ++p_ielem ) {
+    vector<int>* incidentElements = con_FacetCell.getLocalCon( ifacet );
+    for ( auto p_ielem = incidentElements->begin(); (p_ielem != incidentElements->end())&&(*p_ielem != -1); ++p_ielem ) {
       
       if (activeElements[ *p_ielem ]) {
         lastVisitedActiveEl = *p_ielem;

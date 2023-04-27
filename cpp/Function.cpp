@@ -17,7 +17,7 @@ double Function::evaluate( Eigen::Vector3d point ) const {
   mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::VectorXd shaFunVals = e.evalShaFuns( point );
 
-  val = values( e.con ).dot( shaFunVals );
+  val = values( *e.con ).dot( shaFunVals );
 
   return val;
 }
@@ -39,7 +39,7 @@ Eigen::Vector3d Function::evalGrad( Eigen::Vector3d point ) {
   Eigen::MatrixXd gradShaFunVals = e.evalGradShaFuns( point );
 
   for (int inode = 0; inode < e.nnodes; ++inode) {
-    grad += gradShaFunVals.row(inode) * values[ e.con[ inode ] ] ;
+    grad += gradShaFunVals.row(inode) * values[ (*e.con)[ inode ] ] ;
   }
 
   return grad;
