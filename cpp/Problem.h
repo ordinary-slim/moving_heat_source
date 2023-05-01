@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include <list>
-#include "mesh/Mesh.h"
+#include "mesh/Submesh.h"
 #include "Function.h"
 #include "HeatSource.h"
 #include "timeIntegrator.h"
@@ -15,7 +15,7 @@ namespace py = pybind11;
 
 class Problem {
   public:
-    mesh::Mesh mesh;
+    mesh::Submesh domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
     HeatSource mhs;
@@ -51,14 +51,14 @@ class Problem {
       mhs.time = newTime;
     }
     void setPointers(){
-      unknown.mesh = &mesh;
+      unknown.mesh = domain.mesh;
     }
 
     void setAdvectionSpeed(Eigen::Vector3d inputAdvectionSpeed){
       advectionSpeed = inputAdvectionSpeed;
       if (advectionSpeed.norm() > 1e-10) isAdvection = true;
     }
-    void initialize(py::dict &input);
+    void initialize(mesh::Mesh &mesh, py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void updateFRFpos();
@@ -73,19 +73,12 @@ class Problem {
     void forceInactiveNodes();
     void preIterate();
     void postIterate();
-    void setActiveElements(vector<int> otherActiveElements ) {
-      mesh.setActiveElements( otherActiveElements );
-      //POS ACTIVATION OPS
-    }
-    void setActiveNodes(vector<int> otherActiveNodes ) {
-      mesh.setActiveNodes( otherActiveNodes );
-      //POS ACTIVATION OPS
-    }
     void setStabilization(bool stabilize) {
       isStabilized = stabilize;
     }
     void setNeumann( vector<vector<int>> otherNeumannFacets, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
-    };
+    void deactivateFromExternal( Problem pExt );
+};
 #define PROBLEM
 #endif

@@ -1,3 +1,4 @@
+#ifndef BOUNDARY
 #include <vector>
 #include <algorithm>
 
@@ -19,3 +20,5 @@ namespace mesh {
       }
   };
 }
+#define BOUNDARY
+#endif

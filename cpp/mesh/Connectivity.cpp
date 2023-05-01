@@ -99,8 +99,8 @@ Connectivity transpose(Connectivity inCon) {
   vector<vector<int>> tCon;
   tCon.resize( inCon.nels_tDim );
   for (int ient_odim = 0; ient_odim < inCon.nels_oDim; ient_odim++ ) {
-    vector<int> *localCon = inCon.getLocalCon( ient_odim );
-    for ( auto p_ient_tdim = localCon->begin(); (p_ient_tdim != localCon->end())&&(*p_ient_tdim != -1); ++p_ient_tdim ) {
+    const vector<int> *localCon = inCon.getLocalCon( ient_odim );
+    for ( auto p_ient_tdim = localCon->begin(); p_ient_tdim != localCon->end(); ++p_ient_tdim ) {
       addEntry( tCon, *p_ient_tdim, ient_odim );
     }
   }
@@ -118,9 +118,9 @@ Connectivity intersect(Connectivity inCon1, Connectivity inCon2) {
   }
   for (int enti = 0; enti < inCon1.nels_oDim; enti++) {
     int idx_entj = 0;
-    vector<int>* locCon1 = inCon1.getLocalCon(enti);
+    const vector<int>* locCon1 = inCon1.getLocalCon(enti);
     for ( auto pentk = locCon1->begin(); (pentk != locCon1->end())&&(*pentk != -1); ++pentk ) {
-      vector<int>* locCon2 = inCon2.getLocalCon(*pentk);
+      const vector<int>* locCon2 = inCon2.getLocalCon(*pentk);
       for ( auto pentj = locCon2->begin(); (pentj != locCon2->end())&&(*pentj != -1); ++pentj ) {
         if (enti != *pentj){
           addEntry( intersecCon, enti, *pentj );
@@ -146,7 +146,7 @@ std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Conn
     newEntity.resize(Vi.size());
     fill(newEntity.begin(), newEntity.end(), true);
 
-    vector<int>* locCon = DD_connec.getLocalCon(icell);
+    const vector<int>* locCon = DD_connec.getLocalCon(icell);
     for ( auto pjcell = locCon->begin(); (pjcell != locCon->end())&&(*pjcell != -1); ++pjcell ) {
       if (*pjcell > icell) continue;
 

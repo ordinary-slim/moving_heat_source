@@ -1,6 +1,5 @@
 #include "Problem.h"
 #include "Function.h"
-#include "mesh/Mesh.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include <Eigen/Core>
 
@@ -9,26 +8,26 @@ void Problem::updateFRFpos() {
 
   // update positions in no advection RF
   // done in pre iterate because activation is also done here
-  mesh.shiftFRF += dt * mesh.speedFRF;
-  for (int inode=0; inode < mesh.nnodes; inode++){
-    mesh.posFRF.row( inode ) += dt * mesh.speedFRF;
+  domain.mesh->shiftFRF += dt * domain.mesh->speedFRF;
+  for (int inode=0; inode < domain.mesh->nnodes; inode++){
+    domain.mesh->posFRF.row( inode ) += dt * domain.mesh->speedFRF;
   }
 }
 
 void Problem::preIterate() {
   /* Beginning of iteration operations*/
   // CLEANUP Linear System
-  lhs.resize( mesh.nnodes, mesh.nnodes );
-  rhs.resize( mesh.nnodes );
+  lhs.resize( domain.mesh->nnodes, domain.mesh->nnodes );
+  rhs.resize( domain.mesh->nnodes );
   lhs.setZero();
   rhs.setZero();
   lhsCoeffs.clear();
 
   // initialize data structures
-  M.resize(mesh.nnodes, mesh.nnodes); // mass mat
+  M.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
 
   massCoeffs.clear();
-  massCoeffs.reserve( 3*mesh.nnodes );
+  massCoeffs.reserve( 3*domain.mesh->nnodes );
 
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
@@ -63,9 +62,9 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
   previousValues.clear();
   for (int icol = 0; icol < pSols.cols(); ++icol) {
     //Convert icol to Function
-    previousValues.push_back( fem::Function(mesh, pSols(Eigen::placeholders::all, icol)) );
+    previousValues.push_back( fem::Function(*domain.mesh, pSols(Eigen::placeholders::all, icol)) );
   }
-  unknown = fem::Function(mesh, pSols(Eigen::placeholders::all, 0));
+  unknown = fem::Function(*domain.mesh, pSols(Eigen::placeholders::all, 0));
   timeIntegrator.nstepsStored = pSols.cols();
 }
 
@@ -77,12 +76,12 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
   for (vector<int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
-    for (int iBFacet : mesh.boundaryFacets) {
-      vector<int>* bFacetNodes = mesh.con_FacetPoint.getLocalCon( iBFacet );
-      std::sort( bFacetNodes->begin(), bFacetNodes->end() );
+    for (int iBFacet : domain.mesh->boundary.facets) {
+      vector<int> bFacetNodes = vector<int>( *domain.mesh->con_FacetPoint.getLocalCon( iBFacet ) );
+      std::sort( bFacetNodes.begin(), bFacetNodes.end() );
 
       // test if match
-      if (*bFacetNodes == potentialFacet ) {
+      if (bFacetNodes == potentialFacet ) {
         idxMatch = iBFacet;
         cout << "face matched!" << endl;
         break;
@@ -104,9 +103,9 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
   mesh::Element e;
   bool isInPlane;
   Eigen::Vector3d distance;
-  for (int iBFacet : mesh.boundaryFacets) {
+  for (int iBFacet : domain.mesh->boundary.facets) {
     isInPlane = false;
-    e = mesh.getBoundaryFacet( iBFacet );
+    e = domain.mesh->getBoundaryFacet( iBFacet );
 
     // Test if normals are colinear
     if ( normal.cross( e.normal ).norm() > tolerance) {
@@ -125,4 +124,34 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
     neumannFacets.push_back( iBFacet );
     neumannFluxes.push_back( neumannFlux );
   }
+}
+
+void Problem::deactivateFromExternal( Problem pExt ) {
+  // External activation to function on external
+  Eigen::VectorXd extActiveNodesValues(pExt.domain.mesh->nnodes);
+  for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
+    extActiveNodesValues[inode] = double(pExt.domain.activeNodes.x[inode]);
+  }
+  fem::Function extActiveNodes_ext = fem::Function( *pExt.domain.mesh,  extActiveNodesValues);
+  // To function on local
+  fem::Function extActiveNodes = fem::Function( *domain.mesh );
+  extActiveNodes.interpolate( extActiveNodes_ext );
+  // Check if element owned by external problem
+  const vector<int>* incidentNodes;
+  bool allNodesActive;//if all nodes active, active, else inactive
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
+    incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    allNodesActive = true;
+    for (int inode: *incidentNodes) {
+      if (extActiveNodes.values[inode] < 1) {
+        allNodesActive = false;
+        break;
+      }
+    }
+    if (allNodesActive) {
+      // Element owned by other problem
+      domain.activeElements.x[ielem] = 0;
+    }
+  }
+  domain.setActivation( domain.activeElements );
 }

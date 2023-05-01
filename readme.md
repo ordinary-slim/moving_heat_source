@@ -2,8 +2,9 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [x] activeElements from activeNodes
-- [x] Active/Deactivate from MeshFunction
+- [ ] Updating Dirichlet BC without reinitializing problem
+- [ ] boundary to meshtags!
+- [ ] Rethink OOP of activation
 - [ ] 2 main loops
 - [ ] 1 main loop
 - [ ] Inner assembly routine into a single routine
@@ -13,6 +14,8 @@ To-do:
 - [ ] Timer
 - [ ] Get pointer to connectivity instead of copying
 - [ ] Protect con from e.con
+- [x] activeElements from activeNodes
+- [x] Active/Deactivate from MeshFunction
 
 Dependencies:
 

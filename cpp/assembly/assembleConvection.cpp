@@ -5,7 +5,7 @@ typedef Eigen::Triplet<double> T;
 void Problem::assembleConvectionLHS() {
 
   vector<T> C_coeffs;
-  C_coeffs.reserve( 1*mesh.nnodes );
+  C_coeffs.reserve( 1*domain.mesh->nnodes );
 
   double k = material["k"];
   double h = material["h"];
@@ -17,7 +17,7 @@ void Problem::assembleConvectionLHS() {
   for ( int ifacet : convectionFacets ) {
 
     //TODO: Think about active elements!
-    e = mesh.getBoundaryFacet( ifacet );
+    e = domain.getBoundaryFacet( ifacet );
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       for (int jnode = 0; jnode < e.nnodes; jnode++) {
@@ -38,7 +38,7 @@ void Problem::assembleConvectionLHS() {
 void Problem::assembleConvectionRHS() {
 
   Eigen::VectorXd convectionRhs;
-  convectionRhs.resize( mesh.nnodes );
+  convectionRhs.resize( domain.mesh->nnodes );
   convectionRhs.setZero();
 
   double k = material["k"];
@@ -51,7 +51,7 @@ void Problem::assembleConvectionRHS() {
   for ( int ifacet : convectionFacets ) {
 
     //TODO: Think about active elements!
-    e = mesh.getBoundaryFacet( ifacet );
+    e = domain.getBoundaryFacet( ifacet );
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       c_i = 0.0;

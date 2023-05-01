@@ -3,7 +3,7 @@
 void Problem::assembleNeumann() {
 
   Eigen::VectorXd neumannRhs;
-  neumannRhs.resize( mesh.nnodes );
+  neumannRhs.resize( domain.mesh->nnodes );
   neumannRhs.setZero();
 
   double n_i;
@@ -17,7 +17,7 @@ void Problem::assembleNeumann() {
     ifacet = neumannFacets[i];
     normalDerivative = - neumannFluxes[i] / k;
 
-    e = mesh.getBoundaryFacet( ifacet );
+    e = domain.getBoundaryFacet( ifacet );
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       n_i = 0;

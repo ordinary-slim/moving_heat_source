@@ -8,9 +8,9 @@
 
 namespace py = pybind11;
 
-void Problem::initialize(py::dict &input) {
+void Problem::initialize(mesh::Mesh &mesh, py::dict &input) {
   // MESH
-  mesh.initializeMesh( input );
+  domain = mesh::Submesh( &mesh );
 
   // MATERIAL
   // TODO: Better DS!
@@ -25,7 +25,7 @@ void Problem::initialize(py::dict &input) {
   // HEAT SOURCE
   mhs.radius = py::cast<double>(input["radius"]);
   mhs.power = py::cast<double>(input["power"]);
-  mhs.pulse.resize( mesh.nnodes );
+  mhs.pulse.resize( domain.mesh->nnodes );
 
   if (input.contains("efficiency")) mhs.efficiency = py::cast<double>(input["efficiency"]);
 
@@ -46,9 +46,9 @@ void Problem::initialize(py::dict &input) {
         break; }
     default:
       {
-        if (mesh.dim == 1 ) {
+        if (domain.mesh->dim == 1 ) {
           mhs.powerDensity = &gaussianPowerDensity1D;
-        } else if (mesh.dim == 2 ) {
+        } else if (domain.mesh->dim == 2 ) {
           mhs.powerDensity = &gaussianPowerDensity2D;
         } else {
           printf("Dim > 2 not ready yet\n");
@@ -69,8 +69,8 @@ void Problem::initialize(py::dict &input) {
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
-  unknown = fem::Function( mesh );
-  unknown.values = Eigen::VectorXd::Constant( mesh.nnodes, Tenv );
+  unknown = fem::Function( *domain.mesh );
+  unknown.values = Eigen::VectorXd::Constant( domain.mesh->nnodes, Tenv );
   // update time integrator
   previousValues.push_front(  unknown );
   ++timeIntegrator.nstepsStored;
@@ -88,7 +88,7 @@ void Problem::initialize(py::dict &input) {
 
   // CONVECTION BC
   if (input.contains("convectionCoeff")) {
-    convectionFacets = mesh.boundaryFacets;
+    convectionFacets = domain.mesh->boundary.facets;
   }
 
   // ADVECTION
@@ -101,9 +101,9 @@ void Problem::initialize(py::dict &input) {
 
   // DOMAIN MOTION
   if (input.contains("speedFRF_X")) {
-    mesh.speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
-    mesh.speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);
-    mesh.speedFRF[2] = py::cast<double>(input["speedFRF_Z"]);
+    domain.mesh->speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
+    domain.mesh->speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);
+    domain.mesh->speedFRF[2] = py::cast<double>(input["speedFRF_Z"]);
   }
 
   // ASSS STABILIZATION

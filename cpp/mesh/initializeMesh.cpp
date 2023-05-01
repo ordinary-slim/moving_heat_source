@@ -45,8 +45,6 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   nnodes_per_el = cells.shape(1);
   con_CellPoint.con.resize( nels );
   elementTypes.resize( nels );
-  activeElements.resize( nels );
-  activeNodes.resize( nnodes );
   auto aux_cells = cells.unchecked<int>();//Receiving uint here breaks code
   for ( int icell = 0; icell < nels; icell++) {
     con_CellPoint.con[icell].resize( nnodes_per_el );
@@ -56,11 +54,6 @@ void mesh::Mesh::initializeMesh(py::dict &input) {
   }
   std::fill (elementTypes.begin(), elementTypes.end(), 
       cell_type_flag);
-  std::fill (activeElements.begin(), activeElements.end(), 
-      1);//all elements start active
-  std::fill (activeNodes.begin(), activeNodes.end(), 
-      1);//all elements start active
-
   // reference element. no support for mixed s yet
 
   //CONNECTIVITIES

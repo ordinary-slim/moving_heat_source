@@ -12,8 +12,8 @@ void Problem::assembleSpatialLHS() {
   vector<T> K_coeffs;
   vector<T> A_coeffs;
 
-  K_coeffs.reserve( 3*mesh.nnodes );
-  A_coeffs.reserve( 3*mesh.nnodes );
+  K_coeffs.reserve( 3*domain.mesh->nnodes );
+  A_coeffs.reserve( 3*domain.mesh->nnodes );
 
   // matrices assembly
   M.setZero();
@@ -22,11 +22,12 @@ void Problem::assembleSpatialLHS() {
   double rho = material["rho"];
   double cp = material["cp"];
   double k = material["k"];
-  for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
-    if (mesh.activeElements[ielem]==0){
-      continue;
-    }
-    e = mesh.getElement( ielem );
+
+  vector<int> activeElementsIndices = domain.activeElements.getTrueIndices();
+  for (int ielem : activeElementsIndices) {
+
+    e = domain.getElement( ielem );
+
     for (int inode = 0; inode < e.nnodes; inode++) {
       for (int jnode = 0; jnode < e.nnodes; jnode++) {
         m_ij = 0;

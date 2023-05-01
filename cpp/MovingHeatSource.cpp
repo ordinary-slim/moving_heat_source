@@ -21,7 +21,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("unknown", &Problem::unknown)
         .def_readwrite("previousValues", &Problem::previousValues)
         .def_readonly("mhs", &Problem::mhs)
-        .def_readonly("mesh", &Problem::mesh)
+        .def_readonly("domain", &Problem::domain)
         .def_readwrite("time", &Problem::time)
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
@@ -32,10 +32,21 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from array of nodes.")
         .def("setNeumann", static_cast<void (Problem::*)(Eigen::Vector3d, Eigen::Vector3d, double)>(&Problem::setNeumann),
             "Set Neumann condition from plane.")
-        .def("setActiveElements", &Problem::setActiveElements)
-        .def("setActiveNodes", &Problem::setActiveNodes);
+        .def("deactivateFromExternal", &Problem::deactivateFromExternal);
+    py::class_<mesh::Submesh>(m, "Submesh")
+        .def(py::init<>())
+        .def_readonly("activeNodes", &mesh::Submesh::activeNodes)
+        .def_readonly("activeElements", &mesh::Submesh::activeElements)
+        .def_readonly("mesh", &mesh::Submesh::mesh)
+        .def("setActivation", &mesh::Submesh::setActivation);
+    py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
+        .def(py::init<mesh::Mesh*>())
+        .def(py::init<mesh::Mesh*, int, vector<int>>())
+        .def("setValues", &mesh::MeshTag<int>::setValues)
+        .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<>())
+        .def(py::init<const mesh::Mesh&>())
         .def_readonly("pos", &mesh::Mesh::pos)
         .def_readonly("posFRF", &mesh::Mesh::posFRF)
         .def_readonly("con_CellPoint", &mesh::Mesh::con_CellPoint)
@@ -44,9 +55,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("con_FacetCell", &mesh::Mesh::con_FacetCell)//Debugging
         .def_readonly("nels", &mesh::Mesh::nels)
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
-        .def_readonly("activeNodes", &mesh::Mesh::activeNodes)
-        .def_readonly("activeElements", &mesh::Mesh::activeElements)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
+        .def_readonly("dim", &mesh::Mesh::dim)
+        .def("initializeMesh", &mesh::Mesh::initializeMesh)
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
@@ -64,6 +75,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     //an opaque type or interpolate is wrapped into something else
     //m.def( "interpolate", &fem::interpolate, "interpolate list of sourceFunctions to targetFunctions" );
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
+        .def("getLocalCon", &mesh::Connectivity::getLocalCon)
         .def_readonly("con", &mesh::Connectivity::con)
         .def_readonly("nels_oDim", &mesh::Connectivity::nels_oDim)
         .def_readonly("nels_tDim", &mesh::Connectivity::nels_tDim);

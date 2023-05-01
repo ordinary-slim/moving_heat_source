@@ -9,13 +9,13 @@ typedef Eigen::Triplet<double> T;
 void Problem::assembleStabilization() {
   SpMat asss_LHS;
   Eigen::VectorXd asss_RHS;
-  asss_LHS.resize( mesh.nnodes, mesh.nnodes );
-  asss_RHS.resize( mesh.nnodes );
+  asss_LHS.resize( domain.mesh->nnodes, domain.mesh->nnodes );
+  asss_RHS.resize( domain.mesh->nnodes );
   asss_LHS.setZero();
   asss_RHS.setZero();
 
   vector<T> ASSS_lhsCoeffs;
-  ASSS_lhsCoeffs.reserve( 3*mesh.nnodes );
+  ASSS_lhsCoeffs.reserve( 3*domain.mesh->nnodes );
 
   double norm_advectionSpeed = advectionSpeed.norm();
 
@@ -35,11 +35,13 @@ void Problem::assembleStabilization() {
   Eigen::Vector3d x_gp;
 
   mesh::Element e;
-  for (int ielem = 0; ielem < mesh.nels; ielem++ ) {
-    if (mesh.activeElements[ielem]==0){
-      continue;
-    }
-    e = mesh.getElement( ielem );
+  vector<int> activeElementsIndices = domain.activeElements.getTrueIndices();
+
+  for (int ielem : activeElementsIndices ) {
+
+    e = domain.getElement( ielem );
+
+    e = domain.getElement( ielem );
 
     //Compute tau
     h = e.getSizeAlongVector( advectionSpeed );

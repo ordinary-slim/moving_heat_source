@@ -12,11 +12,12 @@ void Problem::assembleSpatialRHS() {
 
   mesh::Element e;
   // assemble
-  for (int ielem = 0; ielem < mesh.nels; ++ielem) {
-    if (mesh.activeElements[ielem]==0){
-      continue;
-    }
-    e = mesh.getElement( ielem );
+  vector<int> activeElementsIndices = domain.activeElements.getTrueIndices();
+  for (int ielem : activeElementsIndices ) {
+
+    e = domain.getElement( ielem );
+
+    e = domain.getElement( ielem );
     for (int inode = 0; inode < e.nnodes; ++inode) {
       r_i = 0;
       for (int igp = 0; igp < e.ngpoints; ++igp) {

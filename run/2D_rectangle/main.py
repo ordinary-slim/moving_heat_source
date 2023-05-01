@@ -17,7 +17,7 @@ def mesh(box):
         #variant="zigzag",  # or "up", "down", "center"
     )
     cells = cells.astype( int )
-    return points, cells
+    return points, cells, cell_type
 
 def isInsideBox( mesh, box ):
     activeElements = []
@@ -31,6 +31,8 @@ def isInsideBox( mesh, box ):
 
         isInside = 1*(xmin>=box[0] and xmax <= box[1] and ymin >= box[2] and ymax <= box[3])
         activeElements.append(isInside)
+
+    activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
     return activeElements
 
 def setAdimR( adimR, p ):
@@ -44,10 +46,10 @@ def setAdimR( adimR, p ):
 def getMaxT( p ):
     maxT = -1
     posMaxT = None
-    for inode in range(p.mesh.nnodes):
+    for inode in range(p.domain.mesh.nnodes):
         if (p.unknown.values[inode] > maxT):
             maxT = p.unknown.values[inode]
-            posMaxT = p.mesh.pos[inode]
+            posMaxT = p.domain.mesh.pos[inode]
     return maxT, posMaxT
 
 def debugHeatSourceNPeak( p ):
@@ -66,21 +68,26 @@ if __name__=="__main__":
     pTransportedMRF             = Problem("TransportedMRF")
     pMRFTransporter  = Problem("MRFTransporter")
 
-    points, cells = mesh(boxRef)
-    for p in [pFineFRF, pFRF, pMRFTransporter]:
-        p.input["points"] = points
-        p.input["cells"] = cells
-        p.input["cell_type"]="quad4"
+    meshFineFRF       = mhs.Mesh()
+    meshFRF           = mhs.Mesh()
+    meshNoTransportMRF= mhs.Mesh()
+    meshTransportedMRF= mhs.Mesh()
+    meshMRFTransporter= mhs.Mesh()
 
-    points, cells = mesh(boxInac)
-    for p in [pNoTransportMRF, pTransportedMRF]:
-        p.input["points"] = points
-        p.input["cells"] = cells
-        p.input["cell_type"]="quad4"
+
+
+    meshPhys = mhs.Mesh()
+    meshInputPhys = {}
+    meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = mesh(boxRef)
+
+    meshBg = mhs.Mesh()
+    meshInputBg = {}
+    meshInputBg["points"], meshInputBg["cells"], meshInputBg["cell_type"] = mesh(boxInac)
 
     #read input
     for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
         p.parseInput( inputFile )
+        p.input["cell_type"] = meshInputPhys["cell_type"]#TODO: quickfix!
 
     # set dt
     dt = setAdimR( adimR, pFRF )
@@ -106,8 +113,12 @@ if __name__=="__main__":
         p.input["speedFRF_X"]      = pTransportedMRF.input["HeatSourceSpeedX"]
         p.input["HeatSourceSpeedX"] = 0.0
 
-    for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
-        p.initialize()
+    for p, m in zip([pFineFRF, pFRF, pMRFTransporter], [meshFineFRF, meshFRF, meshMRFTransporter]):
+        m.initializeMesh( meshInputPhys )
+        p.initialize(m)
+    for p, m in zip([pNoTransportMRF, pTransportedMRF,], [meshNoTransportMRF, meshTransportedMRF,]):
+        m.initializeMesh( meshInputBg )
+        p.initialize(m)
 
     pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
     for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
@@ -129,8 +140,8 @@ if __name__=="__main__":
 
         #iter NoTransportMRF
         pNoTransportMRF.updateFRFpos()
-        activeElements = isInsideBox( pNoTransportMRF.mesh, boxRef )
-        pNoTransportMRF.setActiveElements( activeElements )
+        activeElements = isInsideBox( pNoTransportMRF.domain.mesh, boxRef )
+        pNoTransportMRF.domain.setActivation( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pNoTransportMRF )
         print("--------------------")
@@ -149,8 +160,8 @@ if __name__=="__main__":
         for tF, sF in zip(pTransportedMRF.previousValues, pMRFTransporter.previousValues):
             tF.interpolate( sF )
 
-        activeElements = isInsideBox( pTransportedMRF.mesh, boxRef )
-        pTransportedMRF.setActiveElements( activeElements )
+        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxRef )
+        pTransportedMRF.domain.setActivation( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pTransportedMRF )
         print("--------------------")

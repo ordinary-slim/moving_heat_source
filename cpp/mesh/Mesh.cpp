@@ -39,7 +39,7 @@ Element Mesh::getElement(int ielem) {
 Element Mesh::getBoundaryFacet(int ifacet) {
   // Assumed that ifacet is a boundary facet
   Element e = getEntity( ifacet, con_FacetPoint, refFacetEl );
-  Element parentEl = getElement( boundaryFacetsParentEl[ ifacet ] );
+  Element parentEl = getElement( boundary.parentEls[ ifacet ] );
   e.computeNormal( parentEl.getCentroid() );
   return e;
 }
@@ -55,7 +55,7 @@ int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
   }
 
   //Narrow Phase
-  vector<int>* facets;
+  const vector<int>* facets;
   Element cellEl;
   Element facetEl;
 
@@ -96,97 +96,23 @@ void mesh::Mesh::setAABBs() {
   std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 }
 
-void mesh::Mesh::updateActiveNodes() {
-  /*
-   * Update activeNodes after a change in activeElements
-   * If a node belongs to an active element, set it to active.
-   */
-  vector<int>* incidentElements;
-  for (int inode = 0; inode < nnodes; ++inode) {
-    activeNodes[inode] = 0;
-    incidentElements = con_PointCell.getLocalCon( inode );
-    for ( auto p_ielem = incidentElements->begin(); (p_ielem != incidentElements->end())&&(*p_ielem != -1); ++p_ielem ) {
-      if (activeElements[*p_ielem] == 1) {
-        activeNodes[inode] = 1;
-        break;
-      }
-    }
-  }
-}
-
-void mesh::Mesh::updateActiveElements() {
-  /*
-   * Update activeElements after a change in activeNodes
-   * If all the nodes of an element are active, activate it.
-   */
-  vector<int>* incidentNodes;
-  bool allNodesActive;
-  for (int ielem = 0; ielem < nels; ++ielem) {
-    activeElements[ielem] = 0;
-    incidentNodes = con_CellPoint.getLocalCon( ielem );
-    allNodesActive = true;
-    for ( auto p_inode = incidentNodes->begin(); (p_inode != incidentNodes->end())&&(*p_inode != -1); ++p_inode ) {
-
-      if (activeNodes[*p_inode] == 0) {
-        allNodesActive = false;
-        break;
-      }
-    }
-    if (allNodesActive) {
-      activeElements[ielem] = 1;
-    }
-  }
-}
-
-bool checkHasInactive( const vector<int> &activeElements ) {
-  return (std::find( activeElements.begin(), activeElements.end(), 0) != activeElements.end() );
-}
-
-void mesh::Mesh::setActiveElements(const vector<int> &otherActiveElements ) {
-  activeElements = otherActiveElements;
-  updateActiveNodes();
-  hasInactive = checkHasInactive(activeElements);
-  if (hasInactive) {
-    findBoundary();
-  }
-}
-
-void mesh::Mesh::setActiveNodes(const vector<int> &otherActiveNodes ) {
-  activeNodes = otherActiveNodes;
-  updateActiveElements();
-  hasInactive = checkHasInactive(activeElements);
-  if (hasInactive) {
-    findBoundary();
-  }
-}
-
-void mesh::Mesh::findBoundary() {
+Boundary mesh::Mesh::findBoundary() {
   /*
    * Build array of indices of boundary facets
-   * Check second element of con and decide
   */
-  boundaryFacets.clear();
-  boundaryFacetsParentEl.clear();
-  boundaryFacetsParentEl.resize( con_FacetCell.nels_oDim );
-  std::fill( boundaryFacetsParentEl.begin(), boundaryFacetsParentEl.end(), -1 );
-  int activeElsPerFacet;
+  Boundary b;
+  b.facets.clear();
+  b.parentEls.clear();
+  b.parentEls.resize( con_FacetCell.nels_oDim );
+  std::fill( b.parentEls.begin(), b.parentEls.end(), -1 );
   int lastVisitedActiveEl;
   for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
-    activeElsPerFacet = 0;
-    vector<int>* incidentElements = con_FacetCell.getLocalCon( ifacet );
-    for ( auto p_ielem = incidentElements->begin(); (p_ielem != incidentElements->end())&&(*p_ielem != -1); ++p_ielem ) {
-      
-      if (activeElements[ *p_ielem ]) {
-        lastVisitedActiveEl = *p_ielem;
-        ++activeElsPerFacet;
-      }
-    }
-    if (activeElsPerFacet==1) {
-      boundaryFacets.push_back( ifacet );
-      boundaryFacetsParentEl[ifacet] = lastVisitedActiveEl;
+    const vector<int>* incidentElements = con_FacetCell.getLocalCon( ifacet );
+    if (incidentElements->size()==1) {
+      b.facets.push_back( ifacet );
+      b.parentEls[ifacet] = lastVisitedActiveEl;
     }
   }
-  return;
+  return b;
 }
-
 }

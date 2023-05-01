@@ -67,19 +67,19 @@ class Problem(mhs.Problem):
             if iK in self.input:
                 self.input[iK] = int(self.input[iK])
 
-    def initialize(self):
+    def initialize(self, mesh):
         print( "Initializing {}".format( self.caseName ) )
         self.cleanupPrevPost()
-        super(Problem, self).initialize( self.input )
+        super(Problem, self).initialize( mesh, self.input )
 
     def forceState( self, function ):
         # TODO: Handle prevValues for BDF2+
-        val = np.zeros( self.mesh.nnodes )
-        for inode in range(self.mesh.nnodes):
-            if not(self.mesh.activeNodes[inode]):
+        val = np.zeros( self.domain.mesh.nnodes )
+        for inode in range(self.domain.mesh.nnodes):
+            if not(self.domain.activeNodes.x[inode]):
                 val[inode] = 0
                 continue
-            pos = self.mesh.posFRF[inode, :]
+            pos = self.domain.mesh.posFRF[inode, :]
             val[inode] = function( pos )
         self.initializeIntegrator( val )
 
@@ -113,7 +113,7 @@ class Problem(mhs.Problem):
     def frf2mrf(self, speed=None):
         if speed is None:
             speed = self.mhs.speed
-        self.mesh.setSpeedFRF( speed )
+        self.domain.mesh.setSpeedFRF( speed )
         self.setAdvectionSpeed( -speed )
         self.mhs.setSpeed( np.zeros(3) )
 
@@ -129,9 +129,9 @@ class Problem(mhs.Problem):
         os.makedirs(self.postFolder, exist_ok=True)
 
         if   rf=="FRF":
-            pos = self.mesh.posFRF
+            pos = self.domain.mesh.posFRF
         elif rf=="MRF":
-            pos = self.mesh.pos
+            pos = self.domain.mesh.pos
         else:
             print("Wrong value of rf")
             exit()
@@ -144,7 +144,7 @@ class Problem(mhs.Problem):
 
         point_data={"T": self.unknown.values,
                     "Pulse": self.mhs.pulse,
-                    "ActiveNodes": self.mesh.activeNodes,
+                    "ActiveNodes": self.domain.activeNodes.x,
                     }
         for label, fun in functions.items():
             point_data[label] = fun.values
@@ -153,9 +153,9 @@ class Problem(mhs.Problem):
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
         mesh = meshio.Mesh(
             pos,
-            [ (cell_type, self.mesh.con_CellPoint.con), ],
+            [ (cell_type, self.domain.mesh.con_CellPoint.con), ],
             point_data=point_data,
-            cell_data={"ActiveElements":[self.mesh.activeElements]},
+            cell_data={"ActiveElements":[self.domain.activeElements.x]},
         )
 
         postFilePath = "{}/{}_{}.vtu".format( self.postFolder, self.caseName, self.iter )
