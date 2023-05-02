@@ -3,6 +3,7 @@
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
+#include "../external/pybind11/include/pybind11/functional.h"
 
 namespace py = pybind11;
 
@@ -28,25 +29,35 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
+        .def("setDirichlet", static_cast<void (Problem::*)(vector<int>, std::function<double(Eigen::Vector3d)>)>(&Problem::setDirichlet),
+            "Set Dirichlet condition from indices of facets and function.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<vector<int>>, double)>(&Problem::setNeumann),
             "Set Neumann condition from array of nodes.")
         .def("setNeumann", static_cast<void (Problem::*)(Eigen::Vector3d, Eigen::Vector3d, double)>(&Problem::setNeumann),
             "Set Neumann condition from plane.")
+        .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
+            "Set Neumann condition from index of facet and flux function.")
         .def("deactivateFromExternal", &Problem::deactivateFromExternal);
     py::class_<mesh::Submesh>(m, "Submesh")
         .def(py::init<>())
+        .def("dim", &mesh::Submesh::dim)
         .def_readonly("activeNodes", &mesh::Submesh::activeNodes)
         .def_readonly("activeElements", &mesh::Submesh::activeElements)
+        .def_readonly("justActivatedBoundary", &mesh::Submesh::justActivatedBoundary)
         .def_readonly("mesh", &mesh::Submesh::mesh)
+        .def_readonly("boundary", &mesh::Submesh::boundary)
         .def("setActivation", &mesh::Submesh::setActivation);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<mesh::Mesh*>())
+        .def(py::init<mesh::Mesh*, int>())
         .def(py::init<mesh::Mesh*, int, vector<int>>())
         .def("setValues", &mesh::MeshTag<int>::setValues)
+        .def("getTrueIndices", &mesh::MeshTag<int>::getTrueIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
-        .def(py::init<>())
+        //.def(py::init<>())
         .def(py::init<const mesh::Mesh&>())
+        .def(py::init<const py::dict&>())
         .def_readonly("pos", &mesh::Mesh::pos)
         .def_readonly("posFRF", &mesh::Mesh::posFRF)
         .def_readonly("con_CellPoint", &mesh::Mesh::con_CellPoint)
@@ -57,10 +68,13 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
         .def_readonly("dim", &mesh::Mesh::dim)
-        .def("initializeMesh", &mesh::Mesh::initializeMesh)
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
+    py::class_<mesh::Boundary>(m, "Boundary")
+        .def(py::init<>())
+        .def_readonly("facets", &mesh::Boundary::facets)
+        .def("difference", &mesh::Boundary::difference);
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<>())
         .def(py::init<mesh::Mesh&>())
@@ -70,6 +84,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("interpolate", &fem::Function::interpolate)
         .def("interpolate2dirichlet", &fem::Function::interpolate2dirichlet)
         .def("releaseDirichlet", &fem::Function::releaseDirichlet)
+        .def("setValues", &fem::Function::setValues)
         .def_readonly("values", &fem::Function::values);
     //This export won't work unless list<Function> is made into
     //an opaque type or interpolate is wrapped into something else

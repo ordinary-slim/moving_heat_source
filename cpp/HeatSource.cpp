@@ -13,12 +13,13 @@ double gaussianPowerDensity2D(Eigen::Vector3d x, double t, Eigen::Vector3d x0, d
   return pd;
 }
 
-double testCteHeat1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
+double cteHeat(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
     double power, double efficiency, double radius) {
 
   double pd = 0;
   if ( (x - x0).norm() <= radius ) {
-    pd = efficiency * power / 2 / radius;
+    //pd = efficiency * power / 2 / radius;
+    pd = power;
   }
   return pd;
 }

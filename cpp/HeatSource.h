@@ -33,7 +33,7 @@ double gaussianPowerDensity1D(Eigen::Vector3d x, double t,
 double gaussianPowerDensity2D(Eigen::Vector3d x, double t,
     Eigen::Vector3d x0, double power, double efficiency, double radius);
 
-double testCteHeat1D(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
+double cteHeat(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
     double power, double efficiency, double radius);
 
 double forcedSolutionSource91(Eigen::Vector3d x, double t,

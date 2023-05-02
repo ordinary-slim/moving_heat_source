@@ -10,7 +10,7 @@ class Submesh {
     mesh::Mesh *mesh;//this should be private
                      
     bool hasInactive;
-    mesh::MeshTag<int> activeNodes, activeElements;
+    mesh::MeshTag<int> activeNodes, activeElements, justDeactivatedElements, justActivatedBoundary;
     mesh::Boundary boundary;
 
     Submesh() = default;
@@ -20,8 +20,12 @@ class Submesh {
       _dim = mesh->dim;
       activeNodes = mesh::MeshTag<int>(mesh, 0);
       activeElements = mesh::MeshTag<int>(mesh, mesh->dim);
+      justDeactivatedElements = mesh::MeshTag<int>(mesh, mesh->dim);
+      justActivatedBoundary = mesh::MeshTag<int>(mesh, mesh->dim-1);
       std::fill(activeNodes.x.begin(), activeNodes.x.end(), 1);
       std::fill(activeElements.x.begin(), activeElements.x.end(), 1);
+      std::fill(justDeactivatedElements.x.begin(), justDeactivatedElements.x.end(), 0);
+      std::fill(justActivatedBoundary.x.begin(), justActivatedBoundary.x.end(), 0);
       boundary = mesh->boundary;
     }
 
@@ -40,9 +44,12 @@ class Submesh {
       return e;
     }
 
+    int dim() { return _dim; }
+
     void setActivation(const MeshTag<int> &activation);
     void updateActiveNodes();
     void updateActiveElements();
+    void updateBeforeActivation();
     void updateAfterActivation();
   private:
     int _dim;

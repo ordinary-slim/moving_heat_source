@@ -122,6 +122,7 @@ class Problem(mhs.Problem):
                  rf = "FRF",
                  shift=None,
                  functions={},
+                 cellMeshTags={},
                  ):
         '''
         rf : reference frame, either FRF or MRF
@@ -146,8 +147,11 @@ class Problem(mhs.Problem):
                     "Pulse": self.mhs.pulse,
                     "ActiveNodes": self.domain.activeNodes.x,
                     }
+        cell_data={"ActiveElements":[self.domain.activeElements.x]}
         for label, fun in functions.items():
             point_data[label] = fun.values
+        for label, tag in cellMeshTags.items():
+            cell_data[label] = tag.x
 
         #export
         cell_type = self.cellMappingMeshio[self.input["cell_type"]]
@@ -155,7 +159,7 @@ class Problem(mhs.Problem):
             pos,
             [ (cell_type, self.domain.mesh.con_CellPoint.con), ],
             point_data=point_data,
-            cell_data={"ActiveElements":[self.domain.activeElements.x]},
+            cell_data=cell_data,
         )
 
         postFilePath = "{}/{}_{}.vtu".format( self.postFolder, self.caseName, self.iter )

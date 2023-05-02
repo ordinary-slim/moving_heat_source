@@ -21,10 +21,10 @@ def mesh(box, meshDen=1, variant="up"):
     cells = cells.astype( int )
     return points, cells, cell_type
 
-def exactSol22( x ):
+def exactSol( x ):
     return (1 - np.power(x[0], 2) - np.power(x[1],2))
 
-def setDirichlet22( p ):
+def setDirichlet( p ):
     points = p.input["points"]
     #set Dirichlet BC. boundary nodes to 0
     dirichletNodes = []
@@ -34,7 +34,7 @@ def setDirichlet22( p ):
         pos = points[inode, :]
         if (abs(abs(pos[0]) - 1) < tol) or (abs(abs(pos[1]) - 1) < tol):
             dirichletNodes.append( inode )
-            dirichletValues.append( exactSol22(pos) )
+            dirichletValues.append( exactSol(pos) )
     for p in [p,]:
         p.input["dirichletNodes"] = dirichletNodes
         p.input["dirichletValues"] = dirichletValues
@@ -58,7 +58,7 @@ def isInsideBox( mesh, box ):
 if __name__=="__main__":
     inputFile = "input.txt"
     box = [-1, 1, -1, 1]
-    boxLeft = [-1, 0, -1, 1]
+    boxLeft = [-1, 0, -1, 0.5]
 
     pLeft  = Problem("left")
     pRight  = Problem("right")
@@ -77,7 +77,7 @@ if __name__=="__main__":
 
     # set dirichlet BC
     for p in [pLeft, pRight,]:
-        setDirichlet22( p )
+        setDirichlet( p )
 
     pLeft.initialize(meshLeft)
     pRight.initialize(meshRight)
@@ -86,12 +86,15 @@ if __name__=="__main__":
     leftActiveEls = isInsideBox( pLeft.domain.mesh, boxLeft )
     pLeft.domain.setActivation( leftActiveEls )
 
+    # Deactivate pRight using pLeft
     pRight.deactivateFromExternal( pLeft )
 
-    # Set up left problem with dirichlet condition at right boundary
+    # Set Dirichlet left
+    # Set Neumann right
 
     # post
     pLeft.writepos()
     pRight.writepos(functions={
+        #"internalNodes":femInteralNodes,
         }
                     )

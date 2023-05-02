@@ -1,5 +1,5 @@
 radius		2.0
-power		300.0
+power		4
 initialPositionX	-10.0
 initialPositionY		0.0
 initialPositionZ		0.0
@@ -14,7 +14,7 @@ rho		1
 conductivity		1
 specific_heat		1
 environmentTemperature		2
-sourceTerm 22
+sourceTerm 86
 isAdvection 0
 advectionSpeedX 0.0
 advectionSpeedY 0.0

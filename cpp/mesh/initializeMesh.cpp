@@ -6,7 +6,7 @@
 
 namespace py = pybind11;
 
-void mesh::Mesh::initializeMesh(py::dict &input) {
+mesh::Mesh::Mesh(const py::dict &input) {
   //SET ELEMENT TYPE
   ElementType cell_type_flag;
   string aux_cell_type = py::cast<string>( input["cell_type"] );

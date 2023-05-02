@@ -42,7 +42,7 @@ void Problem::initialize(mesh::Mesh &mesh, py::dict &input) {
       { mhs.powerDensity = &forcedSolutionSource91;
         break; }
     case 86:
-      { mhs.powerDensity = &testCteHeat1D;
+      { mhs.powerDensity = &cteHeat;
         break; }
     default:
       {

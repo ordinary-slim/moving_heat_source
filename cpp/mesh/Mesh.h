@@ -18,6 +18,8 @@ class Mesh {
   public:
     // Copy constructor
     Mesh(const Mesh& mesh) = default;
+    // Construct from python dict with points, cells and cell_type
+    Mesh(const pybind11::dict &input);
     int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
@@ -37,7 +39,6 @@ class Mesh {
     ReferenceElement refFacetEl;
     vector<AABB> elementAABBs;
 
-    void initializeMesh(pybind11::dict &input);
     Boundary findBoundary();
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl );
     Element getElement(int ielem);

@@ -4,11 +4,15 @@
 
 namespace mesh {
   class Boundary {
+    /* 
+     * Should this exist?
+     * It should point to its mesh
+     */
     public:
-      int nfacets;
       std::vector<int> facets,//sorted boundary facets
         parentEls;// length of total # of facets. -1 if internal facet
                   // ielem of parent el if [iboun]
+      int size() { return facets.size(); }
       std::vector<int> difference(const Boundary &otherBoundary) {
         /*
          * Return facets that are ours but not theirs.

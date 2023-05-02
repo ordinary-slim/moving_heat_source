@@ -73,6 +73,7 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
   // For each facet, compare against each boundary facet
   //
   int  idxMatch;
+  int nfacetgpoints = domain.mesh->refFacetEl.ngpoints;
   for (vector<int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
@@ -89,7 +90,8 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
     }
     if (idxMatch >= 0) {
       neumannFacets.push_back( idxMatch );
-      neumannFluxes.push_back( neumannFlux );
+      //Ponder about where did you wrong
+      neumannFluxes.push_back( std::vector<double>(nfacetgpoints, neumannFlux) );
     } else {
       cout << "Not a boundary facet!" << endl;
       exit(-1);
@@ -103,9 +105,9 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
   mesh::Element e;
   bool isInPlane;
   Eigen::Vector3d distance;
-  for (int iBFacet : domain.mesh->boundary.facets) {
+  for (int iBFacet : domain.boundary.facets) {
     isInPlane = false;
-    e = domain.mesh->getBoundaryFacet( iBFacet );
+    e = domain.getBoundaryFacet( iBFacet );
 
     // Test if normals are colinear
     if ( normal.cross( e.normal ).norm() > tolerance) {
@@ -122,11 +124,52 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
 
     // if all tests passed, add facet
     neumannFacets.push_back( iBFacet );
-    neumannFluxes.push_back( neumannFlux );
+    neumannFluxes.push_back( std::vector<double>(e.ngpoints, neumannFlux) );
+  }
+}
+
+void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc ) {
+  mesh::Element e;
+  for (auto ifacet : otherNeumannFacets) {
+    // Test if ifacet belongs to boundary
+    if (std::find( domain.boundary.facets.begin(), domain.boundary.facets.end(), ifacet) == domain.boundary.facets.end() ) {
+      printf("%i is not a boundary facet, skipped\n", ifacet);
+      continue;
+    }
+    // Load element
+    e = domain.getBoundaryFacet( ifacet );
+
+    neumannFacets.push_back( ifacet );
+    double fluxAtPoint;
+    vector<double> facet_fluxes( e.ngpoints );
+    for (int igpoint = 0; igpoint < e.ngpoints; ++igpoint ) {
+      fluxAtPoint = e.normal.dot( fluxFunc(e.gpos.row( igpoint )) );
+      facet_fluxes[igpoint] = fluxAtPoint;
+    }
+    neumannFluxes.push_back( facet_fluxes );
+  }
+}
+
+void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc ) {
+  for (auto ifacet : otherDirichletFacets) {
+    // Test if ifacet belongs to boundary
+    if (std::find( domain.boundary.facets.begin(), domain.boundary.facets.end(), ifacet) == domain.boundary.facets.end() ) {
+      printf("%i is not a boundary facet, skipped\n", ifacet);
+      continue;
+    }
+    const vector<int> *incidentNodes = domain.mesh->con_FacetPoint.getLocalCon( ifacet );
+    for (int inode : *incidentNodes) {
+      // get position
+      Eigen::Vector3d pos = domain.mesh->pos.row( inode );
+      // update DSs
+      unknown.dirichletNodes.push_back( inode );
+      unknown.dirichletValues.push_back( dirichletFunc( pos ) );
+    }
   }
 }
 
 void Problem::deactivateFromExternal( Problem pExt ) {
+  mesh::MeshTag<int> newActiveElements = domain.activeElements;
   // External activation to function on external
   Eigen::VectorXd extActiveNodesValues(pExt.domain.mesh->nnodes);
   for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
@@ -150,8 +193,8 @@ void Problem::deactivateFromExternal( Problem pExt ) {
     }
     if (allNodesActive) {
       // Element owned by other problem
-      domain.activeElements.x[ielem] = 0;
+      newActiveElements.x[ielem] = 0;
     }
   }
-  domain.setActivation( domain.activeElements );
+  domain.setActivation( newActiveElements );
 }

@@ -38,6 +38,9 @@ class Function{
       dirichletNodes.clear();
       dirichletValues.clear();
     }
+    void setValues( const Eigen::VectorXd &otherValues ) {
+      values = otherValues;
+    }
 };
 void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
 }

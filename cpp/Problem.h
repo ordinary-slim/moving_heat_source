@@ -37,7 +37,7 @@ class Problem {
 
     // Neumann BC
     std::vector<int> neumannFacets;
-    std::vector<double> neumannFluxes;
+    std::vector<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
 
     // Convection BC
     double Tenv;
@@ -78,6 +78,8 @@ class Problem {
     }
     void setNeumann( vector<vector<int>> otherNeumannFacets, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
+    void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
+    void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void deactivateFromExternal( Problem pExt );
 };
 #define PROBLEM

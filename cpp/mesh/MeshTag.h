@@ -9,7 +9,6 @@ class MeshTag {
   public:
     std::vector<T> x;//values
     int size() const { return _size; }
-    int dim() const { return _dim; }
 
     MeshTag() = default;
 
@@ -18,6 +17,8 @@ class MeshTag {
       _dim  = dim;
       if (_dim == _mesh->dim ) {
         _size = _mesh->nels;
+      } else if ( _dim == _mesh->dim-1 ) {
+        _size = _mesh->con_FacetCell.nels_oDim;
       } else if ( _dim == 0 ) {
         _size = _mesh->nnodes;
       } else {
@@ -43,6 +44,7 @@ class MeshTag {
     void setValues(std::vector<T> &v) {
       x = v;
     }
+    int dim() const { return _dim; }
   private:
     int _dim, _size;
     Mesh* _mesh;
