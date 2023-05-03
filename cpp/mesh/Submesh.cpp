@@ -40,37 +40,6 @@ Boundary mesh::Submesh::findBoundary() {
   return b;
 }
 
-/*
-// Compute boundary with external problem
-if ( (extProblemBoun)&&(extProblemBoun->dim()==(domain.mesh->dim-1)) ) {
-  // Loop over facets
-  bool incident2JustDeactivated;
-  bool incident2Active;
-  const vector<int> *incidentEls;
-  for (int ifacet = 0; ifacet < domain.mesh->con_FacetCell.nels_oDim; ++ifacet) {
-    incident2JustDeactivated = false;
-    incident2Active = false;
-    // Loop over incident elements
-    incidentEls = domain.mesh->con_FacetCell.getLocalCon( ifacet );
-    for (int iel : *incidentEls ) {
-      // Ask if incident to JustDeactivated element
-      if (not(incident2JustDeactivated) && domain.justDeactivatedElements.x[iel]) {
-        incident2JustDeactivated = true;
-        continue;
-      }
-      // Ask if incident to Active element
-      if (not(incident2Active) && domain.activeElements.x[iel]) {
-        incident2Active = true;
-        continue;
-      }
-    }
-    if ((incident2Active)&&(incident2JustDeactivated)) {
-      extProblemBoun->x[ifacet] = 1;
-    }
-  }
-}
-*/
-
 void mesh::Submesh::updateActiveNodes() {
   /*
    * Update activeNodes after a change in activeElements

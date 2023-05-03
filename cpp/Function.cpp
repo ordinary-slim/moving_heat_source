@@ -22,7 +22,7 @@ double Function::evaluate( Eigen::Vector3d point ) const {
   return val;
 }
 
-Eigen::Vector3d Function::evalGrad( Eigen::Vector3d point ) {
+Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
   /*
   Output gradient of Function @ input point
   */
@@ -36,7 +36,7 @@ Eigen::Vector3d Function::evalGrad( Eigen::Vector3d point ) {
     exit(-1);
   }
   mesh::Element e = mesh->getElement( idxOwnerEl );//Load element containing point
-  Eigen::MatrixXd gradShaFunVals = e.evalGradShaFuns( point );
+  Eigen::MatrixXd gradShaFunVals = e.evaluateGradShaFuns( point );
 
   for (int inode = 0; inode < e.nnodes; ++inode) {
     grad += gradShaFunVals.row(inode) * values[ (*e.con)[ inode ] ] ;
@@ -85,15 +85,4 @@ void interpolate( list<Function> &targetFunctions, const list<Function> &sourceF
   }
 }
 
-void Function::interpolate2dirichlet( Function &extFEMFunc) {
-  Function fh = Function( *mesh );
-  fh.interpolate( extFEMFunc );
-  for (int inode = 0; inode < mesh->nnodes; inode++) {
-    if (fh.values(inode) >= 0) {//If interpolated
-      values(inode) = fh.values(inode);
-      dirichletNodes.push_back( inode );
-      dirichletValues.push_back( fh.values(inode) );
-    }
-  }
-}
 }

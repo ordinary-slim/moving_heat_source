@@ -1,4 +1,5 @@
 #ifndef ELTYPE
+#include <string>
 enum ElementType {
   point1,
   line2,
@@ -7,5 +8,6 @@ enum ElementType {
 };
 int getNnodesElType( ElementType );
 ElementType getIncidentElType( ElementType Dent_elType, int d );
+std::string getElementTypeName(ElementType elType);
 #define ELTYPE
 #endif

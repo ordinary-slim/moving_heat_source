@@ -23,3 +23,6 @@ ElementType getIncidentElType( ElementType Dent_elType, int d ) {
   exit(-1);
 }
 
+std::string getElementTypeName(ElementType &elType) {
+  return nameofElType[elType];
+}

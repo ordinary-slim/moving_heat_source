@@ -4,12 +4,11 @@ sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem
+from wrapper import Problem, readInput
 import pdb
 
-def mesh(box):
+def mesh(box, meshDen=4):
     cell_type="quad4"
-    meshDen = 4
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
         np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
@@ -35,11 +34,11 @@ def isInsideBox( mesh, box ):
     activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
     return activeElements
 
-def setAdimR( adimR, p ):
-    r = p.input["radius"]
-    HeatSourceSpeedX = max( abs(p.input["HeatSourceSpeedX"]), abs(p.input["advectionSpeedX"]))
-    HeatSourceSpeedY = max( abs(p.input["HeatSourceSpeedY"]), abs(p.input["advectionSpeedY"]))
-    HeatSourceSpeedZ = max( abs(p.input["HeatSourceSpeedZ"]), abs(p.input["advectionSpeedZ"]))
+def setAdimR( adimR, input ):
+    r = input["radius"]
+    HeatSourceSpeedX = max( abs(input["HeatSourceSpeedX"]), abs(input["advectionSpeedX"]))
+    HeatSourceSpeedY = max( abs(input["HeatSourceSpeedY"]), abs(input["advectionSpeedY"]))
+    HeatSourceSpeedZ = max( abs(input["HeatSourceSpeedZ"]), abs(input["advectionSpeedZ"]))
     speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
     return (adimR * r / speed)
 
@@ -58,67 +57,57 @@ def debugHeatSourceNPeak( p ):
 
 if __name__=="__main__":
     inputFile = "input.txt"
-    boxRef = [-16, 16, -5, 5]
-    boxInac = [-32, 32, -5, 5]
+    boxPhys = [-16, 16, -5, 5]
+    boxBg = [-32, 32, -5, 5]
     adimR = 1
 
-    pFineFRF         = Problem("fineFRF")
-    pFRF             = Problem("FRF")
-    pNoTransportMRF           = Problem("NoTransportMRF")
-    pTransportedMRF             = Problem("TransportedMRF")
-    pMRFTransporter  = Problem("MRFTransporter")
+    # read input
+    problemInput = readInput( inputFile )
 
-    meshFineFRF       = mhs.Mesh()
-    meshFRF           = mhs.Mesh()
-    meshNoTransportMRF= mhs.Mesh()
-    meshTransportedMRF= mhs.Mesh()
-    meshMRFTransporter= mhs.Mesh()
+    FineFRFInput = dict( problemInput )
+    FRFInput = dict( problemInput )
+    NoTransportMRFInput = dict( problemInput )
+    TransportedMRFInput = dict( problemInput )
 
+    # Mesh
+    meshInputPhys, meshInputBg = {}, {}
+    meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = mesh(boxPhys)
+    meshInputBg["points"], meshInputBg["cells"], meshInputBg["cell_type"] = mesh(boxBg)
 
+    meshFineFRF       = mhs.Mesh(meshInputPhys)
+    meshFRF           = mhs.Mesh(meshInputPhys)
+    meshNoTransportMRF= mhs.Mesh(meshInputBg)
+    meshTransportedMRF= mhs.Mesh(meshInputBg)
+    meshMRFTransporter= mhs.Mesh(meshInputPhys)
 
-    meshPhys = mhs.Mesh()
-    meshInputPhys = {}
-    meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = mesh(boxRef)
-
-    meshBg = mhs.Mesh()
-    meshInputBg = {}
-    meshInputBg["points"], meshInputBg["cells"], meshInputBg["cell_type"] = mesh(boxInac)
-
-    #read input
-    for p in [pFineFRF, pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
-        p.parseInput( inputFile )
-        p.input["cell_type"] = meshInputPhys["cell_type"]#TODO: quickfix!
-
+    # Problem params
     # set dt
-    dt = setAdimR( adimR, pFRF )
-    for p in [pFRF, pNoTransportMRF, pTransportedMRF, pMRFTransporter]:
-        p.input["dt"] = dt
+    dt = setAdimR( adimR, FRFInput )
+    for input in [FRFInput, TransportedMRFInput, NoTransportMRFInput]:
+        input["dt"] = dt
     ##determine fine problem tstep size
     approxFine_dt = pow(dt, 2)
     approxFine_dt = min( approxFine_dt, dt / 32.0 )
     fineStepsPerStep = int( np.ceil( dt / approxFine_dt ) )
     fine_dt = dt / float( fineStepsPerStep )
-    pFineFRF.input["dt"] = fine_dt
+    FineFRFInput["dt"] = fine_dt
 
     #set MRF business NO TRANSPORT
-    for p in [pNoTransportMRF,]:
-        p.input["isAdvection"] = 1
-        p.input["advectionSpeedX"] = -pTransportedMRF.input["HeatSourceSpeedX"]
-        p.input["speedFRF_X"]      = pTransportedMRF.input["HeatSourceSpeedX"]
-        p.input["HeatSourceSpeedX"] = 0.0
+    NoTransportMRFInput["isAdvection"] = 1
+    NoTransportMRFInput["advectionSpeedX"] = -FRFInput["HeatSourceSpeedX"]
+    NoTransportMRFInput["speedFRF_X"]      = FRFInput["HeatSourceSpeedX"]
+    NoTransportMRFInput["HeatSourceSpeedX"] = 0.0
     #set MRF business TRANSPORT
-    for p in [pTransportedMRF]:
-        p.input["isAdvection"] = 1
-        p.input["advectionSpeedX"] = -pTransportedMRF.input["HeatSourceSpeedX"]
-        p.input["speedFRF_X"]      = pTransportedMRF.input["HeatSourceSpeedX"]
-        p.input["HeatSourceSpeedX"] = 0.0
+    TransportedMRFInput["isAdvection"] = 1
+    TransportedMRFInput["advectionSpeedX"] = -FRFInput["HeatSourceSpeedX"]
+    TransportedMRFInput["speedFRF_X"]      = FRFInput["HeatSourceSpeedX"]
+    TransportedMRFInput["HeatSourceSpeedX"] = 0.0
 
-    for p, m in zip([pFineFRF, pFRF, pMRFTransporter], [meshFineFRF, meshFRF, meshMRFTransporter]):
-        m.initializeMesh( meshInputPhys )
-        p.initialize(m)
-    for p, m in zip([pNoTransportMRF, pTransportedMRF,], [meshNoTransportMRF, meshTransportedMRF,]):
-        m.initializeMesh( meshInputBg )
-        p.initialize(m)
+    pFineFRF         = Problem(meshFineFRF, FineFRFInput, caseName="fineFRF")
+    pFRF             = Problem(meshFRF, FRFInput, caseName="FRF")
+    pNoTransportMRF  = Problem(meshNoTransportMRF, NoTransportMRFInput, caseName="NoTransportMRF")
+    pTransportedMRF  = Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
+    pMRFTransporter  = Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
 
     pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
     for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
@@ -140,7 +129,7 @@ if __name__=="__main__":
 
         #iter NoTransportMRF
         pNoTransportMRF.updateFRFpos()
-        activeElements = isInsideBox( pNoTransportMRF.domain.mesh, boxRef )
+        activeElements = isInsideBox( pNoTransportMRF.domain.mesh, boxPhys )
         pNoTransportMRF.domain.setActivation( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pNoTransportMRF )
@@ -160,7 +149,7 @@ if __name__=="__main__":
         for tF, sF in zip(pTransportedMRF.previousValues, pMRFTransporter.previousValues):
             tF.interpolate( sF )
 
-        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxRef )
+        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxPhys )
         pTransportedMRF.domain.setActivation( activeElements )
         print("---BEFORE-----------")
         debugHeatSourceNPeak( pTransportedMRF )

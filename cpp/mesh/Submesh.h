@@ -13,12 +13,14 @@ class Submesh {
     mesh::MeshTag<int> activeNodes, activeElements, justDeactivatedElements, justActivatedBoundary;
     mesh::Boundary boundary;
 
-    Submesh() = default;
-
-    Submesh(Mesh *m) {
+    Submesh(Mesh *m) :
+      activeNodes(mesh::MeshTag<int>(m, 0)),
+      activeElements(mesh::MeshTag<int>(m, m->dim)),
+      justDeactivatedElements(mesh::MeshTag<int>(m, m->dim)),
+      justActivatedBoundary(mesh::MeshTag<int>(m, m->dim-1))
+    {
       mesh = m;
       _dim = mesh->dim;
-      activeNodes = mesh::MeshTag<int>(mesh, 0);
       activeElements = mesh::MeshTag<int>(mesh, mesh->dim);
       justDeactivatedElements = mesh::MeshTag<int>(mesh, mesh->dim);
       justActivatedBoundary = mesh::MeshTag<int>(mesh, mesh->dim-1);

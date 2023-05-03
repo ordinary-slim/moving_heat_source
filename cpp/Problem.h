@@ -15,6 +15,7 @@ namespace py = pybind11;
 
 class Problem {
   public:
+    Problem(mesh::Mesh &mesh, py::dict &input);
     mesh::Submesh domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
@@ -34,6 +35,10 @@ class Problem {
     vector<Eigen::Triplet<double>> lhsCoeffs;
     Eigen::SparseMatrix<double> M; // mass mat
     vector<Eigen::Triplet<double>> massCoeffs;
+
+    // Dirichlet BC
+    mesh::MeshTag<int>    dirichletNodes;
+    mesh::MeshTag<double> dirichletValues;
 
     // Neumann BC
     std::vector<int> neumannFacets;
@@ -58,7 +63,6 @@ class Problem {
       advectionSpeed = inputAdvectionSpeed;
       if (advectionSpeed.norm() > 1e-10) isAdvection = true;
     }
-    void initialize(mesh::Mesh &mesh, py::dict &input);
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void updateFRFpos();
@@ -80,7 +84,17 @@ class Problem {
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
+    void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
     void deactivateFromExternal( Problem pExt );
+    void interpolate2dirichlet( fem::Function &extFEMFunc);
+
+    void clearBCs() {
+      neumannFacets.clear();
+      neumannFluxes.clear();
+      convectionFacets.clear();
+      fill( dirichletNodes.x.begin(), dirichletNodes.x.end(), 0);
+      fill( dirichletValues.x.begin(), dirichletValues.x.end(), 0.0);
+    }
 };
 #define PROBLEM
 #endif

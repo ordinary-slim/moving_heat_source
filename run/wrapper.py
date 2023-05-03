@@ -12,8 +12,7 @@ import meshio
 import pdb
 import re
 
-class Problem(mhs.Problem):
-    # Convenience glob vars
+def readInput(fileName):
     integerKeys = [
             "nels",
             "maxIter",
@@ -22,55 +21,51 @@ class Problem(mhs.Problem):
             "sourceTerm",
             "isAdvection",
             ]
+    problemInput = {}
+    lines = []
+    with open( fileName, 'r') as f:
+        lines = f.readlines()
+
+    for idx, l in enumerate(lines):
+        lines[idx] =  l.rstrip("\n")
+
+    for l in lines:
+        pair = l.split()
+        problemInput[pair[0]] = float(pair[1])
+
+    for iK in integerKeys:
+        if iK in problemInput:
+            problemInput[iK] = int(problemInput[iK])
+
+    return problemInput
+
+class Problem(mhs.Problem):
+    # Convenience glob vars
     cellMappingMeshio = {
             "line2" : "line",
             "quad4" : "quad",
             "triangle3" : "triangle",
         }
-    def __init__(self, caseName, problem=None):
+    def __init__(self, mesh, input, problem=None, caseName="case"):
         self.caseName= caseName
-        self.input = {}
+        self.input = input
         self.iter = 0
-        self.postFolder = "post_{}".format( caseName )
+        self.postFolder = "post_{}".format( self.caseName )
+
         if problem:
             self.input = problem.input
             super().__init__(problem)
             self.setPointers()
             self.iter = problem.iter
         else:
-            super().__init__()
+            super().__init__(mesh, input)
 
     # PREPROCESSING
     # Process params
-    def readInputFile( self, fileName ):
-        self.parseInput( fileName )
-
     def setMesh( self, points, cells, cell_type ):
         self.input["points"] = points
         self.input["cells"] = cells
         self.input["cell_type"]=cell_type
-
-    def parseInput(self, fileName):
-        lines = []
-
-        with open( fileName, 'r') as f:
-            lines = f.readlines()
-
-        for idx, l in enumerate(lines):
-            lines[idx] =  l.rstrip("\n")
-
-        for l in lines:
-            pair = l.split()
-            self.input[pair[0]] = float(pair[1])
-
-        for iK in self.integerKeys:
-            if iK in self.input:
-                self.input[iK] = int(self.input[iK])
-
-    def initialize(self, mesh):
-        print( "Initializing {}".format( self.caseName ) )
-        self.cleanupPrevPost()
-        super(Problem, self).initialize( mesh, self.input )
 
     def forceState( self, function ):
         # TODO: Handle prevValues for BDF2+
@@ -154,10 +149,11 @@ class Problem(mhs.Problem):
             cell_data[label] = tag.x
 
         #export
-        cell_type = self.cellMappingMeshio[self.input["cell_type"]]
+        myCellType = self.domain.mesh.elementTypes[0].name
+        cellType = self.cellMappingMeshio[myCellType]
         mesh = meshio.Mesh(
             pos,
-            [ (cell_type, self.domain.mesh.con_CellPoint.con), ],
+            [ (cellType, self.domain.mesh.con_CellPoint.con), ],
             point_data=point_data,
             cell_data=cell_data,
         )

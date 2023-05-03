@@ -9,9 +9,8 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
-        .def(py::init<>())
-        .def(py::init<Problem>())
-        .def("initialize", &Problem::initialize)
+        .def(py::init<Problem>())//copy constructor
+        .def(py::init<mesh::Mesh&, py::dict&>())
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("updateFRFpos", &Problem::updateFRFpos)
         .def("iterate", &Problem::iterate)
@@ -27,9 +26,12 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
         .def("setDirichlet", static_cast<void (Problem::*)(vector<int>, std::function<double(Eigen::Vector3d)>)>(&Problem::setDirichlet),
+            "Set Dirichlet condition from indices of facets and function.")
+        .def("setDirichlet", static_cast<void (Problem::*)(const vector<int>&, const vector<double>&)>(&Problem::setDirichlet),
             "Set Dirichlet condition from indices of facets and function.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<vector<int>>, double)>(&Problem::setNeumann),
             "Set Neumann condition from array of nodes.")
@@ -39,7 +41,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from index of facet and flux function.")
         .def("deactivateFromExternal", &Problem::deactivateFromExternal);
     py::class_<mesh::Submesh>(m, "Submesh")
-        .def(py::init<>())
+        .def(py::init<mesh::Mesh*>())
         .def("dim", &mesh::Submesh::dim)
         .def_readonly("activeNodes", &mesh::Submesh::activeNodes)
         .def_readonly("activeElements", &mesh::Submesh::activeElements)
@@ -48,14 +50,13 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("boundary", &mesh::Submesh::boundary)
         .def("setActivation", &mesh::Submesh::setActivation);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
-        .def(py::init<mesh::Mesh*>())
-        .def(py::init<mesh::Mesh*, int>())
-        .def(py::init<mesh::Mesh*, int, vector<int>>())
+        .def(py::init<const mesh::Mesh*>())
+        .def(py::init<const mesh::Mesh*, int>())
+        .def(py::init<const mesh::Mesh*, int, vector<int>>())
         .def("setValues", &mesh::MeshTag<int>::setValues)
         .def("getTrueIndices", &mesh::MeshTag<int>::getTrueIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
-        //.def(py::init<>())
         .def(py::init<const mesh::Mesh&>())
         .def(py::init<const py::dict&>())
         .def_readonly("pos", &mesh::Mesh::pos)
@@ -68,6 +69,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
         .def_readonly("dim", &mesh::Mesh::dim)
+        .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
@@ -80,10 +82,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<mesh::Mesh&>())
         .def(py::init<mesh::Mesh&, const Eigen::VectorXd&>())
         .def("evaluate", &fem::Function::evaluate)
-        .def("evalGrad", &fem::Function::evalGrad)
+        .def("evaluateGrad", &fem::Function::evaluateGrad)
         .def("interpolate", &fem::Function::interpolate)
-        .def("interpolate2dirichlet", &fem::Function::interpolate2dirichlet)
-        .def("releaseDirichlet", &fem::Function::releaseDirichlet)
         .def("setValues", &fem::Function::setValues)
         .def_readonly("values", &fem::Function::values);
     //This export won't work unless list<Function> is made into
@@ -112,6 +112,11 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("computeDerivatives", &mesh::Element::computeDerivatives)
         .def("getCentroid", &mesh::Element::getCentroid)
         .def("getSizeAlongVector", &mesh::Element::getSizeAlongVector);
+    py::enum_<ElementType>(m, "ElementType")
+        .value("point1", ElementType::point1)
+        .value("line2", ElementType::line2)
+        .value("triangle3", ElementType::triangle3)
+        .value("quad4", ElementType::quad4);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition)

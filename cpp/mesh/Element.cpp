@@ -95,7 +95,7 @@ Eigen::VectorXd mesh::Element::evalShaFuns( Eigen::Vector3d pos ) {
   return shaFunsVals;
 }
 
-Dense3ColMat mesh::Element::evalGradShaFuns( Eigen::Vector3d pos ) {
+Dense3ColMat mesh::Element::evaluateGradShaFuns( Eigen::Vector3d pos ) {
   /*
   Evaluate grad shape funcs at a point
   */

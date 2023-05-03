@@ -162,10 +162,15 @@ void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<doub
       // get position
       Eigen::Vector3d pos = domain.mesh->pos.row( inode );
       // update DSs
-      unknown.dirichletNodes.push_back( inode );
-      unknown.dirichletValues.push_back( dirichletFunc( pos ) );
+      dirichletNodes[ inode ] = 1;
+      dirichletValues[ inode ] = dirichletFunc( pos );
     }
   }
+}
+
+void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues) {
+  dirichletNodes = mesh::mark( *domain.mesh, 0, otherDirichletNodes );
+  dirichletValues = mesh::MeshTag<double>( domain.mesh, otherDirichletNodes, otherDirichletValues, 0 );
 }
 
 void Problem::deactivateFromExternal( Problem pExt ) {
@@ -197,4 +202,16 @@ void Problem::deactivateFromExternal( Problem pExt ) {
     }
   }
   domain.setActivation( newActiveElements );
+}
+
+void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
+  fem::Function fh = fem::Function( *domain.mesh );
+  fh.interpolate( extFEMFunc );
+  for (int inode = 0; inode < domain.mesh->nnodes; inode++) {
+    if (fh.values(inode) >= 0) {//If interpolated
+      unknown.values(inode) = fh.values(inode);
+      dirichletNodes[ inode ] = 1;
+      dirichletValues[ inode ] = fh.values(inode) ;
+    }
+  }
 }

@@ -46,5 +46,5 @@ if __name__=="__main__":
     p.forceState( f )
 
     point = np.array([-0.5, -0.5, 0.0])
-    out = p.unknown.evalGrad( point )
+    out = p.unknown.evaluateGrad( point )
     print( out )

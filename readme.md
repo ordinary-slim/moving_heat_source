@@ -2,6 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [x] Dirichlet condition to MeshTags
+- [ ] Move elementTypes to class
 - [ ] Take MeshTags for BCs
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [ ] When to update boundary of Mesh ?
@@ -20,6 +22,7 @@ To-do:
 - [x] Active/Deactivate from MeshFunction
 - [ ] Storing neumannFluxes as array[facets][gausspoints]
     - Is it a good idea?
+- [ ] Separate solve for coupled iterations!
 
 Dependencies:
 

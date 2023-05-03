@@ -11,8 +11,6 @@ class Function{
   public:
     mesh::Mesh* mesh;
     Eigen::VectorXd values;
-    std::vector<int> dirichletNodes;
-    std::vector<double> dirichletValues;
 
     Function(){
     }
@@ -31,13 +29,8 @@ class Function{
     }
 
     double evaluate( Eigen::Vector3d point ) const;
-    Eigen::Vector3d evalGrad( Eigen::Vector3d point );
+    Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
     void interpolate(Function &extFEMFunc );
-    void interpolate2dirichlet(Function &extFEMFunc);
-    void releaseDirichlet(){
-      dirichletNodes.clear();
-      dirichletValues.clear();
-    }
     void setValues( const Eigen::VectorXd &otherValues ) {
       values = otherValues;
     }

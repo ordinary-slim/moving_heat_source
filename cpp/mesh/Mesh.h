@@ -47,6 +47,18 @@ class Mesh {
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
       speedFRF = inputSpeedFRF;
     }
+    int getNumEntities( const int inputDim ) const {
+      if (inputDim == dim ) {
+        return nels;
+      } else if ( inputDim == (dim-1) ) {
+        return con_FacetCell.nels_oDim;
+      } else if ( inputDim == 0 ) {
+        return nnodes;
+      } else {
+        cout << "Not ready yet!" << endl;
+        exit(-1);
+      }
+    }
     void setAABBs();
     int findOwnerElement( Eigen::Vector3d point );
 };

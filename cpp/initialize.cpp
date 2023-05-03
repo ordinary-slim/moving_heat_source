@@ -8,10 +8,11 @@
 
 namespace py = pybind11;
 
-void Problem::initialize(mesh::Mesh &mesh, py::dict &input) {
-  // MESH
-  domain = mesh::Submesh( &mesh );
-
+Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
+  dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
+  dirichletValues( mesh::MeshTag<double>( &mesh ) ),
+  domain( mesh::Submesh( &mesh ) )
+{
   // MATERIAL
   // TODO: Better DS!
   material["rho"] = py::cast<double>(input["rho"]);
@@ -75,12 +76,10 @@ void Problem::initialize(mesh::Mesh &mesh, py::dict &input) {
   previousValues.push_front(  unknown );
   ++timeIntegrator.nstepsStored;
 
-
-
   // DIRICHLET BC
   if (input.contains("dirichletNodes")) {
-    unknown.dirichletNodes = py::cast<vector<int>>(input["dirichletNodes"]);
-    unknown.dirichletValues = py::cast<vector<double>>(input["dirichletValues"]);
+    setDirichlet( py::cast<vector<int>>(input["dirichletNodes"]),
+                  py::cast<vector<double>>(input["dirichletValues"]) );
   }
 
   // NEUMANN BC
