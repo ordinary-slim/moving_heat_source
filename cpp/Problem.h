@@ -65,6 +65,9 @@ class Problem {
     }
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
+    void assemble();
+    void solve();
+    void cleanupLinearSystem();
     void updateFRFpos();
     void assembleSpatialLHS();//mass, diffusion, advection
     void assembleSpatialRHS();//source term

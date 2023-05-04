@@ -78,18 +78,28 @@ if __name__=="__main__":
 
     # Deactivate pRight using pLeft
     pRight.deactivateFromExternal( pLeft )
+    pRight.writepos()
 
-    # set dirichlet BC
-    for p in [pLeft, pRight,]:
-        setDirichlet( p )
-    # Set Dirichlet left
-    pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
-    # Solve pLeft
-    pLeft.iterate()
-    # Set Neumann right
-    pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluateGrad )
-    # Solve pRight
-    pRight.iterate()
+    numSolves = 10
+    for it in range(numSolves):
+        # PRE-SOLVE
+        for p in [pLeft, pRight,]:
+            p.clearBCs()
+            p.cleanupLinearSystem()
+        # SET BCs
+        # set dirichlet BC
+        for p in [pLeft, pRight,]:
+            setDirichlet( p )
+        # Set Dirichlet left
+        pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
+        # Solve pLeft
+        pLeft.assemble()
+        pLeft.solve()
+        # Set Neumann right
+        pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluateGrad )
+        # Solve pRight
+        pRight.assemble()
+        pRight.solve()
 
     # post
     pLeft.writepos()

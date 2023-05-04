@@ -16,6 +16,16 @@ void Problem::updateFRFpos() {
 
 void Problem::preIterate() {
   /* Beginning of iteration operations*/
+
+  cleanupLinearSystem();
+
+  //TODO: Move mass matrix allocs etc here
+  // UPDATE to tn+1
+  mhs.updatePosition( dt );
+  setTime( time + dt );
+  ++iter;
+}
+void Problem::cleanupLinearSystem() {
   // CLEANUP Linear System
   lhs.resize( domain.mesh->nnodes, domain.mesh->nnodes );
   rhs.resize( domain.mesh->nnodes );
@@ -28,12 +38,6 @@ void Problem::preIterate() {
 
   massCoeffs.clear();
   massCoeffs.reserve( 3*domain.mesh->nnodes );
-
-  //TODO: Move mass matrix allocs etc here
-  // UPDATE to tn+1
-  mhs.updatePosition( dt );
-  setTime( time + dt );
-  ++iter;
 }
 
 

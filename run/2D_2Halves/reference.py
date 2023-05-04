@@ -5,7 +5,7 @@ import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 import numpy as np
-from wrapper import Problem
+from wrapper import Problem, readInput
 import pdb
 
 def meshTri(box, meshDen=1, variant="up"):
@@ -35,8 +35,20 @@ def meshQuad(box, meshDen=1, variant="up"):
     cells = cells.astype( int )
     return points, cells, cell_type
 
-def exactSol22( x ):
+def exactSol( x ):
     return (1 - np.power(x[0], 2) - np.power(x[1],2))
+
+def setDirichlet( p ):
+    #set Dirichlet BC. boundary nodes to 0
+    dirichletNodes = []
+    dirichletValues = []
+    tol = 1e-7
+    for inode in range(p.domain.mesh.nnodes):
+        pos = p.domain.mesh.pos[inode, :]
+        if (abs(abs(pos[0]) - 1) < tol) or (abs(abs(pos[1]) - 1) < tol):
+            dirichletNodes.append( inode )
+            dirichletValues.append( exactSol(pos) )
+    p.setDirichlet( dirichletNodes, dirichletValues )
 
 def isInsideBox( mesh, box ):
     activeElements = []
@@ -50,40 +62,40 @@ def isInsideBox( mesh, box ):
 
         isInside = 1*(xmin>=box[0] and xmax <= box[1] and ymin >= box[2] and ymax <= box[3])
         activeElements.append(isInside)
+
+    activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
     return activeElements
 
 if __name__=="__main__":
     inputFile = "input.txt"
     box = [-1, 1, -1, 1]
 
-    p  = Problem("reference")
+    # Read input
+    problemInput = readInput( inputFile )
 
-    points, p.input["cells"], p.input["cell_type"] = meshQuad(box, meshDen=2, variant="zigzag")
-    p.input["points"] = points
+    # Mesh
+    meshInput = {}
+    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = meshQuad(box, meshDen=2, variant="zigzag")
+    m = mhs.Mesh( meshInput )
 
-    #set Dirichlet BC. boundary nodes to 0
-    dirichletNodes = []
-    dirichletValues = []
-    tol = 1e-7
-    for inode in range(points.shape[0]):
-        pos = points[inode, :]
-        if (abs(abs(pos[0]) - 1) < tol) or (abs(abs(pos[1]) - 1) < tol):
-            dirichletNodes.append( inode )
-            dirichletValues.append( exactSol22(pos) )
-    for p in [p,]:
-        p.input["dirichletNodes"] = dirichletNodes
-        p.input["dirichletValues"] = dirichletValues
+    # Initialize problems
+    p  = Problem(m, problemInput, caseName="reference")
 
-    #read input
-    for p in [p,]:
-        p.parseInput( inputFile )
-
-    for p in [p,]:
-        p.initialize()
-
+    # Set Dirichlet
+    setDirichlet( p )
 
     #solve
     p.iterate()
 
+    #exact sol
+    vals = np.zeros( p.domain.mesh.nnodes )
+    for inode in range( p.domain.mesh.nnodes):
+        pos = p.domain.mesh.pos[inode, :]
+        vals[inode] = exactSol( pos )
+    es = mhs.Function( p.domain.mesh, vals )
+
+
     # post
-    p.writepos()
+    p.writepos(functions={
+        "exactSol":es,
+        })

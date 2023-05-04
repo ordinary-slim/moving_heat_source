@@ -1,9 +1,9 @@
 radius		2.0
 power		4
-initialPositionX	-10.0
+initialPositionX	  0.0
 initialPositionY		0.0
 initialPositionZ		0.0
-HeatSourceSpeedX		10
+HeatSourceSpeedX		0
 HeatSourceSpeedY		0
 HeatSourceSpeedZ		0
 dt	0.1

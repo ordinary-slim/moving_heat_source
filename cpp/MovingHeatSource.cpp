@@ -11,9 +11,12 @@ PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         .def(py::init<Problem>())//copy constructor
         .def(py::init<mesh::Mesh&, py::dict&>())
+        .def("iterate", &Problem::iterate)
+        .def("assemble", &Problem::assemble)
+        .def("solve", &Problem::solve)
+        .def("cleanupLinearSystem", &Problem::cleanupLinearSystem)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("updateFRFpos", &Problem::updateFRFpos)
-        .def("iterate", &Problem::iterate)
         .def("preIterate", &Problem::preIterate)
         .def("postIterate", &Problem::postIterate)
         .def("setTime", &Problem::setTime)
@@ -39,6 +42,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from plane.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
+        .def("clearBCs", &Problem::clearBCs)
         .def("deactivateFromExternal", &Problem::deactivateFromExternal);
     py::class_<mesh::Submesh>(m, "Submesh")
         .def(py::init<mesh::Mesh*>())
