@@ -9,8 +9,7 @@ namespace mesh
 Element Mesh::getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
 
   if (ient < 0) {
-    cout << "Bad Mesh::getEntity!" << endl;
-    exit(-1);
+    throw std::invalid_argument( "received negative value." );
   }
 
   Element e;
@@ -105,12 +104,11 @@ Boundary mesh::Mesh::findBoundary() {
   b.parentEls.clear();
   b.parentEls.resize( con_FacetCell.nels_oDim );
   std::fill( b.parentEls.begin(), b.parentEls.end(), -1 );
-  int lastVisitedActiveEl;
   for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
     const vector<int>* incidentElements = con_FacetCell.getLocalCon( ifacet );
     if (incidentElements->size()==1) {
       b.facets.push_back( ifacet );
-      b.parentEls[ifacet] = lastVisitedActiveEl;
+      b.parentEls[ifacet] = (*incidentElements)[0];
     }
   }
   return b;

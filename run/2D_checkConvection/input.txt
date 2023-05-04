@@ -12,7 +12,6 @@ rho		1
 conductivity		2
 specific_heat		1
 convectionCoeff 1
-environmentTemperature		0
 timeIntegration 1
 sourceTerm 1
 isAdvection 0
@@ -23,3 +22,5 @@ speedFRF_X 0.0
 speedFRF_Y 0.0
 speedFRF_Z 0.0
 isStabilized 0
+convectionCoeff 1
+environmentTemperature		0

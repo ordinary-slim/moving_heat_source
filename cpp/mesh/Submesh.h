@@ -1,4 +1,5 @@
 #ifndef SUBMESH
+#define SUBMESH
 #include <algorithm>
 #include "Mesh.h"
 #include "MeshTag.h"
@@ -57,5 +58,4 @@ class Submesh {
     int _dim;
 };
 }
-#define SUBMESH
 #endif

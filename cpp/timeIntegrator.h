@@ -1,4 +1,5 @@
 #ifndef TIMEINTEGRATOR
+#define TIMEINTEGRATOR
 #include <Eigen/Core>
 
 class TimeIntegratorHandler {
@@ -52,5 +53,4 @@ class TimeIntegratorHandler {
         }
       }
     };
-#define TIMEINTEGRATOR
 #endif

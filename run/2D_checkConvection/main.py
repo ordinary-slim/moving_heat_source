@@ -1,16 +1,16 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
+sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem
+from wrapper import Problem, readInput
 import pdb
 
 maxIter = 40
 dt = 0.5
 Tfinal = 20
-initialT = 25
+initialT = 10
 
 def mesh(box):
     cell_type="quad4"
@@ -22,26 +22,23 @@ def mesh(box):
         #variant="zigzag",  # or "up", "down", "center"
     )
     cells = cells.astype( int )
-    return points, cells
+    return points, cells, cell_type
 
 if __name__=="__main__":
     inputFile = "input.txt"
     box = [-16, 16, -5, 5]
 
-    p             = Problem("case")
+    # Read input
+    problemInput = readInput( inputFile )
 
-    points, cells = mesh(box)
-    for p in [p,]:
-        p.input["points"] = points
-        p.input["cells"] = cells
-        p.input["cell_type"]="quad4"
+    # Mesh
+    meshInput = {}
+    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box)
+    m = mhs.Mesh(meshInput)
 
-    #read input
-    for p in [p,]:
-        p.parseInput( inputFile )
+    # Initialize problems
+    p  = Problem(m, problemInput, caseName="case")
 
-    for p in [p,]:
-        p.initialize()
 
     f = lambda pos : initialT
     p.forceState( f )

@@ -1,4 +1,5 @@
 #ifndef FEMFUNC
+#define FEMFUNC
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
@@ -37,5 +38,4 @@ class Function{
 };
 void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
 }
-#define FEMFUNC
 #endif

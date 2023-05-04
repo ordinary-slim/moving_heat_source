@@ -1,4 +1,5 @@
 #ifndef MESH
+#define MESH
 #include <iostream>
 #include <vector>
 #include <Eigen/Core>
@@ -63,5 +64,4 @@ class Mesh {
     int findOwnerElement( Eigen::Vector3d point );
 };
 }
-#define MESH
 #endif

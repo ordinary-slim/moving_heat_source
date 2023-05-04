@@ -1,4 +1,5 @@
 #ifndef MESHTAG
+#define MESHTAG
 #include <vector>
 #include "Mesh.h"
 
@@ -66,6 +67,4 @@ class MeshTag {
 };
 MeshTag<int> mark( const Mesh &mesh, int dim = 0, const vector<int> &indices = vector<int>() );
 }
-
-#define MESHTAG
 #endif

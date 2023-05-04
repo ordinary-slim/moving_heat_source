@@ -1,4 +1,5 @@
 #ifndef HEATSOURCE
+#define HEATSOURCE
 #include <vector>
 #include <Eigen/Core>
 
@@ -38,5 +39,4 @@ double cteHeat(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
 
 double forcedSolutionSource91(Eigen::Vector3d x, double t,
     Eigen::Vector3d x0, double power, double efficiency, double radius);
-#define HEATSOURCE
 #endif

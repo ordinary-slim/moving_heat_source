@@ -1,4 +1,5 @@
 #ifndef REFELEMENT
+#define REFELEMENT
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -239,5 +240,4 @@ class ReferenceElement {
     }
   }
 };
-#define REFELEMENT
 #endif

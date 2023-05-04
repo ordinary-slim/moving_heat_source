@@ -93,9 +93,8 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
       }
     }
     if (idxMatch >= 0) {
-      neumannFacets.push_back( idxMatch );
-      //Ponder about where did you wrong
-      neumannFluxes.push_back( std::vector<double>(nfacetgpoints, neumannFlux) );
+      neumannFacets[ idxMatch ] = 1;
+      neumannFluxes[ idxMatch ] =  std::vector<double>(nfacetgpoints, neumannFlux);
     } else {
       cout << "Not a boundary facet!" << endl;
       exit(-1);
@@ -127,8 +126,8 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
     }
 
     // if all tests passed, add facet
-    neumannFacets.push_back( iBFacet );
-    neumannFluxes.push_back( std::vector<double>(e.ngpoints, neumannFlux) );
+    neumannFacets[ iBFacet ] = 1;
+    neumannFluxes[ iBFacet ] =  std::vector<double>(e.ngpoints, neumannFlux);
   }
 }
 
@@ -143,14 +142,14 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
     // Load element
     e = domain.getBoundaryFacet( ifacet );
 
-    neumannFacets.push_back( ifacet );
+    neumannFacets[ ifacet ] = 1;
     double fluxAtPoint;
     vector<double> facet_fluxes( e.ngpoints );
     for (int igpoint = 0; igpoint < e.ngpoints; ++igpoint ) {
       fluxAtPoint = e.normal.dot( fluxFunc(e.gpos.row( igpoint )) );
       facet_fluxes[igpoint] = fluxAtPoint;
     }
-    neumannFluxes.push_back( facet_fluxes );
+    neumannFluxes[ ifacet ] = facet_fluxes;
   }
 }
 

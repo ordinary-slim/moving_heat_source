@@ -41,7 +41,7 @@ if __name__=="__main__":
     problemInput = readInput( inputFile )
     # Mesh
     meshInput = {}
-    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box)
+    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box, meshDen=2)
     m = mhs.Mesh( meshInput )
 
     # Initialize problems

@@ -1,4 +1,5 @@
 #ifndef PROBLEM
+#define PROBLEM
 #include <map>
 #include <string>
 #include <list>
@@ -41,12 +42,12 @@ class Problem {
     mesh::MeshTag<double> dirichletValues;
 
     // Neumann BC
-    std::vector<int> neumannFacets;
-    std::vector<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
+    mesh::MeshTag<int>    neumannFacets;
+    mesh::MeshTag<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
 
     // Convection BC
+    mesh::MeshTag<int> convectionFacets;
     double Tenv;
-    std::vector<int> convectionFacets;
 
     // integrator
     TimeIntegratorHandler timeIntegrator;
@@ -92,12 +93,13 @@ class Problem {
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {
-      neumannFacets.clear();
-      neumannFluxes.clear();
-      convectionFacets.clear();
+      fill( neumannFacets.x.begin(), neumannFacets.x.end(), 0);
+      for (int ifacet = 0; ifacet < neumannFluxes.size(); ++ifacet) {
+        neumannFluxes[ifacet].clear();
+      }
+      fill( convectionFacets.x.begin(), convectionFacets.x.end(), 0);
       fill( dirichletNodes.x.begin(), dirichletNodes.x.end(), 0);
       fill( dirichletValues.x.begin(), dirichletValues.x.end(), 0.0);
     }
 };
-#define PROBLEM
 #endif

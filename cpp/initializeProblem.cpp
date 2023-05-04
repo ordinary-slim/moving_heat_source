@@ -11,6 +11,9 @@ namespace py = pybind11;
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
+  neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
+  neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
+  convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   domain( mesh::Submesh( &mesh ) )
 {
   // MATERIAL
@@ -86,8 +89,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   // TODO: Think about how to eat this
 
   // CONVECTION BC
-  if (input.contains("convectionCoeff")) {
-    convectionFacets = domain.mesh->boundary.facets;
+  if (isConvection) {
+    convectionFacets = mesh::mark( *domain.mesh, domain.mesh->dim-1, domain.mesh->boundary.facets );
   }
 
   // ADVECTION

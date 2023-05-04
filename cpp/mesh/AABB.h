@@ -1,3 +1,5 @@
+#ifndef AABB_H
+#define AABB_H
 #include "Element.h"
 #include <Eigen/Core>
 
@@ -27,3 +29,4 @@ struct AABB {
     return isInside;
   }
 };
+#endif

@@ -14,7 +14,8 @@ void Problem::assembleConvectionLHS() {
   double c_ij;
 
   // assemble
-  for ( int ifacet : convectionFacets ) {
+  vector<int> indicesConvectionFacets = convectionFacets.getTrueIndices();
+  for ( int ifacet : indicesConvectionFacets ) {
 
     //TODO: Think about active elements!
     e = domain.getBoundaryFacet( ifacet );
@@ -48,7 +49,8 @@ void Problem::assembleConvectionRHS() {
   double c_i;
 
   // assemble
-  for ( int ifacet : convectionFacets ) {
+  vector<int> indicesConvectionFacets = convectionFacets.getTrueIndices();
+  for ( int ifacet : indicesConvectionFacets ) {
 
     //TODO: Think about active elements!
     e = domain.getBoundaryFacet( ifacet );
