@@ -7,7 +7,11 @@
 #include "Element.h"
 
 namespace mesh {
-class Submesh {
+/*
+ * Wrapper around Mesh object
+ * Defines a subset of the Mesh
+ */
+class ActiveMesh {
   public:
     mesh::Mesh *mesh;//this should be private
                      
@@ -15,7 +19,7 @@ class Submesh {
     mesh::MeshTag<int> activeNodes, activeElements, justDeactivatedElements, justActivatedBoundary;
     MeshTag<int> boundaryFacets, boundaryFacetsParentEls;
 
-    Submesh(Mesh *m) :
+    ActiveMesh(Mesh *m) :
       activeNodes(mesh::MeshTag<int>(m, 0, 1)),
       activeElements(mesh::MeshTag<int>(m, m->dim, 1)),
       justDeactivatedElements(mesh::MeshTag<int>(m, m->dim, 0)),

@@ -14,7 +14,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
   convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
-  domain( mesh::Submesh( &mesh ) )
+  domain( mesh::ActiveMesh( &mesh ) )
 {
   // MATERIAL
   // TODO: Better DS!

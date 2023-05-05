@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <list>
-#include "mesh/Submesh.h"
+#include "mesh/ActiveMesh.h"
 #include "Function.h"
 #include "HeatSource.h"
 #include "timeIntegrator.h"
@@ -17,7 +17,7 @@ namespace py = pybind11;
 class Problem {
   public:
     Problem(mesh::Mesh &mesh, py::dict &input);
-    mesh::Submesh domain;
+    mesh::ActiveMesh domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
     HeatSource mhs;

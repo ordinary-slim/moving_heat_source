@@ -44,14 +44,14 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from index of facet and flux function.")
         .def("clearBCs", &Problem::clearBCs)
         .def("deactivateFromExternal", &Problem::deactivateFromExternal);
-    py::class_<mesh::Submesh>(m, "Submesh")
+    py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())
-        .def("dim", &mesh::Submesh::dim)
-        .def_readonly("activeNodes", &mesh::Submesh::activeNodes)
-        .def_readonly("activeElements", &mesh::Submesh::activeElements)
-        .def_readonly("justActivatedBoundary", &mesh::Submesh::justActivatedBoundary)
-        .def_readonly("mesh", &mesh::Submesh::mesh)
-        .def("setActivation", &mesh::Submesh::setActivation);
+        .def("dim", &mesh::ActiveMesh::dim)
+        .def_readonly("activeNodes", &mesh::ActiveMesh::activeNodes)
+        .def_readonly("activeElements", &mesh::ActiveMesh::activeElements)
+        .def_readonly("justActivatedBoundary", &mesh::ActiveMesh::justActivatedBoundary)
+        .def_readonly("mesh", &mesh::ActiveMesh::mesh)
+        .def("setActivation", &mesh::ActiveMesh::setActivation);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::Mesh*>())
         .def(py::init<const mesh::Mesh*, int>())
