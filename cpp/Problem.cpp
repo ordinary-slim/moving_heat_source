@@ -78,10 +78,11 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
   //
   int  idxMatch;
   int nfacetgpoints = domain.mesh->refFacetEl.ngpoints;
+  vector<int> indicesBounFacets = domain.boundaryFacets.getTrueIndices();
   for (vector<int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
-    for (int iBFacet : domain.mesh->boundary.facets) {
+    for (int iBFacet : indicesBounFacets) {
       vector<int> bFacetNodes = vector<int>( *domain.mesh->con_FacetPoint.getLocalCon( iBFacet ) );
       std::sort( bFacetNodes.begin(), bFacetNodes.end() );
 
@@ -108,7 +109,8 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
   mesh::Element e;
   bool isInPlane;
   Eigen::Vector3d distance;
-  for (int iBFacet : domain.boundary.facets) {
+  vector<int> indicesBounFacets = domain.boundaryFacets.getTrueIndices();
+  for (int iBFacet : indicesBounFacets) {
     isInPlane = false;
     e = domain.getBoundaryFacet( iBFacet );
 
@@ -135,7 +137,7 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
   mesh::Element e;
   for (auto ifacet : otherNeumannFacets) {
     // Test if ifacet belongs to boundary
-    if (std::find( domain.boundary.facets.begin(), domain.boundary.facets.end(), ifacet) == domain.boundary.facets.end() ) {
+    if (!domain.boundaryFacets[ifacet]) {
       printf("%i is not a boundary facet, skipped\n", ifacet);
       continue;
     }
@@ -156,7 +158,7 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
 void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc ) {
   for (auto ifacet : otherDirichletFacets) {
     // Test if ifacet belongs to boundary
-    if (std::find( domain.boundary.facets.begin(), domain.boundary.facets.end(), ifacet) == domain.boundary.facets.end() ) {
+    if (!domain.boundaryFacets[ifacet]) {
       printf("%i is not a boundary facet, skipped\n", ifacet);
       continue;
     }

@@ -90,7 +90,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   // CONVECTION BC
   if (isConvection) {
-    convectionFacets = mesh::mark( *domain.mesh, domain.mesh->dim-1, domain.mesh->boundary.facets );
+    convectionFacets = domain.boundaryFacets;
   }
 
   // ADVECTION

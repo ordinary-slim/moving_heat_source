@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "MeshTag.h"
 #include "Element.h"
 #include <Eigen/Core>
 #include <chrono>
@@ -35,14 +36,6 @@ Element Mesh::getEntity(int ient, Connectivity &connectivity, ReferenceElement &
 Element Mesh::getElement(int ielem) {
   return getEntity( ielem, con_CellPoint, refCellEl );
 }
-Element Mesh::getBoundaryFacet(int ifacet) {
-  // Assumed that ifacet is a boundary facet
-  Element e = getEntity( ifacet, con_FacetPoint, refFacetEl );
-  Element parentEl = getElement( boundary.parentEls[ ifacet ] );
-  e.computeNormal( parentEl.getCentroid() );
-  return e;
-}
-
 int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
   int idxOwnerEl = -1;
   vector<int> potentialOwners;
@@ -94,23 +87,11 @@ void mesh::Mesh::setAABBs() {
   auto end = std::chrono::steady_clock::now();
   std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 }
-
-Boundary mesh::Mesh::findBoundary() {
-  /*
-   * Build array of indices of boundary facets
-  */
-  Boundary b;
-  b.facets.clear();
-  b.parentEls.clear();
-  b.parentEls.resize( con_FacetCell.nels_oDim );
-  std::fill( b.parentEls.begin(), b.parentEls.end(), -1 );
-  for (int ifacet = 0; ifacet < con_FacetCell.nels_oDim; ++ifacet) {
-    const vector<int>* incidentElements = con_FacetCell.getLocalCon( ifacet );
-    if (incidentElements->size()==1) {
-      b.facets.push_back( ifacet );
-      b.parentEls[ifacet] = (*incidentElements)[0];
-    }
+MeshTag<int> mark( const Mesh &mesh, int dim, const vector<int> &indices ) {
+  vector<int> values = vector<int>( mesh.getNumEntities( dim ), 0 );
+  for (int index : indices) {
+    values[index] = 1;
   }
-  return b;
+  return MeshTag<int>( &mesh, dim, values );
 }
 }

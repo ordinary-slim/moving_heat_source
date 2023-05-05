@@ -4,12 +4,12 @@
 #include <vector>
 #include <Eigen/Core>
 #include "Connectivity.h"
-#include "Boundary.h"
 #include "Element.h"
 #include "RefElement.h"
 #include "ElementTypes.h"
 #include "AABB.h"
 #include "../../external/pybind11/include/pybind11/pybind11.h"
+#include "MeshTag.h"
 
 using namespace std;
 
@@ -33,17 +33,14 @@ class Mesh {
     Connectivity  con_FacetPoint;
     Connectivity  con_FacetCell;
     Connectivity  con_CellFacet;
-    mesh::Boundary   boundary;
     vector<ElementType> elementTypes;
     int ngpointsCell = -1;//number of gausspoints for cells elements
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     vector<AABB> elementAABBs;
 
-    Boundary findBoundary();
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl );
     Element getElement(int ielem);
-    Element getBoundaryFacet(int ifacet);
 
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
       speedFRF = inputSpeedFRF;
@@ -63,5 +60,6 @@ class Mesh {
     void setAABBs();
     int findOwnerElement( Eigen::Vector3d point );
 };
+MeshTag<int> mark( const Mesh &mesh, int dim = 0, const std::vector<int> &indices = std::vector<int>() );
 }
 #endif

@@ -51,7 +51,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("activeElements", &mesh::Submesh::activeElements)
         .def_readonly("justActivatedBoundary", &mesh::Submesh::justActivatedBoundary)
         .def_readonly("mesh", &mesh::Submesh::mesh)
-        .def_readonly("boundary", &mesh::Submesh::boundary)
         .def("setActivation", &mesh::Submesh::setActivation);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::Mesh*>())
@@ -77,10 +76,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
-    py::class_<mesh::Boundary>(m, "Boundary")
-        .def(py::init<>())
-        .def_readonly("facets", &mesh::Boundary::facets)
-        .def("difference", &mesh::Boundary::difference);
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<>())
         .def(py::init<mesh::Mesh&>())

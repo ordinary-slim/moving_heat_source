@@ -53,7 +53,7 @@ if __name__=="__main__":
     pointInPlane = np.array([0.0, 0.0, 0.0])
     planeNormal  = np.array([-1.0, 0.0, 0.0])
     def flux(point):
-        return np.array([10.0, 0.0, 0.0])
+        return np.array([-10.0, 0.0, 0.0])
     p.setNeumann( p.domain.justActivatedBoundary.getTrueIndices(), flux )
 
     it = 0

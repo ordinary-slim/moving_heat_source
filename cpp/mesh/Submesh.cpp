@@ -1,15 +1,12 @@
 #include "Submesh.h"
 
 namespace mesh {
-Boundary mesh::Submesh::findBoundary() {
+void Submesh::computeBoundary() {
   /*
    * Build array of indices of boundary facets
   */
-  Boundary b;
-  b.facets.clear();
-  b.parentEls.clear();
-  b.parentEls.resize( mesh->con_FacetCell.nels_oDim );
-  std::fill( b.parentEls.begin(), b.parentEls.end(), -1 );
+  fill(boundaryFacets.x.begin(), boundaryFacets.x.end(), 0);
+  fill(boundaryFacetsParentEls.x.begin(), boundaryFacetsParentEls.x.end(), 0);
   int activeElsPerFacet;
   bool incident2JustDeactivated;
   int lastVisitedActiveEl;
@@ -30,14 +27,13 @@ Boundary mesh::Submesh::findBoundary() {
       }
     }
     if (activeElsPerFacet==1) {
-      b.facets.push_back( ifacet );
-      b.parentEls[ ifacet ] = lastVisitedActiveEl;
+      boundaryFacets[ ifacet ] = 1;
+      boundaryFacetsParentEls[ ifacet ] = lastVisitedActiveEl;
       if (incident2JustDeactivated) {
         justActivatedBoundary.x[ifacet] = 1;
       }
     }
   }
-  return b;
 }
 
 void mesh::Submesh::updateActiveNodes() {
@@ -98,7 +94,7 @@ void mesh::Submesh::updateBeforeActivation() {
 void mesh::Submesh::updateAfterActivation() {
   hasInactive = (std::find( activeElements.x.begin(), activeElements.x.end(), false) != activeElements.x.end() );
   if (hasInactive) {
-    boundary = findBoundary();
+    computeBoundary();
   }
 }
 
