@@ -16,22 +16,15 @@ class Submesh {
     MeshTag<int> boundaryFacets, boundaryFacetsParentEls;
 
     Submesh(Mesh *m) :
-      activeNodes(mesh::MeshTag<int>(m, 0)),
-      activeElements(mesh::MeshTag<int>(m, m->dim)),
-      justDeactivatedElements(mesh::MeshTag<int>(m, m->dim)),
-      justActivatedBoundary(mesh::MeshTag<int>(m, m->dim-1)),
+      activeNodes(mesh::MeshTag<int>(m, 0, 1)),
+      activeElements(mesh::MeshTag<int>(m, m->dim, 1)),
+      justDeactivatedElements(mesh::MeshTag<int>(m, m->dim, 0)),
+      justActivatedBoundary(mesh::MeshTag<int>(m, m->dim-1, 0)),
       boundaryFacets(mesh::MeshTag<int>(m, m->dim-1)),
       boundaryFacetsParentEls(mesh::MeshTag<int>(m, m->dim-1))
     {
       mesh = m;
       _dim = mesh->dim;
-      activeElements = mesh::MeshTag<int>(mesh, mesh->dim);
-      justDeactivatedElements = mesh::MeshTag<int>(mesh, mesh->dim);
-      justActivatedBoundary = mesh::MeshTag<int>(mesh, mesh->dim-1);
-      std::fill(activeNodes.x.begin(), activeNodes.x.end(), 1);
-      std::fill(activeElements.x.begin(), activeElements.x.end(), 1);
-      std::fill(justDeactivatedElements.x.begin(), justDeactivatedElements.x.end(), 0);
-      std::fill(justActivatedBoundary.x.begin(), justActivatedBoundary.x.end(), 0);
       computeBoundary();
     }
 
@@ -44,8 +37,7 @@ class Submesh {
     Element getBoundaryFacet(int ifacet) {
       // Assumed that ifacet is a boundary facet
       Element e = getEntity( ifacet, mesh->con_FacetPoint, mesh->refFacetEl );
-      int idxParentEl = mesh->con_FacetCell.con[ifacet][0];
-      Element parentEl = getElement( idxParentEl );
+      Element parentEl = getElement( boundaryFacetsParentEls[ifacet] );
       e.computeNormal( parentEl.getCentroid() );
       return e;
     }

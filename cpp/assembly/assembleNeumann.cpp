@@ -19,7 +19,7 @@ void Problem::assembleNeumann() {
     for (int inode = 0; inode < e.nnodes; ++inode) {
       n_i = 0;
       for (int igp = 0; igp < e.ngpoints; ++igp) {
-        normalDerivative = - neumannFluxes[ifacet][igp] / k;
+        normalDerivative = neumannFluxes[ifacet][igp] / k;
         n_i += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * normalDerivative;
       }
       neumannRhs[(*e.con)[inode]] += n_i;
