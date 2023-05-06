@@ -93,13 +93,12 @@ class Problem {
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {
-      fill( neumannFacets.x.begin(), neumannFacets.x.end(), 0);
-      for (int ifacet = 0; ifacet < neumannFluxes.size(); ++ifacet) {
-        neumannFluxes[ifacet].clear();
-      }
-      fill( convectionFacets.x.begin(), convectionFacets.x.end(), 0);
-      fill( dirichletNodes.x.begin(), dirichletNodes.x.end(), 0);
-      fill( dirichletValues.x.begin(), dirichletValues.x.end(), 0.0);
+      dirichletNodes.setCteValue( 0 );
+      dirichletValues.setCteValue( 0 );
+      neumannFacets.setCteValue( 0 );
+      neumannFluxes.setCteValue( vector<double>() );
+      convectionFacets.setCteValue( 0 );
     }
+    fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };
 #endif

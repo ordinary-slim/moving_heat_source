@@ -182,8 +182,9 @@ void Problem::deactivateFromExternal( Problem pExt ) {
   mesh::MeshTag<int> newActiveElements = domain.activeElements;
   // External activation to function on external
   Eigen::VectorXd extActiveNodesValues(pExt.domain.mesh->nnodes);
+  // Convert to double
   for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
-    extActiveNodesValues[inode] = double(pExt.domain.activeNodes.x[inode]);
+    extActiveNodesValues[inode] = double(pExt.domain.activeNodes[inode]);
   }
   fem::Function extActiveNodes_ext = fem::Function( *pExt.domain.mesh,  extActiveNodesValues);
   // To function on local
@@ -219,4 +220,43 @@ void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
       dirichletValues[ inode ] = fh.values(inode) ;
     }
   }
+}
+
+fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
+  /*
+   * L2 projection onto domain
+   */
+  // Initialize null function
+  fem::Function fh = fem::Function( *domain.mesh );
+  // Assemble RHS
+  Eigen::VectorXd rhsProjection = Eigen::VectorXd::Zero( domain.mesh->nnodes );
+  vector<int> indicesActiveElements = domain.activeElements.getTrueIndices();
+  double fx, rhs_i;
+  Eigen::Vector3d x_gp;
+  mesh::Element e;
+  for (int ielem : indicesActiveElements ) {
+
+    e = domain.getElement( ielem );
+
+    for (int inode = 0; inode < e.nnodes; ++inode) {
+      rhs_i = 0.0;
+      for (int igp = 0; igp < e.ngpoints; ++igp ) {
+        x_gp = e.gpos.row( igp );
+        fx = func(x_gp);
+        rhs_i +=  fx * e.BaseGpVals[inode][igp] *
+          e.gpweight[igp] * e.vol;
+      }
+      rhsProjection[(*e.con)[inode]] += rhs_i;
+    }
+  }
+  // Solve
+  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  //Solve linear system
+  solver.compute( M );//TODO: Make sure mass matrix is ready
+  if (not(solver.info() == Eigen::Success)) {
+    std::cout << "Mass matrix not ready yet. Projection skipped." << std::endl;
+  } else {
+    fh.values = solver.solve(rhsProjection);
+  }
+  return fh;
 }

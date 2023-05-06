@@ -17,7 +17,6 @@ void Problem::assembleSpatialRHS() {
 
     e = domain.getElement( ielem );
 
-    e = domain.getElement( ielem );
     for (int inode = 0; inode < e.nnodes; ++inode) {
       r_i = 0;
       for (int igp = 0; igp < e.ngpoints; ++igp) {

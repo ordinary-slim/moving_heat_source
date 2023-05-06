@@ -23,6 +23,8 @@ def mesh(box, meshDen=1, variant="up"):
 
 def exactSol( x ):
     return (1 - np.power(x[0], 2) - np.power(x[1],2))
+def exactFlux( x ):
+    return np.array([-2*x[0], -2*x[1], 0.0])
 
 def setDirichlet( p ):
     #set Dirichlet BC. boundary nodes to 0
@@ -62,8 +64,8 @@ if __name__=="__main__":
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=2, variant="zigzag")
-    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=3, variant="up")
+    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=4, variant="zigzag")
+    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=5, variant="up")
 
     meshLeft = mhs.Mesh(leftMeshInput)
     meshRight = mhs.Mesh(rightMeshInput)
@@ -80,7 +82,7 @@ if __name__=="__main__":
     pRight.deactivateFromExternal( pLeft )
     pRight.writepos()
 
-    numSolves = 10
+    numSolves = 20
     for it in range(numSolves):
         # PRE-SOLVE
         for p in [pLeft, pRight,]:
@@ -90,20 +92,31 @@ if __name__=="__main__":
         # set dirichlet BC
         for p in [pLeft, pRight,]:
             setDirichlet( p )
+        # RIGHT
+        # Set Neumann right
+        pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pLeft.unknown.evaluateGrad )
+        # Solve pRight
+        pRight.assemble()
+        pRight.solve()
+
+        # LEFT
         # Set Dirichlet left
         pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
         # Solve pLeft
         pLeft.assemble()
         pLeft.solve()
-        # Set Neumann right
-        pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluateGrad )
-        # Solve pRight
-        pRight.assemble()
-        pRight.solve()
+
+    fexactLeft = pLeft.project( exactSol )
+    fexactRight = pRight.project( exactSol )
 
     # post
-    pLeft.writepos()
-    pRight.writepos(functions={
-        #"internalNodes":femInteralNodes,
-        }
+    pLeft.writepos(
+            functions={
+                "fexact":fexactLeft,
+                }
+                    )
+    pRight.writepos(
+            functions={
+                "fexact":fexactRight,
+                }
                     )

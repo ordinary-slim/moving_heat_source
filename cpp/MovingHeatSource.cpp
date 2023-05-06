@@ -43,6 +43,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
         .def("clearBCs", &Problem::clearBCs)
+        .def("project", &Problem::project)
         .def("deactivateFromExternal", &Problem::deactivateFromExternal);
     py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())
