@@ -146,7 +146,7 @@ class Problem(mhs.Problem):
         for label, fun in functions.items():
             point_data[label] = fun.values
         for label, tag in cellMeshTags.items():
-            cell_data[label] = tag.x
+            cell_data[label] = [tag.x]
 
         #export
         myCellType = self.domain.mesh.elementTypes[0].name

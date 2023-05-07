@@ -23,6 +23,8 @@ class MeshTag {
 
     T& operator[](int idx);
 
+    const T& operator[](int idx) const;
+
     void setCteValue(const T &val);
 
     void setValues(std::vector<T> &v);

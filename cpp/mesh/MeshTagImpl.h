@@ -51,6 +51,11 @@ T& MeshTag<T>::operator[](int idx) {
 }
 
 template<typename T>
+const T& MeshTag<T>::operator[](int idx) const {
+  return x[idx];
+}
+
+template<typename T>
 void MeshTag<T>::setCteValue(const T &val) {
   // Set constant value
   fill(x.begin(), x.end(), val);

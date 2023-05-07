@@ -50,7 +50,7 @@ if __name__=="__main__":
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]=cell_type
-        #p.input["numberOfGaussPoints"]=3
+        #p.input["numberOfGaussPointsCells"]=3
     # Dirichlet condition
     dirichletNodes = [0, len(points)-1]
     dirichletValues = [0.5, 0.5]

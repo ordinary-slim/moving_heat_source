@@ -34,13 +34,12 @@ class Mesh {
     Connectivity  con_FacetCell;
     Connectivity  con_CellFacet;
     vector<ElementType> elementTypes;
-    int ngpointsCell = -1;//number of gausspoints for cells elements
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     vector<AABB> elementAABBs;
 
-    Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl );
-    Element getElement(int ielem);
+    Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement &refEl ) const;
+    Element getElement(int ielem) const;
 
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
       speedFRF = inputSpeedFRF;
@@ -58,7 +57,7 @@ class Mesh {
       }
     }
     void setAABBs();
-    int findOwnerElement( Eigen::Vector3d point );
+    vector<int> findOwnerElement( const Eigen::Vector3d &point );
 };
 MeshTag<int> mark( const Mesh &mesh, int dim = 0, const std::vector<int> &indices = std::vector<int>() );
 }

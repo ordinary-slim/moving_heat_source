@@ -148,7 +148,8 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
     double fluxAtPoint;
     vector<double> facet_fluxes( e.ngpoints );
     for (int igpoint = 0; igpoint < e.ngpoints; ++igpoint ) {
-      fluxAtPoint = e.normal.dot( fluxFunc(e.gpos.row( igpoint )) );
+      Eigen::Vector3d pos = e.gpos.row( igpoint );
+      fluxAtPoint = e.normal.dot( fluxFunc(pos) );
       facet_fluxes[igpoint] = fluxAtPoint;
     }
     neumannFluxes[ ifacet ] = facet_fluxes;

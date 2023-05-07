@@ -48,7 +48,7 @@ if __name__=="__main__":
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]=cell_type
-        #p.input["numberOfGaussPoints"]=3
+        #p.input["numberOfGaussPointsCells"]=3
     #read input
     for p in [p,]:
         p.parseInput( inputFile )

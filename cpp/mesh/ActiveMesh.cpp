@@ -36,7 +36,7 @@ void ActiveMesh::computeBoundary() {
   }
 }
 
-void mesh::ActiveMesh::updateActiveNodes() {
+void ActiveMesh::updateActiveNodes() {
   /*
    * Update activeNodes after a change in activeElements
    * If a node belongs to an active element, set it to active.
@@ -54,7 +54,7 @@ void mesh::ActiveMesh::updateActiveNodes() {
   }
 }
 
-void mesh::ActiveMesh::updateActiveElements() {
+void ActiveMesh::updateActiveElements() {
   /*
    * Update activeElements after a change in activeNodes
    * If all the nodes of an element are active, activate it.
@@ -86,12 +86,12 @@ bool checkHasInactive( const vector<int> &activeElements ) {
   return (std::find( activeElements.begin(), activeElements.end(), 0) != activeElements.end() );
 }
 
-void mesh::ActiveMesh::updateBeforeActivation() {
+void ActiveMesh::updateBeforeActivation() {
   fill(justActivatedBoundary.x.begin(), justActivatedBoundary.x.end(), 0);
   fill(justDeactivatedElements.x.begin(), justDeactivatedElements.x.end(), 0);
 }
 
-void mesh::ActiveMesh::updateAfterActivation() {
+void ActiveMesh::updateAfterActivation() {
   hasInactive = (std::find( activeElements.x.begin(), activeElements.x.end(), false) != activeElements.x.end() );
   if (hasInactive) {
     computeBoundary();
@@ -99,7 +99,7 @@ void mesh::ActiveMesh::updateAfterActivation() {
 }
 
 
-void mesh::ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
+void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
   updateBeforeActivation();
   if (activationCriterion.dim()==0) {
     // Activate by nodes. Is this useful?
@@ -118,5 +118,17 @@ void mesh::ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
     exit(-1);
   }
   updateAfterActivation();
+}
+
+int ActiveMesh::findOwnerElement( const Eigen::Vector3d &point ) const {
+  int activeOwnerElement = -1;
+  vector<int> owners = mesh->findOwnerElement( point );
+  for (int ielem : owners) {
+    if ( activeElements[ielem] ) {
+      activeOwnerElement = ielem;
+      break;
+    }
+  }
+  return activeOwnerElement;
 }
 }

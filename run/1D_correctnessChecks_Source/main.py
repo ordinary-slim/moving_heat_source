@@ -56,7 +56,7 @@ if __name__=="__main__":
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]=cell_type
-        #p.input["numberOfGaussPoints"]=3
+        #p.input["numberOfGaussPointsCells"]=3
 
     # MRF meshes
     points, cells, cell_type = mesh(boxBG[0], boxBG[1], elDen)
@@ -64,7 +64,7 @@ if __name__=="__main__":
         p.input["points"] = points
         p.input["cells"] = cells
         p.input["cell_type"]=cell_type
-        #p.input["numberOfGaussPoints"]=3
+        #p.input["numberOfGaussPointsCells"]=3
 
     #read input
     for p in [pFRF, pMRF_Advec, pMRF_Trans, pMRF_TransHelper, pMRF_AdvecTrans, pMRF_AdvecTransHelper]:

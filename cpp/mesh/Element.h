@@ -24,7 +24,7 @@ class Element {
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
     bool openIntegration = false;//default closed integration
 
-    ReferenceElement      *refEl;
+    const ReferenceElement      *refEl;
     // x : loc coordinate; xi : reference coordinate
     // x = ref2locShift + ref2locMatrix · xi
     // xi = loc2refShift + loc2refMatrix · x
@@ -72,7 +72,7 @@ class Element {
       }
     }
 
-    void setElementType( ReferenceElement &target_refEl ) {
+    void setElementType( const ReferenceElement &target_refEl ) {
       refEl = &target_refEl;
       elementType = refEl->elementType;
       nnodes = refEl->nnodes;
@@ -92,13 +92,13 @@ class Element {
       return loc2refShift + loc2refMatrix * x;
     }
 
-    Eigen::Vector3d getCentroid() {
+    Eigen::Vector3d getCentroid() const {
       return centroid;
     }
 
     void computeCentroid();
     void computeNormal( Eigen::Vector3d parentCentroid );
-    Element getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl );
+    Element getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl ) const;
     Eigen::VectorXd evalShaFuns( Eigen::Vector3d pos );
     Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
     double getSizeAlongVector( Eigen::Vector3d vector );

@@ -17,13 +17,17 @@ mesh::Mesh::Mesh(const py::dict &input) {
   } else if (aux_cell_type == "quad4") {
     cell_type_flag = quad4;
   }
+  int ngpointsCell = -1, ngpointsFacet = -1;
   if (input.contains("numberOfGaussPoints")){
-    ngpointsCell = py::cast<int>( input["numberOfGaussPoints"] );
+    ngpointsCell = py::cast<int>( input["numberOfGaussPointsCells"] );
+  }
+  if (input.contains("numberOfGaussPointsFacets")){
+    ngpointsFacet = py::cast<int>( input["numberOfGaussPointsFacets"] );
   }
   // reference element. no support for mixed meshes yet
   refCellEl = ReferenceElement(cell_type_flag, ngpointsCell);
   ElementType FacetElType = getIncidentElType(cell_type_flag, refCellEl.dim-1);
-  refFacetEl = ReferenceElement(FacetElType);
+  refFacetEl = ReferenceElement(FacetElType, ngpointsFacet);
 
   //READ POINTS
   py::array points = input["points"];

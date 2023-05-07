@@ -64,8 +64,13 @@ if __name__=="__main__":
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=4, variant="zigzag")
-    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=5, variant="up")
+    meshDen = 8
+    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
+    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="up")
+
+    # open integration facets
+    leftMeshInput["numberOfGaussPointsFacets"] =  2
+    rightMeshInput["numberOfGaussPointsFacets"] = 2
 
     meshLeft = mhs.Mesh(leftMeshInput)
     meshRight = mhs.Mesh(rightMeshInput)
@@ -82,41 +87,45 @@ if __name__=="__main__":
     pRight.deactivateFromExternal( pLeft )
     pRight.writepos()
 
-    numSolves = 20
+    numSolves = 5
     for it in range(numSolves):
+        print("Solve #{}".format( it+1 ) )
         # PRE-SOLVE
         for p in [pLeft, pRight,]:
             p.clearBCs()
             p.cleanupLinearSystem()
-        # SET BCs
-        # set dirichlet BC
-        for p in [pLeft, pRight,]:
-            setDirichlet( p )
+
         # RIGHT
-        # Set Neumann right
+        # Dirichlet outside right
+        setDirichlet( pRight )
+        # Neumann interface right
+        print("Setting Neumann right...")
         pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pLeft.unknown.evaluateGrad )
         # Solve pRight
         pRight.assemble()
         pRight.solve()
+        #post
+        fexactRight = pRight.project( exactSol )
+
+        pRight.writepos(
+                functions={
+                    "fexact":fexactRight,
+                    }
+                        )
 
         # LEFT
-        # Set Dirichlet left
+        # Dirichlet outside left
+        setDirichlet( pLeft )
+        # Dirichlet interface left
         pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
         # Solve pLeft
         pLeft.assemble()
         pLeft.solve()
+        # post
+        fexactLeft = pLeft.project( exactSol )
+        pLeft.writepos(
+                functions={
+                    "fexact":fexactLeft,
+                    }
+                )
 
-    fexactLeft = pLeft.project( exactSol )
-    fexactRight = pRight.project( exactSol )
-
-    # post
-    pLeft.writepos(
-            functions={
-                "fexact":fexactLeft,
-                }
-                    )
-    pRight.writepos(
-            functions={
-                "fexact":fexactRight,
-                }
-                    )

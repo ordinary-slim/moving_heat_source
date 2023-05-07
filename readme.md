@@ -2,9 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [x] Function point to domain instead of mesh
-- [ ] Find owner element of mesh return list of elements
-- [ ] Find owner element of domain return AN active element that owns
+- [x] Find owner element of mesh return list of elements
+- [x] Find owner element of domain return AN active element that owns
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [ ] 1 main loop

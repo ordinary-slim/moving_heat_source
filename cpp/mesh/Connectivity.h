@@ -31,7 +31,7 @@ class Connectivity {
       telType = in_telType;
     }
 
-    const std::vector<int>* getLocalCon( int idx ) {
+    const std::vector<int>* getLocalCon( int idx ) const {
       return &con[ idx ];
     }
     /*

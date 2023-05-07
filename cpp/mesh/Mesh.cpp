@@ -7,7 +7,7 @@
 namespace mesh
 {
 
-Element Mesh::getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
+Element Mesh::getEntity(int ient, const Connectivity &connectivity, const ReferenceElement &refEl ) const {
 
   if (ient < 0) {
     throw std::invalid_argument( "received negative value." );
@@ -33,13 +33,13 @@ Element Mesh::getEntity(int ient, Connectivity &connectivity, ReferenceElement &
   return e;
 }
 
-Element Mesh::getElement(int ielem) {
+Element Mesh::getElement(int ielem) const {
   return getEntity( ielem, con_CellPoint, refCellEl );
 }
-int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
-  int idxOwnerEl = -1;
+vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
+  vector<int> idxOwnerEl;
   vector<int> potentialOwners;
-  //Broad  Phase
+  //Broad  Phase Search
   for (int ielem = 0; ielem < nels; ++ielem) {
     if ( elementAABBs[ielem].isPointInside( point ) ) {
       potentialOwners.push_back( ielem );
@@ -65,8 +65,7 @@ int mesh::Mesh::findOwnerElement( Eigen::Vector3d point ) {
       }
     }
     if (isInside) {
-      idxOwnerEl = ielem;
-      break;
+      idxOwnerEl.push_back( ielem );
     }
   }
   return idxOwnerEl;

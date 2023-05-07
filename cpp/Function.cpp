@@ -10,7 +10,7 @@ double Function::evaluate( Eigen::Vector3d point ) const {
   double val = 0;
 
   // GET VALS OF SHAPE FUNCS AT POINT
-  int idxOwnerEl = domain->mesh->findOwnerElement( point );
+  int idxOwnerEl = domain->findOwnerElement( point );
   if (idxOwnerEl < 0) {// Point outside of domain->mesh
     return -1;
   }
@@ -26,11 +26,10 @@ Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
   /*
   Output gradient of Function @ input point
   */
-  Eigen::Vector3d grad;
-  grad.setZero();
+  Eigen::Vector3d grad = Eigen::Vector3d::Zero();
 
   // GET VALS OF GRAD o SHAPE FUNCS AT POINT
-  int idxOwnerEl = domain->mesh->findOwnerElement( point );
+  int idxOwnerEl = domain->findOwnerElement( point );
   if (idxOwnerEl < 0) {// Point outside of domain->mesh
     cout << "Point outside domain in grad FEM fun eval!" << endl;
     exit(-1);

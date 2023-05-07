@@ -18,7 +18,7 @@ struct AABB {
     }
   }
 
-  bool isPointInside( Eigen::Vector3d point ) {
+  bool isPointInside( const Eigen::Vector3d &point ) const {
     bool isInside = true;
     for (int idim = 0; idim < dim; ++idim) {
       if ( (point[idim] < bounds[idim][0]) || (point[idim] > bounds[idim][1]) ) {

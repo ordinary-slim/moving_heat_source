@@ -77,6 +77,11 @@ class ReferenceElement {
 
           if (openIntegration) {
             switch (ngpoints) {
+              case 2:
+                gpos << -1.0 / sqrt(3.0), 0.0, 0.0,
+                        +1.0 / sqrt(3.0), 0.0, 0.0;
+                gpweight = {0.5, 0.5};
+                break;
               case 3:
                 gpos << 0.0, 0.0, 0.0,
                         -sqrt( 3.0 / 5.0 ), 0.0, 0.0,

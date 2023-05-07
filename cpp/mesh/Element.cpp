@@ -56,7 +56,7 @@ void mesh::Element::computeDerivatives() {
   }
 }
 
-Element mesh::Element::getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl ) {
+Element mesh::Element::getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl ) const {
   /*
    * TODO: facetRefEl should come from somewhere else!
    */
