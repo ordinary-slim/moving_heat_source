@@ -66,9 +66,9 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
   previousValues.clear();
   for (int icol = 0; icol < pSols.cols(); ++icol) {
     //Convert icol to Function
-    previousValues.push_back( fem::Function(*domain.mesh, pSols(Eigen::placeholders::all, icol)) );
+    previousValues.push_back( fem::Function(&domain, pSols(Eigen::placeholders::all, icol)) );
   }
-  unknown = fem::Function(*domain.mesh, pSols(Eigen::placeholders::all, 0));
+  unknown = fem::Function(&domain, pSols(Eigen::placeholders::all, 0));
   timeIntegrator.nstepsStored = pSols.cols();
 }
 
@@ -186,9 +186,9 @@ void Problem::deactivateFromExternal( Problem pExt ) {
   for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
     extActiveNodesValues[inode] = double(pExt.domain.activeNodes[inode]);
   }
-  fem::Function extActiveNodes_ext = fem::Function( *pExt.domain.mesh,  extActiveNodesValues);
+  fem::Function extActiveNodes_ext = fem::Function( &pExt.domain,  extActiveNodesValues);
   // To function on local
-  fem::Function extActiveNodes = fem::Function( *domain.mesh );
+  fem::Function extActiveNodes = fem::Function( &domain );
   extActiveNodes.interpolate( extActiveNodes_ext );
   // Check if element owned by external problem
   const vector<int>* incidentNodes;
@@ -211,7 +211,7 @@ void Problem::deactivateFromExternal( Problem pExt ) {
 }
 
 void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
-  fem::Function fh = fem::Function( *domain.mesh );
+  fem::Function fh = fem::Function( &domain );
   fh.interpolate( extFEMFunc );
   for (int inode = 0; inode < domain.mesh->nnodes; inode++) {
     if (fh.values(inode) >= 0) {//If interpolated
@@ -227,7 +227,7 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
    * L2 projection onto domain
    */
   // Initialize null function
-  fem::Function fh = fem::Function( *domain.mesh );
+  fem::Function fh = fem::Function( &domain );
   // Assemble RHS
   Eigen::VectorXd rhsProjection = Eigen::VectorXd::Zero( domain.mesh->nnodes );
   vector<int> indicesActiveElements = domain.activeElements.getTrueIndices();

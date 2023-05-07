@@ -14,7 +14,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
   convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
-  domain( mesh::ActiveMesh( &mesh ) )
+  domain( mesh::ActiveMesh( &mesh ) ),
+  unknown( fem::Function( &domain ) )
 {
   // MATERIAL
   // TODO: Better DS!
@@ -73,7 +74,6 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
-  unknown = fem::Function( *domain.mesh );
   unknown.values = Eigen::VectorXd::Constant( domain.mesh->nnodes, Tenv );
   // update time integrator
   previousValues.push_front(  unknown );

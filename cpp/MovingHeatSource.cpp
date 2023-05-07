@@ -78,9 +78,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
-        .def(py::init<>())
-        .def(py::init<mesh::Mesh&>())
-        .def(py::init<mesh::Mesh&, const Eigen::VectorXd&>())
+        .def(py::init<const mesh::ActiveMesh*>())
+        .def(py::init<const mesh::ActiveMesh*, const Eigen::VectorXd&>())
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
         .def("interpolate", &fem::Function::interpolate)

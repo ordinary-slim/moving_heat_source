@@ -1,5 +1,6 @@
 #ifndef FEMFUNC
 #define FEMFUNC
+#include "mesh/ActiveMesh.h"
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
@@ -10,18 +11,16 @@ namespace fem
 {
 class Function{
   public:
-    mesh::Mesh* mesh;
     Eigen::VectorXd values;
+    const mesh::ActiveMesh* domain;
 
-    Function(){
-    }
-
-    Function(mesh::Mesh &otherMesh, const Eigen::VectorXd &otherValues = Eigen::VectorXd()){
-      mesh = &otherMesh;
+    Function(const mesh::ActiveMesh* dom, const Eigen::VectorXd &otherValues = Eigen::VectorXd())
+    {
+      domain = dom;
       if (otherValues.size() == 0) {
-        values = Eigen::VectorXd::Zero( mesh->nnodes );
+        values = Eigen::VectorXd::Zero( domain->mesh->nnodes );
       } else {
-        if (otherValues.size() != mesh->nnodes) {
+        if (otherValues.size() != domain->mesh->nnodes) {
           cout << "Wrong vals mesh pair in Function construction!" << endl;
           exit(-1);
         }

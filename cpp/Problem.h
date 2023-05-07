@@ -57,7 +57,7 @@ class Problem {
       mhs.time = newTime;
     }
     void setPointers(){
-      unknown.mesh = domain.mesh;
+      unknown.domain = &domain;
     }
 
     void setAdvectionSpeed(Eigen::Vector3d inputAdvectionSpeed){
