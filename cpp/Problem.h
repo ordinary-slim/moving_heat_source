@@ -56,6 +56,13 @@ class Problem {
       time = newTime;
       mhs.time = newTime;
     }
+    void setDeltaT( double newDeltaT ) {
+      /*
+       * Should only be used before first time-step
+       * Not ready yet for change of DeltaT between time iterations
+       */
+      dt = newDeltaT;
+    }
     void setPointers(){
       unknown.domain = &domain;
     }
@@ -89,7 +96,9 @@ class Problem {
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
-    void deactivateFromExternal( Problem pExt );
+    mesh::MeshTag<int> externalActiveElements( const Problem &pExt );//TODO: rename this!
+    void deactivateFromExternal( const Problem &pExt );
+    void intersectFromExternal( const Problem &pExt );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {

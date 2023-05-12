@@ -66,14 +66,15 @@ if __name__=="__main__":
     leftMeshInput, rightMeshInput = {}, {}
     meshDen = 8
     leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
-    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="up")
+    #rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="up")
 
     # open integration facets
     leftMeshInput["numberOfGaussPointsFacets"] =  2
     rightMeshInput["numberOfGaussPointsFacets"] = 2
 
     meshLeft = mhs.Mesh(leftMeshInput)
-    meshRight = mhs.Mesh(rightMeshInput)
+    #meshRight = mhs.Mesh(rightMeshInput)
+    meshRight = mhs.Mesh(meshLeft)
 
     # Initialize problems
     pLeft  = Problem(meshLeft, problemInput, caseName="left")
@@ -117,6 +118,7 @@ if __name__=="__main__":
         # Dirichlet outside left
         setDirichlet( pLeft )
         # Dirichlet interface left
+        print("Setting Dirichlet left...")
         pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
         # Solve pLeft
         pLeft.assemble()

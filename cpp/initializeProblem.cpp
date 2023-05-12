@@ -102,6 +102,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   }
 
   // DOMAIN MOTION
+  // TODO: Move this down to mesh level!
   if (input.contains("speedFRF_X")) {
     domain.mesh->speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
     domain.mesh->speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);

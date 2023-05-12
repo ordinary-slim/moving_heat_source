@@ -30,6 +30,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
+        .def("setDeltaT", &Problem::setDeltaT)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
         .def("setDirichlet", static_cast<void (Problem::*)(vector<int>, std::function<double(Eigen::Vector3d)>)>(&Problem::setDirichlet),
@@ -44,7 +45,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from index of facet and flux function.")
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
-        .def("deactivateFromExternal", &Problem::deactivateFromExternal);
+        .def("deactivateFromExternal", &Problem::deactivateFromExternal)
+        .def("intersectFromExternal", &Problem::intersectFromExternal);
     py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())
         .def("dim", &mesh::ActiveMesh::dim)

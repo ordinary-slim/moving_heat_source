@@ -179,15 +179,10 @@ void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector
   dirichletValues = mesh::MeshTag<double>( domain.mesh, otherDirichletNodes, otherDirichletValues, 0 );
 }
 
-void Problem::deactivateFromExternal( Problem pExt ) {
-  mesh::MeshTag<int> newActiveElements = domain.activeElements;
+mesh::MeshTag<int> Problem::externalActiveElements( const Problem &pExt ) {
+  mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
   // External activation to function on external
-  Eigen::VectorXd extActiveNodesValues(pExt.domain.mesh->nnodes);
-  // Convert to double
-  for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
-    extActiveNodesValues[inode] = double(pExt.domain.activeNodes[inode]);
-  }
-  fem::Function extActiveNodes_ext = fem::Function( &pExt.domain,  extActiveNodesValues);
+  fem::Function extActiveNodes_ext = fem::Function( &pExt.domain,  domain.activeNodes );
   // To function on local
   fem::Function extActiveNodes = fem::Function( &domain );
   extActiveNodes.interpolate( extActiveNodes_ext );
@@ -205,10 +200,32 @@ void Problem::deactivateFromExternal( Problem pExt ) {
     }
     if (allNodesActive) {
       // Element owned by other problem
-      newActiveElements.x[ielem] = 0;
+      activeInExternal[ielem] = 1;
     }
   }
-  domain.setActivation( newActiveElements );
+  return activeInExternal;
+}
+
+void Problem::deactivateFromExternal( const Problem &pExt ) {
+  mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
+  mesh::MeshTag<int> activeInExternal = externalActiveElements( pExt );
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
+    if (domain.activeElements[ielem] && not(activeInExternal[ielem]) ) {
+      activationCriterion[ielem] = 1;
+    }
+  }
+  domain.setActivation( activationCriterion );
+}
+
+void Problem::intersectFromExternal( const Problem &pExt ) {
+  mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
+  mesh::MeshTag<int> activeInExternal = externalActiveElements( pExt );
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
+    if (domain.activeElements[ielem] && activeInExternal[ielem]) {
+      activationCriterion[ielem] = 1;
+    }
+  }
+  domain.setActivation( activationCriterion );
 }
 
 void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {

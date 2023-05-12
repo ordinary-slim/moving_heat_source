@@ -27,6 +27,19 @@ class Function{
         values = otherValues;
       }
     }
+    template<typename T>
+    Function(const mesh::ActiveMesh* dom, const mesh::MeshTag<T> &tag) {
+      if (tag.dim()!=0) {
+        throw std::invalid_argument("Expected nodal MeshTag in Function constructor.");
+      }
+      domain = dom;
+      Eigen::VectorXd convertedVals(domain->mesh->nnodes);
+      // Convert to double
+      for (int inode = 0; inode < domain->mesh->nnodes; ++inode) {
+        convertedVals[inode] = double(tag[inode]);
+      }
+      values = convertedVals;
+    }
 
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
