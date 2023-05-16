@@ -5,14 +5,20 @@ leftBound = -L/2;
 rightBound = leftBound + L;
 
 % HEAT SOURCE
-power = 100;
+power = 100.0;
 efficiency = 1.0;
 radius = 1;
-x0 = 0.0;
+xi0 = -5.0;
 speed = 10;
 % IC
 icXi = @(xi, t) 25*ones(size(xi));
 icX = @(x, t) 25*ones(size(x));
+% power = 0.0;
+% icX = @(x, t) max(0.0, 20-abs(x));
+% icXi = @(xi, t) icX(xi+speed*t, t);
+% power = 0.0;
+% icX = @(x, t) sin(2*(x)/L*pi);
+% icXi = @(xi, t) icX(xi+speed*t, t);
 
 % MATERIAL
 rho = 1;
@@ -21,24 +27,27 @@ k = 1;
 
 
 %% DISCRETIZATION
-nelsXi = 80;%# elements
-nnodesXi = nelsXi + 1;
-nelsX = 20;%# elements
-nnodesX = nelsX + 1;
-nnodes = nnodesXi + nnodesX;
-nels   = nelsXi + nelsX;
-dx = L/nels;
 % TIME
 tol = 1e-7;
 t = 0.0;
-dt = 0.2;
+dt = 1;
 Tfinal = 2.0;
-
-%% MESHING
-xi_nodesFun = @(t) linspace(-speed*t + leftBound,-speed*(t+dt) + rightBound, nnodesXi);
+% SPACE
+meshDen = 5;
+h = 1/meshDen;
+xi_nodesFun = @(t) (-speed*t+leftBound):h:(-speed*(t+dt) + rightBound);
+x_nodesFun = @(t) (leftBound):h:(leftBound+speed*dt);
+xipos = xi_nodesFun(t);
+xpos  = x_nodesFun(t);
+nnodesXi = size(xipos,2);
+nnodesX  = size(xpos, 2);
+nelsXi = nnodesXi-1;
+nelsX = nnodesX-1;
 xi_connectivity = [(1:nelsXi)', (2:(nelsXi+1))'];
-x_nodesFun = @(t) linspace(leftBound, leftBound+speed*dt, nnodesX);
 x_connectivity = [(1:nelsX)', (2:(nelsX+1))'];
+
+nnodes = nnodesXi + nnodesX;
+nels   = nelsXi + nelsX;
 
 % Build global numbering
 %numberingSubproblem(i) gives global numbering of node i of Subproblem
@@ -46,8 +55,8 @@ numberingX  = 1:nnodesX;
 numberingXi = (nnodesX+1):(nnodesX+nnodesXi);
 
 %% Initializing solution
-Uxi = icXi(xi_nodesFun(t), 0)';
-Ux = icX(x_nodesFun(t), 0)';
+Uxi = icXi(xipos, 0)';
+Ux = icX(xpos, 0)';
 U = [Ux; Uxi];
 massX = sparse(nnodesX, nnodesX);
 massXi = sparse(nnodesXi, nnodesXi);
@@ -56,8 +65,6 @@ diffusionXi = sparse(nnodesXi, nnodesXi);
 advectionXi = sparse(nnodesXi, nnodesXi);
 pulse = zeros([nnodesXi, 1]);
 
-xipos = xi_nodesFun(t);
-xpos  = x_nodesFun(t);
 % FIXED SUBPROBLEM
 % Assemble mass matrix
 for iel=1:nelsX
@@ -80,14 +87,12 @@ for iel=1:nelsXi
     Mloc = [h/3, h/6; h/6, h/3];
     Aloc = [-1/2, 1/2; -1/2, 1/2];
     Kloc = [1/h, -1/h; -1/h, 1/h];
-    rloc = h*powerDensity(xiposloc, power, efficiency, radius);%closed integration
     massXi(inodes, inodes) = ...
         massXi(inodes, inodes) + Mloc;
     advectionXi(inodes, inodes) = ...
         advectionXi(inodes, inodes) + Aloc;
     diffusionXi(inodes, inodes) = ...
         diffusionXi(inodes, inodes) + Kloc;
-    pulse(inodes) = pulse(inodes) + rloc';
 end
 
 %% Time loop
@@ -108,7 +113,7 @@ while t < Tfinal
         inodes = xi_connectivity(iel, :);
         xiposloc = xipos(inodes);
         h = xiposloc(2) - xiposloc(1);
-        rloc = h*powerDensity(xiposloc, power, efficiency, radius);
+        rloc = h*powerDensity(xiposloc, xi0, power, efficiency, radius);
         pulse(inodes) = pulse(inodes) + rloc';
     end
     % Assemble subproblems into system
@@ -116,20 +121,43 @@ while t < Tfinal
     rhs(numberingXi) = rhs(numberingXi) + rho*cp*( massXi*Uxi / dt ) + pulse;
     lhs(numberingX, numberingX) = lhs(numberingX, numberingX) + rho*cp*(massX/dt) + k*diffusionX;
     lhs(numberingXi, numberingXi) = lhs(numberingXi, numberingXi) + rho*cp*(massXi/dt - speed*advectionXi) + k*diffusionXi;
-    % Assemble Dirichlet condition interface
-    inodeDirichletXi = xi_connectivity( 1, 1);
-    inodeDirichletX = x_connectivity( nelsX, 2 );
-    lhs(numberingXi(inodeDirichletXi), :) = 0.0;
-    lhs(numberingXi(inodeDirichletXi), numberingX(inodeDirichletX)) = -1.0;
-    lhs(numberingXi(inodeDirichletXi), numberingXi(inodeDirichletXi)) = 1.0;
-    rhs(numberingXi(inodeDirichletXi)) = 0.0;
+
     % Assemble Neumann condition interface
-    inodeBounX = x_connectivity( nelsX, 2);
-    inodesXi = xi_connectivity( 1, :);
-    Kboun = [1/2, -1/2];
-    lhs(numberingX(inodeBounX), numberingXi(inodesXi)) = ...
-        lhs(numberingX(inodeBounX), numberingXi(inodesXi)) + k*Kboun;
-    % TODO
+    % inodeBounX = x_connectivity( nelsX, 2);
+    % inodesXi = xi_connectivity( 1, :);
+    % xiposloc = xipos(inodesXi);
+    % h = xiposloc(2) - xiposloc(1);
+    % Kboun = [-1/h, 1/h];
+    % lhs(numberingX(inodeBounX), numberingXi(inodesXi)) = ...
+    %     lhs(numberingX(inodeBounX), numberingXi(inodesXi)) - k*Kboun;
+    % % TODO, fix here
+
+    % Assemble Dirichlet interface RIGHT
+    % inodeDirichletXi = xi_connectivity( 1, 1);
+    % inodeDirichletX = x_connectivity( nelsX, 2 );
+    % lhs(numberingXi(inodeDirichletXi), :) = 0.0;
+    % lhs(numberingXi(inodeDirichletXi), numberingX(inodeDirichletX)) = -1.0;
+    % lhs(numberingXi(inodeDirichletXi), numberingXi(inodeDirichletXi)) = 1.0;
+    % rhs(numberingXi(inodeDirichletXi)) = 0.0;
+
+    % Assemble Neumann condition interface RIGHT
+    inodeBounXi_Neumann = xi_connectivity( 1, 1);
+    inodesX_Neumann = x_connectivity( nelsX, :);
+    xposloc = xpos(inodesX_Neumann);
+    inodeBounXi_Neumann_global = numberingXi( inodeBounXi_Neumann );
+    inodesX_Neumann_global = numberingX( inodesX_Neumann );
+    h = xposloc(2) - xposloc(1);
+    Kboun = -[-1/h, 1/h];
+    lhs(inodeBounXi_Neumann_global, inodesX_Neumann_global) = ...
+        lhs(inodeBounXi_Neumann_global, inodesX_Neumann_global) - k*Kboun;
+    % TODO, fix here
+    % Assemble Dirichlet interface LEFT
+    inodeDirichletXi_global = numberingXi( xi_connectivity( 1, 1) );
+    inodeDirichletX_global = numberingX( x_connectivity( nelsX, 2 ) );
+    lhs(inodeDirichletX_global, :) = 0.0;
+    lhs(inodeDirichletX_global, inodeDirichletX_global) = 1.0;
+    lhs(inodeDirichletX_global, inodeDirichletXi_global) = -1.0;
+    rhs(inodeDirichletX_global) = 0.0;
     %% Solve
     U = lhs \ rhs;
 
@@ -143,19 +171,20 @@ while t < Tfinal
     minY = min(U);
     maxY = max(U);
     range = maxY - minY;
-    plot(posSol+speed*t, sol);
+    hold off
+    plot(posSol+speed*t, sol, 'DisplayName', "myScheme");
+    legend()
     % xlim([leftBound-speed*(Tfinal+3*dt), rightBound+speed*dt]);
     xlim([leftBound, rightBound]);
     ylim([minY-0.1*range, maxY+0.1*range]);
-    pause(0.1);
+    pause(0.4);
 end
 
 %% HEAT SOURCE
-function [pd] = powerDensity(xi, power, efficiency, radius)
-    xi0 = 0.0;
+function [pd] = powerDensity(xi, xi0, power, efficiency, radius)
     if (abs(xi-xi0)>3*radius)
         pd = 0.0;
     else
-        pd = 2*(power*efficiency) / pi / pow2(radius) * exp( - 2*pow2(xi - xi0)/pow2(radius));
+        pd = 2*(power*efficiency) / pi / radius^2 * exp( - 2*(xi - xi0).^2/radius^2);
     end
 end
