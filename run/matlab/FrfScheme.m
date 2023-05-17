@@ -8,10 +8,9 @@ classdef FrfScheme < Scheme
         pulse
     end
     methods
-        function obj = FrfScheme(workspace)
-            obj = obj.load(workspace);
-            load(workspace, "icX");
-            obj = obj.initialize(icX);
+        function obj = FrfScheme(S)
+            obj = obj.load(S);
+            obj = obj.initialize(S.icX);
         end
         function obj = initialize(obj, icX)
             obj.h = 1/obj.meshDensity;
@@ -55,6 +54,9 @@ classdef FrfScheme < Scheme
                 % Assemble subproblems into system
                 obj.rhs = obj.rhs + obj.rho*obj.cp*( obj.massX*obj.U / obj.dt ) + obj.pulse;
                 obj.lhs = obj.lhs + obj.rho*obj.cp*(obj.massX/obj.dt) + obj.k*obj.diffusionX;
+                % Assemble Neumann BC
+                obj.rhs(1) = obj.rhs(1) + obj.k*obj.neumannFluxLeft;
+                obj.rhs(end) = obj.rhs(end) + obj.k*obj.neumannFluxRight;
                 %% Solve
                 obj.U = obj.lhs \ obj.rhs;
         end

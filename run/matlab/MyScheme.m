@@ -26,12 +26,16 @@ classdef MyScheme < Scheme
         Upos
         pos
         adimDt
+        xInterface
+        stabilizationLhsXi
+        stabilizationRhsXi
+        scA = 2.0
+        scAD = 4.0
     end
     methods
-        function obj = MyScheme(workspace)
-            obj = obj.load(workspace);
-            load(workspace, "icX", "icXi");
-            obj = obj.initialize(icX, icXi);
+        function obj = MyScheme(S)
+            obj = obj.load(S);
+            obj = obj.initialize(S.icX, S.icXi);
         end
         function obj = initialize(obj, icX, icXi)
             obj.h = 1/obj.meshDensity;
@@ -66,6 +70,9 @@ classdef MyScheme < Scheme
             obj.diffusionXi = sparse(obj.nnodesXi, obj.nnodesXi);
             obj.advectionXi = sparse(obj.nnodesXi, obj.nnodesXi);
             obj.pulseXi = zeros([obj.nnodesXi, 1]);
+            % Stabilization
+            obj.stabilizationLhsXi = sparse(obj.nnodesXi, obj.nnodesXi);
+            obj.stabilizationRhsXi = zeros([obj.nnodesXi, 1]);
 
         end
         function obj = preLoopAssembly(obj)
@@ -84,7 +91,7 @@ classdef MyScheme < Scheme
                   obj.diffusionX(inodes, inodes) + Kloc;
           end
           % XI SUBPROBLEM
-          % Assemble advection and mass mat
+          % Assemble mass, advection and diffusion
           for iel=1:obj.nelsXi
               inodes = obj.xi_connectivity(iel, :);
               xiposloc = obj.xipos(inodes);
@@ -98,6 +105,19 @@ classdef MyScheme < Scheme
                   obj.advectionXi(inodes, inodes) + Aloc;
               obj.diffusionXi(inodes, inodes) = ...
                   obj.diffusionXi(inodes, inodes) + Kloc;
+          end
+          % Assemble stabilization LHS and RHS
+          for iel=1:obj.nelsXi
+              inodes = obj.xi_connectivity(iel, :);
+              xiposloc = obj.xipos(inodes);
+              h = xiposloc(2) - xiposloc(1);
+              tau = obj.getTau( h );
+              Slhsloc = obj.rho * obj.cp * tau * obj.speed^2 / h * [1, -1; -1, 1];
+              Srhsloc = tau * (obj.powerDensity(xiposloc, obj.xi0) .* [-1, 1]) * obj.speed;
+              obj.stabilizationLhsXi(inodes, inodes) = ...
+                  obj.stabilizationLhsXi(inodes, inodes) + Slhsloc;
+              obj.stabilizationRhsXi(inodes) = ...
+                  obj.stabilizationRhsXi(inodes) + Srhsloc';
           end
         end
         function obj = iterate(obj)
@@ -130,9 +150,9 @@ classdef MyScheme < Scheme
           end
           % Assemble subproblems into system
           obj.rhs(obj.numberingX) = obj.rhs(obj.numberingX) + obj.rho*obj.cp*( obj.massX*obj.Ux / obj.dt ) + obj.pulseX;
-          obj.rhs(obj.numberingXi)= obj.rhs(obj.numberingXi) + obj.rho*obj.cp*( obj.massXi*obj.Uxi / obj.dt ) + obj.pulseXi;
+          obj.rhs(obj.numberingXi)= obj.rhs(obj.numberingXi) + obj.rho*obj.cp*( obj.massXi*obj.Uxi / obj.dt ) + obj.pulseXi + obj.stabilizationRhsXi;
           obj.lhs(obj.numberingX, obj.numberingX) = obj.lhs(obj.numberingX, obj.numberingX) + obj.rho*obj.cp*(obj.massX/obj.dt) + obj.k*obj.diffusionX;
-          obj.lhs(obj.numberingXi, obj.numberingXi) = obj.lhs(obj.numberingXi, obj.numberingXi) + obj.rho*obj.cp*(obj.massXi/obj.dt - obj.speed*obj.advectionXi) + obj.k*obj.diffusionXi;
+          obj.lhs(obj.numberingXi, obj.numberingXi) = obj.lhs(obj.numberingXi, obj.numberingXi) + obj.rho*obj.cp*(obj.massXi/obj.dt - obj.speed*obj.advectionXi) + obj.k*obj.diffusionXi + obj.stabilizationLhsXi;
 
 
           %% INTERFACE
@@ -152,7 +172,13 @@ classdef MyScheme < Scheme
           % lhs(numberingXi(inodeDirichletXi), numberingX(inodeDirichletX)) = -1.0;
           % lhs(numberingXi(inodeDirichletXi), numberingXi(inodeDirichletXi)) = 1.0;
           % rhs(numberingXi(inodeDirichletXi)) = 0.0;
-
+          
+          % EXTERNAL BCs
+          % Neumann condition left
+          obj.rhs(1) = obj.rhs(1) + obj.k*obj.neumannFluxLeft;
+          % Neumann condition right
+          obj.rhs(end) = obj.rhs(end) + obj.k*obj.neumannFluxRight; 
+          % Neumann condition right
           % Assemble Neumann condition interface RIGHT
           inodeBounXi_Neumann = obj.xi_connectivity( 1, 1);
           inodesX_Neumann = obj.x_connectivity( obj.nelsX, :);
@@ -179,6 +205,16 @@ classdef MyScheme < Scheme
           obj.Ux = obj.U(obj.numberingX);
           obj.Uxi = interp1(obj.pos, obj.Upos, obj.getXiNodes())';%gotta work on this
           obj.adimDt = obj.speed*obj.dt / obj.radius;
+          obj.xInterface = obj.xpos( obj.x_connectivity( obj.nelsX, 2 ) );%for post
+        end
+        function [tau] = getTau(obj, h)
+          advectionEstimate = h / obj.scA / (obj.rho*obj.cp*abs(obj.speed));
+          if obj.k>0
+            diffusionEstimate = h.^2 / obj.scAD / obj.k;
+            tau = 1 / (1/advectionEstimate + 1/diffusionEstimate);
+          else
+            tau = advectionEstimate;
+          end
         end
         function [nodes] = getXiNodes(obj)
             nodes = (-obj.speed*obj.t+obj.leftBound):obj.h:(-obj.speed*(obj.t+obj.dt) + obj.rightBound);

@@ -21,31 +21,36 @@ classdef Scheme < handle
       nels = 1;
       U = [];
       iter = 0;
+      neumannFluxLeft = 0.0;
+      neumannFluxRight = 0.0;
       lhs
       rhs
     end
     methods
-        function obj = load(obj, workspace)
-            load(workspace, "leftBound", "rightBound", "power", ...
-                "efficiency", "radius", "cutoffRadius", "x0", ...
-                "speed", "rho", "cp", "k", "dt", "meshDensity", "Tfinal");
+        function obj = load(obj, S)
             % Load problem parameters from a previous MATLAB workspace
-            obj.power = power;
-            obj.efficiency = efficiency;
-            obj.radius = radius;
-            obj.x0ini = x0;
-            obj.speed = speed;
-            obj.rho = rho;
-            obj.cp = cp;
-            obj.k = k;
-            obj.dt = dt;
-            obj.Tfinal = Tfinal;
-            obj.leftBound = leftBound;
-            obj.rightBound = rightBound;
-            obj.cutoffRadius = cutoffRadius;
-            obj.L = rightBound - leftBound;
-            obj.meshDensity = meshDensity;
+            obj.power = S.power;
+            obj.efficiency = S.efficiency;
+            obj.radius = S.radius;
+            obj.x0ini = S.x0;
+            obj.speed = S.speed;
+            obj.rho = S.rho;
+            obj.cp = S.cp;
+            obj.k = S.k;
+            obj.dt = S.dt;
+            obj.Tfinal = S.Tfinal;
+            obj.leftBound = S.leftBound;
+            obj.rightBound = S.rightBound;
+            obj.cutoffRadius = S.cutoffRadius;
+            obj.L = S.rightBound - S.leftBound;
+            obj.meshDensity = S.meshDensity;
             obj.x0 = obj.x0ini;
+            if isfield(S, "neumannFluxLeft")
+                obj.neumannFluxLeft = S.neumannFluxLeft;
+            end
+            if isfield(S, "neumannFluxRight")
+                obj.neumannFluxRight = S.neumannFluxRight;
+            end
         end
         function [pd] = powerDensity(obj, x, x0)
             if (abs(x-x0)>obj.cutoffRadius)
