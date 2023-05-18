@@ -5,27 +5,30 @@ inputdset = "neumannLeft.mat";
 S = load(inputdset, "leftBound", "rightBound", "power", ...
     "efficiency", "radius", "cutoffRadius", "x0", ...
     "speed", "rho", "cp", "k", "dt", "meshDensity", "Tfinal", "icX", "icXi", "neumannFluxLeft", "neumannFluxRight");
-S.neumannFluxLeft = 10;
-S.neumannFluxRight = 0.0;
-S.dt = 0.1;
-S.meshDensity = 5;
-S.k = 1.0;
+S.neumannFluxLeft = 50;
+S.neumannFluxRight = 50.0;
+S.dt = 0.2;
+S.meshDensity = 4;
+S.k = 10.0;
 S.power = 0.0;
 frfscheme = FrfScheme(S);
 referenceSol = FrfScheme(S);
 myscheme = MyScheme(S);
+halfhalfscheme = HalfHalfScheme(S);
 
 referenceSol.dt = 0.01;
 
 frfscheme.preLoopAssembly();
 referenceSol.preLoopAssembly();
 myscheme.preLoopAssembly();
+halfhalfscheme.preLoopAssembly();
 
 
 figure('Position', [100 100 1200 900])
 while myscheme.t < myscheme.Tfinal-1e-7
     frfscheme.iterate();
     myscheme.iterate();
+    halfhalfscheme.iterate();
     while referenceSol.t < myscheme.t
         referenceSol.iterate();
     end
@@ -40,6 +43,9 @@ while myscheme.t < myscheme.Tfinal-1e-7
             "LineWidth", 2);
     xline(myscheme.xInterface, ...
         'DisplayName', "My scheme, $\Gamma$")
+    plot(halfhalfscheme.pos, halfhalfscheme.Upos, ...
+        'DisplayName', "Half half DD", ...
+            "LineWidth", 2);
     plot(referenceSol.xpos, referenceSol.U, '--', ...
         'DisplayName', "Reference", ...
         "LineWidth", 1.5);
@@ -66,6 +72,6 @@ while myscheme.t < myscheme.Tfinal-1e-7
         'Interpreter', 'latex')
     set(gca, 'FontSize', 24)
     set(gca, 'TickLabelInterpreter', 'latex')
-    %pause(0.4)
+    pause(0.4)
     % END PLOT
 end

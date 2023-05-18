@@ -1,7 +1,6 @@
 classdef MyScheme < Scheme
     properties
         h
-        connectivity
         pulse
         xi0
         xipos
@@ -29,12 +28,16 @@ classdef MyScheme < Scheme
         xInterface
         stabilizationLhsXi
         stabilizationRhsXi
+        isStabilized = false
         scA = 2.0
         scAD = 4.0
     end
     methods
         function obj = MyScheme(S)
             obj = obj.load(S);
+            if isfield(S, "isStabilized")
+                obj.isStabilized = S.isStabilized;
+            end
             obj = obj.initialize(S.icX, S.icXi);
         end
         function obj = initialize(obj, icX, icXi)
@@ -106,7 +109,7 @@ classdef MyScheme < Scheme
               obj.diffusionXi(inodes, inodes) = ...
                   obj.diffusionXi(inodes, inodes) + Kloc;
           end
-          % Assemble stabilization LHS and RHS
+          % Assemble stabilization LHS
           for iel=1:obj.nelsXi
               inodes = obj.xi_connectivity(iel, :);
               xiposloc = obj.xipos(inodes);
@@ -131,6 +134,7 @@ classdef MyScheme < Scheme
           obj.rhs = zeros([obj.nnodes, 1]);
           obj.pulseXi = zeros([obj.nnodesXi, 1]);
           obj.pulseX = zeros([obj.nnodesX, 1]);
+          obj.stabilizationRhsXi = zeros([obj.nnodesXi, 1]);
           %% Time-dependent assembly    
           % Pulse, X
           for iel=1:obj.nelsX
@@ -148,37 +152,52 @@ classdef MyScheme < Scheme
               rloc = obj.h*obj.powerDensity(xiposloc, obj.xi0);
               obj.pulseXi(inodes) = obj.pulseXi(inodes) + rloc';
           end
+          % Stabilization RHS, Xi
+          for iel=1:obj.nelsXi
+              inodes = obj.xi_connectivity(iel, :);
+              xiposloc = obj.xipos(inodes);
+              h = xiposloc(2) - xiposloc(1);
+              tau = obj.getTau( h );
+              Srhsloc = tau * (obj.powerDensity(xiposloc, obj.xi0) .* [-1, 1]) * obj.speed;
+              obj.stabilizationRhsXi(inodes) = ...
+                  obj.stabilizationRhsXi(inodes) + Srhsloc';
+          end
           % Assemble subproblems into system
           obj.rhs(obj.numberingX) = obj.rhs(obj.numberingX) + obj.rho*obj.cp*( obj.massX*obj.Ux / obj.dt ) + obj.pulseX;
-          obj.rhs(obj.numberingXi)= obj.rhs(obj.numberingXi) + obj.rho*obj.cp*( obj.massXi*obj.Uxi / obj.dt ) + obj.pulseXi + obj.stabilizationRhsXi;
+          obj.rhs(obj.numberingXi)= obj.rhs(obj.numberingXi) + obj.rho*obj.cp*( obj.massXi*obj.Uxi / obj.dt ) + obj.pulseXi;
           obj.lhs(obj.numberingX, obj.numberingX) = obj.lhs(obj.numberingX, obj.numberingX) + obj.rho*obj.cp*(obj.massX/obj.dt) + obj.k*obj.diffusionX;
-          obj.lhs(obj.numberingXi, obj.numberingXi) = obj.lhs(obj.numberingXi, obj.numberingXi) + obj.rho*obj.cp*(obj.massXi/obj.dt - obj.speed*obj.advectionXi) + obj.k*obj.diffusionXi + obj.stabilizationLhsXi;
-
-
-          %% INTERFACE
-          % Assemble Neumann condition interface LEFT
-          % inodeBounX = x_connectivity( nelsX, 2);
-          % inodesXi = xi_connectivity( 1, :);
-          % xiposloc = xipos(inodesXi);
-          % h = xiposloc(2) - xiposloc(1);
-          % Kboun = [-1/h, 1/h];
-          % lhs(numberingX(inodeBounX), numberingXi(inodesXi)) = ...
-          %     lhs(numberingX(inodeBounX), numberingXi(inodesXi)) - k*Kboun;
-
-          % Assemble Dirichlet interface RIGHT
-          % inodeDirichletXi = xi_connectivity( 1, 1);
-          % inodeDirichletX = x_connectivity( nelsX, 2 );
-          % lhs(numberingXi(inodeDirichletXi), :) = 0.0;
-          % lhs(numberingXi(inodeDirichletXi), numberingX(inodeDirichletX)) = -1.0;
-          % lhs(numberingXi(inodeDirichletXi), numberingXi(inodeDirichletXi)) = 1.0;
-          % rhs(numberingXi(inodeDirichletXi)) = 0.0;
+          obj.lhs(obj.numberingXi, obj.numberingXi) = obj.lhs(obj.numberingXi, obj.numberingXi) + obj.rho*obj.cp*(obj.massXi/obj.dt - obj.speed*obj.advectionXi) + obj.k*obj.diffusionXi;
+            
+          if obj.isStabilized
+              obj.rhs(obj.numberingXi) = obj.rhs(obj.numberingXi) + obj.stabilizationRhsXi;
+              obj.lhs(obj.numberingXi, obj.numberingXi) = obj.lhs(obj.numberingXi, obj.numberingXi) + obj.stabilizationLhsXi;
+          end
           
+
           % EXTERNAL BCs
           % Neumann condition left
           obj.rhs(1) = obj.rhs(1) + obj.k*obj.neumannFluxLeft;
           % Neumann condition right
           obj.rhs(end) = obj.rhs(end) + obj.k*obj.neumannFluxRight; 
-          % Neumann condition right
+
+          %% INTERFACE
+          % Assemble Neumann condition interface LEFT
+          % inodeBounX = obj.x_connectivity( obj.nelsX, 2);
+          % inodesXi = obj.xi_connectivity( 1, :);
+          % xiposloc = obj.xipos(inodesXi);
+          % h = xiposloc(2) - xiposloc(1);
+          % Kboun = [-1/h, 1/h];
+          % obj.lhs(obj.numberingX(inodeBounX), obj.numberingXi(inodesXi)) = ...
+          %     obj.lhs(obj.numberingX(inodeBounX), obj.numberingXi(inodesXi)) - obj.k*Kboun;
+
+          % Assemble Dirichlet interface RIGHT
+          % inodeDirichletXi = obj.xi_connectivity( 1, 1);
+          % inodeDirichletX = obj.x_connectivity( obj.nelsX, 2 );
+          % obj.lhs(obj.numberingXi(inodeDirichletXi), :) = 0.0;
+          % obj.lhs(obj.numberingXi(inodeDirichletXi), obj.numberingX(inodeDirichletX)) = -1.0;
+          % obj.lhs(obj.numberingXi(inodeDirichletXi), obj.numberingXi(inodeDirichletXi)) = 1.0;
+          % obj.rhs(obj.numberingXi(inodeDirichletXi)) = 0.0;
+
           % Assemble Neumann condition interface RIGHT
           inodeBounXi_Neumann = obj.xi_connectivity( 1, 1);
           inodesX_Neumann = obj.x_connectivity( obj.nelsX, :);
