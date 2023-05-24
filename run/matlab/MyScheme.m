@@ -31,12 +31,16 @@ classdef MyScheme < Scheme
         isStabilized = false
         scA = 2.0
         scAD = 4.0
+        minLengthSubdomainX = 0.0;
     end
     methods
         function obj = MyScheme(S)
             obj = obj.load(S);
             if isfield(S, "isStabilized")
                 obj.isStabilized = S.isStabilized;
+            end
+            if isfield(S, "minLengthSubdomainX")
+                obj.minLengthSubdomainX = S.minLengthSubdomainX;
             end
             obj = obj.initialize(S.icX, S.icXi);
         end
@@ -222,7 +226,7 @@ classdef MyScheme < Scheme
           obj.pos = [obj.xpos(1:end-1)-obj.speed*obj.t, obj.xipos];
           obj.Upos = [obj.U(obj.numberingX(1:end-1)); obj.U(obj.numberingXi)];
           obj.Ux = obj.U(obj.numberingX);
-          obj.Uxi = interp1(obj.pos, obj.Upos, obj.getXiNodes())';%gotta work on this
+          obj.Uxi = interp1(obj.pos, obj.Upos, obj.getXiNodes(), "linear", "extrap")';%gotta work on this
           obj.adimDt = obj.speed*obj.dt / obj.radius;
           obj.xInterface = obj.xpos( obj.x_connectivity( obj.nelsX, 2 ) );%for post
         end
@@ -235,11 +239,18 @@ classdef MyScheme < Scheme
             tau = advectionEstimate;
           end
         end
-        function [nodes] = getXiNodes(obj)
-            nodes = (-obj.speed*obj.t+obj.leftBound):obj.h:(-obj.speed*(obj.t+obj.dt) + obj.rightBound);
+        function lengthSubdomainX = getLengthSubdomainX(obj)
+            lengthSubdomainX = (obj.speed*obj.dt);
+            lengthSubdomainX = max( obj.minLengthSubdomainX, lengthSubdomainX);
+        end
+        function [nodes] = getXiNodes(obj)   
+            lengthSubdomainX = obj.getLengthSubdomainX;
+            leftBoundXi = round((-obj.speed*(obj.t+obj.dt)+obj.leftBound+lengthSubdomainX),5);
+            nodes = leftBoundXi:obj.h:(-obj.speed*(obj.t+obj.dt) + obj.rightBound);
         end
         function [nodes] = getXNodes(obj)
-            nodes = (obj.leftBound):obj.h:(obj.leftBound+obj.speed*obj.dt);
+            lengthSubdomainX = obj.getLengthSubdomainX;
+            nodes = (obj.leftBound):obj.h:(obj.leftBound+lengthSubdomainX);
         end
     end
 end

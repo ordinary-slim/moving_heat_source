@@ -53,11 +53,7 @@ classdef Scheme < handle
             end
         end
         function [pd] = powerDensity(obj, x, x0)
-            if (abs(x-x0)>obj.cutoffRadius)
-                pd = 0.0;
-            else
-                pd = 2*(obj.power*obj.efficiency) / pi / obj.radius^2 * exp( - 2*(x - x0).^2/obj.radius^2);
-            end
+            pd = 2*(obj.power*obj.efficiency) / pi / obj.radius^2 * exp( - 2*(x - x0).^2/obj.radius^2);
         end
     end
 end

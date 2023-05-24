@@ -5,15 +5,21 @@ inputdset = "cteIc.mat";
 S = load(inputdset, "leftBound", "rightBound", "power", ...
     "efficiency", "radius", "cutoffRadius", "x0", ...
     "speed", "rho", "cp", "k", "dt", "meshDensity", "Tfinal", "icX", "icXi");
+S.isStabilized = true;
 S.icXi = @(xi, t) S.icX(xi+S.speed*t, t);
-S.dt = 0.1;
+S.dt = 0.2;
 S.meshDensity = 2;
 S.k = 1.0;
 S.power = 0.0;
 frfscheme = FrfScheme(S);
 referenceSol = FrfScheme(S);
 myscheme = MyScheme(S);
-halfhalf = HalfHalfScheme(S);
+myschemeRef = MyScheme(S);
+
+myschemeRef.dt = S.dt / 2;
+% myschemeRef.meshDensity = S.meshDensity * 2;
+myschemeRef.minLengthSubdomainX = myscheme.getLengthSubdomainX();
+myschemeRef.initialize( S.icX, S.icXi );
 
 referenceSol.dt = 0.01;
 referenceSol.meshDensity = 10;
@@ -22,16 +28,18 @@ referenceSol.initialize(S.icX);
 frfscheme.preLoopAssembly();
 referenceSol.preLoopAssembly();
 myscheme.preLoopAssembly();
-halfhalf.preLoopAssembly();
+myschemeRef.preLoopAssembly();
 
 
-figure('Position', [100 100 1200 900])
-while myscheme.t < myscheme.Tfinal
+figure('Position', [100 100 1400 900])
+while myscheme.t < myscheme.Tfinal-1e-7
     frfscheme.iterate();
     myscheme.iterate();
-    halfhalf.iterate();
+    while myschemeRef.t < myscheme.t
+        myschemeRef.iterate();       
+    end
     while referenceSol.t < myscheme.t
-        referenceSol.iterate();
+        referenceSol.iterate();       
     end
     % PLOT
     hold off
@@ -41,11 +49,11 @@ while myscheme.t < myscheme.Tfinal
     hold on
     plot(myscheme.pos+myscheme.t*myscheme.speed, myscheme.Upos, ...
         'DisplayName', "My scheme", ...
-            "LineWidth", 2);
+            "LineWidth", 2);  
     xline(myscheme.xInterface, ...
         'DisplayName', "My scheme, $\Gamma$")
-    plot(halfhalf.pos, halfhalf.Upos, ...
-        'DisplayName', "Half half DD", ...
+    plot(myschemeRef.pos+myschemeRef.t*myschemeRef.speed, myschemeRef.Upos, ...
+        'DisplayName', "My scheme,refined in time", ...
             "LineWidth", 2);
     plot(referenceSol.xpos, referenceSol.U, '--', ...
         'DisplayName', "Reference", ...
@@ -68,7 +76,7 @@ while myscheme.t < myscheme.Tfinal
     annotation('textbox',dim,'String',timeString,'FitBoxToText','on', ...
         'Interpreter', 'latex', 'FontSize', 24);
     legend('Location', 'best', 'FontSize', 24, 'Interpreter', 'latex');
-    title(sprintf("$\\Delta t$ = %.1f",myscheme.dt), ...
+    title(sprintf("$\\Delta t$ = %.1f, h = %.1f",myscheme.dt, myscheme.h), ...
         'FontSize', 32, ...
         'Interpreter', 'latex')
     set(gca, 'FontSize', 24)

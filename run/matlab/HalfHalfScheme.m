@@ -167,10 +167,10 @@ classdef HalfHalfScheme < Scheme
           obj.xInterface = obj.pos1( obj.connectivity1( obj.nels1, 2 ) );%for post
         end
         function [nodes] = meshLeft(obj)
-            nodes = (obj.leftBound):obj.h:(obj.leftBound + (obj.rightBound - obj.leftBound)/2);
+            nodes = (obj.leftBound):obj.h:(obj.leftBound + (obj.rightBound - obj.leftBound)/5);
         end
         function [nodes] = meshRight(obj)
-            nodes = (obj.leftBound + (obj.rightBound - obj.leftBound)/2):obj.h:obj.rightBound;
+            nodes = (obj.leftBound + (obj.rightBound - obj.leftBound)/5):obj.h:obj.rightBound;
         end
     end
 end

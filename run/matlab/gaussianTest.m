@@ -5,8 +5,15 @@ inputdset = "gaussianTest.mat";
 S = load(inputdset, "leftBound", "rightBound", "power", ...
     "efficiency", "radius", "cutoffRadius", "x0", ...
     "speed", "rho", "cp", "k", "dt", "meshDensity", "Tfinal", "icX", "icXi");
+S.k = 1;
+S.cp = 1;
+S.rho = 1;
 S.x0 = -20;
-S.dt = 0.2;
+S.Tfinal = 4;
+S.dt = setDt( S, 10);
+S.cutoffRadius = 2.0;
+S.meshDensity = 2;
+% S.minLengthSubdomainX = 5;
 frfscheme = FrfScheme(S);
 referenceSol = FrfScheme(S);
 myscheme = MyScheme(S);
@@ -18,8 +25,8 @@ referenceSol.preLoopAssembly();
 myscheme.preLoopAssembly();
 
 
-figure('Position', [100 100 1200 900])
-while myscheme.t < myscheme.Tfinal
+figure('Position', [200 100 1200 900])
+while myscheme.t < myscheme.Tfinal - 1e-7
     frfscheme.iterate();
     myscheme.iterate();
     while referenceSol.t < myscheme.t
@@ -50,18 +57,26 @@ while myscheme.t < myscheme.Tfinal
         "Marker", 's', ...
         "MarkerEdgeColor", rectangleColor(1:3), "MarkerEdgeAlpha", rectangleColor(end), ...
         "MarkerFaceColor", rectangleColor(1:3), "MarkerFaceAlpha", rectangleColor(end), ...
-        "DisplayName", "Heat source support")
+        "DisplayName", sprintf("Support of heat source"))
     delete(findall(gcf,'type','annotation'))
-    dim = [.2 .5 .3 .3];
+    dim = [.45 0.0 .3 .3];
     timeString = sprintf("t = %.1f", myscheme.t);
     annotation('textbox',dim,'String',timeString,'FitBoxToText','on', ...
         'Interpreter', 'latex', 'FontSize', 24);
     legend('Location', 'best', 'FontSize', 24, 'Interpreter', 'latex');
-    title(sprintf("Step size = %d $\\mathcal{R}$",myscheme.adimDt), ...
+    title(sprintf("$\\Delta t$ = %g, $\\mathcal{R}$ = %g, h = %g", ...
+        myscheme.dt, myscheme.adimDt, myscheme.h), ...
         'FontSize', 32, ...
         'Interpreter', 'latex')
     set(gca, 'FontSize', 24)
     set(gca, 'TickLabelInterpreter', 'latex')
-    pause(0.4)
+    xlabel("x", "Interpreter", "latex")
+    ylabel("u", "Interpreter", "latex")
+    grid on
+    % pause(0.1)
     % END PLOT
+end
+
+function [dt] = setDt( S, adimR)
+    dt = S.radius / S.speed * adimR; 
 end
