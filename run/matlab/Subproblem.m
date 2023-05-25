@@ -59,15 +59,22 @@ classdef Subproblem  < handle
                   continue;
               end
               % Load element
-              e = obj.mesh.getElement( ielem );
+              e = obj.mesh.getElement( ielem );              
+              tau = obj.getTau( e.vol );%1D
+
               % Compute contributions
               Aloc = zeros([e.nnodes, e.nnodes]);
               rloc = zeros([e.nnodes, 1]);
               for igp=1:e.ngpoints
                   xgp = e.gpos(igp);
                   for inode=1:e.nnodes
+                      % SOURCE
                       rloc(inode) = rloc(inode) + ...
                           e.baseFuns{inode}(xgp)*obj.powerDensity(xgp)*...
+                          e.gpweight(igp)*e.vol;
+                      %STABILIZATION RHS
+                      rloc(inode) = rloc(inode) + ...
+                          tau * obj.powerDensity(xgp) * obj.vadv * e.gradBaseFuns{inode}(xgp) * ...
                           e.gpweight(igp)*e.vol;
                       for jnode=1:e.nnodes
                           %DIFFUSION
@@ -79,6 +86,11 @@ classdef Subproblem  < handle
                           Aloc(inode, jnode) = Aloc(inode, jnode) + ...
                               obj.rho*obj.cp*obj.vadv*...
                               e.baseFuns{inode}(xgp) * e.gradBaseFuns{jnode}(xgp)*...
+                              e.gpweight(igp)*e.vol;
+                          %STABILIZATION LHS
+                          Aloc(inode, jnode) = Aloc(inode, jnode) + ...
+                              obj.rho * obj.cp * tau * obj.vadv^2 * ...
+                              e.gradBaseFuns{inode}(xgp) * e.gradBaseFuns{jnode}(xgp)*...
                               e.gpweight(igp)*e.vol;
                       end
                   end
@@ -116,11 +128,41 @@ classdef Subproblem  < handle
               end
           end
       end
+      function obj = interpolateInactive( obj, otherProblem )
+          arguments
+              obj Subproblem
+              otherProblem Subproblem
+          end
+          inactiveNodes = find(~obj.mesh.activeNodes);
+          for inode=inactiveNodes'
+            posNode_other = obj.mesh.posFixed(inode) - otherProblem.mesh.shiftFixed;
+            val = otherProblem.evaluate( posNode_other );
+            if isnumeric(val)
+                obj.U(inode) =  val;
+            end
+          end
+      end
       function u = evaluate( obj, x )
+          % Return false if x not in mesh
+          u = false;
           ielem = obj.mesh.findOwnerElement( x );
-          e = obj.mesh.getElement( ielem );
-          coeffs = [e.baseFuns{1}(x), e.baseFuns{2}(x)];
-          u = dot( coeffs, obj.U(e.con));
+          if ielem > 0
+              e = obj.mesh.getElement( ielem );
+              coeffs = [e.baseFuns{1}(x), e.baseFuns{2}(x)];
+              u = dot( coeffs, obj.U(e.con));
+          end
+      end
+      function [tau] = getTau(obj, h)
+          % Compute tau for stabilization
+          scA = 2;
+          scAD = 4;
+          advectionEstimate = h / scA / (obj.rho*obj.cp*abs(obj.vadv));
+          if obj.k>0
+            diffusionEstimate = h.^2 / scAD / obj.k;
+            tau = 1 / (1/advectionEstimate + 1/diffusionEstimate);
+          else
+            tau = advectionEstimate;
+          end
       end
       function [pd] = powerDensity(obj, x)
           pd = 2*(obj.power) / pi / obj.radius^2 * exp( - 2*(x - obj.x0).^2/obj.radius^2);

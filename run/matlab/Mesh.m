@@ -31,29 +31,47 @@ classdef Mesh  < handle
           obj.updateActiveNodes();
           obj.postActivation();
       end
-      function [obj, newInterface] = substract( obj, otherMesh )
+      function [obj, newInterface] = substract( obj, otherMesh, reset )
           % 1D
           % If element is contained in other mesh, deactivate
-          obj.activeElements = ones([obj.nels, 1]);
+          arguments
+              obj Mesh
+              otherMesh Mesh
+              reset = true
+          end
+          if reset
+            obj.activeElements = ones([obj.nels, 1]);
+          end
+          % Assuming otherMesh has no holes
+          otherMeshLeft = otherMesh.posFixed( find(otherMesh.activeNodes, 1) );
+          otherMeshRight = otherMesh.posFixed( find(otherMesh.activeNodes, 1, "last") );
           for iel=1:obj.nels
               e = obj.getElement(iel);
               elLeft = e.pos(1);
               elRight = e.pos(2);
-
-              if (otherMesh.posFixed(1) <= elLeft ) && (otherMesh.posFixed(end) >= elRight)
+              
+              if (otherMeshLeft <= elLeft ) && (otherMeshRight >= elRight)
                   obj.activeElements(iel) = 0.0;
               end
           end
           [~, newInterface] = obj.postActivateElements();
       end
-      function [obj, newInterface] = intersect( obj, otherMesh )
+      function [obj, newInterface] = intersect( obj, otherMesh, reset )
           % 1D
           % If element is NOT contained in other mesh, deactivate
+          arguments
+              obj Mesh
+              otherMesh Mesh
+              reset = true
+          end
+          if reset
+            obj.activeElements = ones([obj.nels, 1]);
+          end
           obj.activeElements = ones([obj.nels, 1]);
           for iel=1:obj.nels
               e = obj.getElement(iel);
-              elLeft = e.pos(1);
-              elRight = e.pos(2);
+              elLeft = e.pos(1) + obj.shiftFixed;
+              elRight = e.pos(2) + obj.shiftFixed;
 
               if (otherMesh.posFixed(1) > elLeft ) || (otherMesh.posFixed(end) < elRight)
                   obj.activeElements(iel) = 0;

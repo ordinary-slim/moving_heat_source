@@ -1,4 +1,4 @@
-classdef MyDDScheme
+classdef MyDDScheme < handle
     properties
         ls LinearSystem
         numberingPart
@@ -7,6 +7,7 @@ classdef MyDDScheme
         meshSubdomain Mesh
         problemPart Subproblem
         problemHS Subproblem
+        posInterface = [];
     end
     methods
         function [obj] = MyDDScheme(params)
@@ -36,12 +37,27 @@ classdef MyDDScheme
         function [obj] = iterate(obj)
           %% pre-iteration
           obj.ls.cleanup();
+          % Motion is done here
+          obj.problemHS.mesh.intersect( obj.problemPart.mesh, true );
           obj.problemPart.preIterate();
           obj.problemHS.preIterate();
           % Domain OPS
-          [~, partGammaNodes] = obj.problemPart.mesh.substract( obj.problemHS.mesh );
-          obj.problemHS.mesh.intersect( obj.problemPart.mesh );
-          hsGammaNodes = obj.problemHS.mesh.bounNodes;%TODO: fix this
+          obj.problemHS.mesh.intersect( obj.problemPart.mesh, false );
+          obj.problemPart.mesh.substract( obj.problemHS.mesh );
+          % Determine Gamma boundary
+          partGammaNodes = [];
+          for inode=obj.problemPart.mesh.bounNodes
+              posNode_other = obj.problemPart.mesh.posFixed(inode) - obj.problemHS.mesh.shiftFixed;
+              if obj.meshSubdomain.findOwnerElement(posNode_other) >= 0
+                  partGammaNodes = [partGammaNodes, inode];
+              end
+          end
+          hsGammaNodes = [];
+          for inode=obj.problemHS.mesh.bounNodes
+              if obj.meshPart.findOwnerElement( obj.problemHS.mesh.posFixed(inode) ) >= 0
+                  hsGammaNodes = [hsGammaNodes, inode];
+              end
+          end
           %% Assembly
           obj.problemPart.assemblePDE(obj.ls);
           obj.problemHS.assemblePDE(obj.ls);
@@ -66,7 +82,10 @@ classdef MyDDScheme
               posNode = obj.problemHS.mesh.pos( inode );
               posNode_other = obj.problemHS.mesh.posFixed(inode) - obj.problemPart.mesh.shiftFixed;
               % Compute normal
-              parentEl = obj.meshSubdomain.getElement( obj.meshSubdomain.conPointCell.getLocalCon( inode ) );
+              % Find parentEl
+              ownerEls = obj.meshSubdomain.conPointCell.getLocalCon( inode );
+              idxParentEl = ownerEls( logical(obj.meshSubdomain.activeElements(ownerEls)) );
+              parentEl = obj.meshSubdomain.getElement( idxParentEl );
               normal = posNode - parentEl.centroid;
               normal = normal / abs(normal);
               % Get corresponding element neighbour mesh
@@ -90,11 +109,26 @@ classdef MyDDScheme
           obj.problemPart.U = obj.ls.U(obj.problemPart.numbering);
           obj.problemHS.U = obj.ls.U(obj.problemHS.numbering);
           % Interpolate inactive nodes of obj.problemPart
-          inactiveNodesPart = find(~obj.problemPart.mesh.activeNodes);
-          for inode=inactiveNodesPart'
-              posNode_other = obj.problemPart.mesh.posFixed(inode) - obj.problemHS.mesh.shiftFixed;
-              obj.problemPart.U(inode) =  obj.problemHS.evaluate( posNode_other );
-          end
+          obj.problemPart.interpolateInactive( obj.problemHS );
+          obj.problemHS.interpolateInactive( obj.problemPart );
+          % Save interface positions for post
+          obj.posInterface = obj.problemPart.mesh.posFixed( partGammaNodes );
+        end
+        function [t] = getTime(obj)
+            t = obj.problemHS.time;
         end
     end
+end
+
+function plotActiveInactive( scheme )
+    arguments
+        scheme MyDDScheme
+    end
+    figure
+    scatter(scheme.meshPart.posFixed(~logical(scheme.meshPart.activeNodes)), 1, "r")
+    hold on
+    scatter(scheme.meshPart.posFixed(logical(scheme.meshPart.activeNodes)), 1, "k")
+
+    scatter(scheme.meshSubdomain.posFixed(~logical(scheme.meshSubdomain.activeNodes)), 1.25, "r")
+    scatter(scheme.meshSubdomain.posFixed(logical(scheme.meshSubdomain.activeNodes)), 1.25, "k")
 end
