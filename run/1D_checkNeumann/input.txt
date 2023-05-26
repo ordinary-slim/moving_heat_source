@@ -23,4 +23,4 @@ advectionSpeedZ 0.0
 speedFRF_X 0.0
 speedFRF_Y 0.0
 speedFRF_Z 0.0
-isStabilized 0
+isStabilized 1

@@ -13,8 +13,8 @@ params.leftBound = -25;
 params.rightBound = +25;
 params.ic = @(x) params.Tenv*ones(size(x));
 
-adimDt = 5;
-adimDomainSize = 5;
+adimDt = 4;
+adimDomainSize = 6;
 params.x0 = -20;
 params.radiusSubdomain = adimDomainSize*params.radius;
 params.dt = setDt( params, adimDt );
@@ -25,6 +25,7 @@ fineparams.dt = setDt( params, 0.2 );
 
 bestSchemeEver = MyDDScheme( params );
 frfscheme = FRFScheme( params );
+myoldscheme = MyScheme( params );
 finefrfscheme = FRFScheme( fineparams );
 
 tol = 1e-7;
@@ -32,24 +33,28 @@ figure('Position', [200 100 1200 900])
 while params.Tfinal-tol > bestSchemeEver.problemPart.time
     bestSchemeEver.iterate();
     frfscheme.iterate();
+    myoldscheme.iterate();
     while finefrfscheme.getTime < bestSchemeEver.getTime()
         finefrfscheme.iterate();
     end
     %% plot
     hold off
     plot(bestSchemeEver.problemPart.mesh.posFixed, bestSchemeEver.problemPart.U, ...
-         "DisplayName", "My scheme", "LineWidth", 2)
+         "DisplayName", "DD close to HS", "LineWidth", 2)
     hold on
-    plot(frfscheme.mesh.posFixed, frfscheme.problem.U, ...
-         "DisplayName", "FRF scheme", "LineWidth", 2)
+    % plot(frfscheme.mesh.posFixed, frfscheme.problem.U, ...
+    %      "DisplayName", "FRF scheme", "LineWidth", 2)
     plot(finefrfscheme.mesh.posFixed, finefrfscheme.problem.U, '--', ...
         'DisplayName', "Reference", ...
         "LineWidth", 1.5);
+    plot(myoldscheme.pos+myoldscheme.t*myoldscheme.speed, myoldscheme.Upos, ...
+        'DisplayName', "DD everywhere", ...
+            "LineWidth", 2);
     for idx=1:length(bestSchemeEver.posInterface)
         xGamma = bestSchemeEver.posInterface(idx);
         if idx==1
             xline(bestSchemeEver.posInterface(1), ...
-        'DisplayName', "My scheme, $\Gamma$")
+        'DisplayName', "DD close to HS, $\Gamma$")
         else
             xline(bestSchemeEver.posInterface(end), ...
         'HandleVisibility', "off")

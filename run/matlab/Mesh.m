@@ -67,7 +67,6 @@ classdef Mesh  < handle
           if reset
             obj.activeElements = ones([obj.nels, 1]);
           end
-          obj.activeElements = ones([obj.nels, 1]);
           for iel=1:obj.nels
               e = obj.getElement(iel);
               elLeft = e.pos(1) + obj.shiftFixed;

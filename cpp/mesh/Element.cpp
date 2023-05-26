@@ -13,7 +13,9 @@ void mesh::Element::computeLocRefMappings() {
   }
 
   // Obtain second vector
-  if (dim < 2) {
+  if (dim == 0) {
+    X.setIdentity();
+  } else if (dim < 2) {
     double tol = 1e-7;
     //Eigen::Vector3d e1 = X.row( 0 );
     Eigen::Vector3d e2;

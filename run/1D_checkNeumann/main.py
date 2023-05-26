@@ -2,7 +2,7 @@ import sys
 sys.path.insert(1, '..')
 sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
-from wrapper import Problem
+from wrapper import Problem, readInput
 import numpy as np
 import meshzoo
 import pdb
@@ -35,26 +35,22 @@ def isInside( mesh, box ):
 
 if __name__=="__main__":
     inputFile = "input.txt"
+    # read input
+    problemInput = readInput( inputFile )
 
-    p = Problem("myNeumannProblem")
-
-    elDen = 4
+    # MESH
+    elDen = 1
     leftEnd = -25.0
     rightEnd = +25.0
     boxDomain = [leftEnd, rightEnd]
-    # Meshing
-    points, cells, cell_type = mesh(boxDomain[0], boxDomain[1], elDen)
-    for p in [p,]:
-        p.input["points"] = points
-        p.input["cells"] = cells
-        p.input["cell_type"]=cell_type
-        #p.input["numberOfGaussPointsCells"]=3
-    #read input
-    for p in [p,]:
-        p.parseInput( inputFile )
+    meshDict = {}
+    meshDict["points"], meshDict["cells"], meshDict["cell_type"] = mesh(boxDomain[0], boxDomain[1], elDen)
+    myMesh = mhs.Mesh(meshDict)
 
-    for p in [p,]:
-        p.initialize()
+    speed = 0.1
+    problemInput["isAdvection"] = 1
+    problemInput["advectionSpeedX"] = -speed
+    p = Problem(myMesh, problemInput, caseName="neumann")
 
     # Neumann condition
     neumannVal = 10

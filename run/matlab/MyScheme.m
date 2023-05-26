@@ -32,6 +32,7 @@ classdef MyScheme < Scheme
         scA = 2.0
         scAD = 4.0
         minLengthSubdomainX = 0.0;
+        preAssembled = false;
     end
     methods
         function obj = MyScheme(S)
@@ -128,6 +129,10 @@ classdef MyScheme < Scheme
           end
         end
         function obj = iterate(obj)
+          if ~(obj.preAssembled)
+              obj.preLoopAssembly;
+              obj.preAssembled = true;
+          end
           obj.iter = obj.iter + 1;
           "iter " + obj.iter
           obj.xipos = obj.getXiNodes();
@@ -145,7 +150,7 @@ classdef MyScheme < Scheme
               inodes = obj.x_connectivity(iel, :);
               xposloc = obj.xpos(inodes);
               h = xposloc(2) - xposloc(1);
-              rloc = h*obj.powerDensity(xposloc, obj.x0);
+              rloc = 0.5*h*obj.powerDensity(xposloc, obj.x0);
               obj.pulseX(inodes) = obj.pulseX(inodes) + rloc';
           end
           % Pulse, Xi
@@ -153,7 +158,7 @@ classdef MyScheme < Scheme
               inodes = obj.xi_connectivity(iel, :);
               xiposloc = obj.xipos(inodes);
               h = xiposloc(2) - xiposloc(1);
-              rloc = obj.h*obj.powerDensity(xiposloc, obj.xi0);
+              rloc = 0.5*obj.h*obj.powerDensity(xiposloc, obj.xi0);
               obj.pulseXi(inodes) = obj.pulseXi(inodes) + rloc';
           end
           % Stabilization RHS, Xi

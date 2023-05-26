@@ -97,8 +97,8 @@ classdef MyDDScheme < handle
               globIdx_receiveNeumann = obj.problemHS.numbering( inode );
               globIdx_sendNeumann = obj.problemPart.numbering( e.con );
               
-              obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) = obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) - ...
-                  obj.problemHS.k * dn_coeffs;
+              obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) = obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) ...
+                  - obj.problemHS.k * dn_coeffs;
           end
 
           obj.problemPart.assembleInactiveNodes(obj.ls);

@@ -28,8 +28,10 @@ class Element {
     // x : loc coordinate; xi : reference coordinate
     // x = ref2locShift + ref2locMatrix · xi
     // xi = loc2refShift + loc2refMatrix · x
-    Eigen::Vector3d ref2locShift, loc2refShift;
-    Eigen::Matrix3d ref2locMatrix, loc2refMatrix;
+    Eigen::Vector3d ref2locShift = Eigen::Vector3d::Zero();
+    Eigen::Vector3d loc2refShift = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d ref2locMatrix = Eigen::Matrix3d::Zero();
+    Eigen::Matrix3d loc2refMatrix = Eigen::Matrix3d::Zero();
 
     void computeNodalValues_Base(){
       //COMMON
