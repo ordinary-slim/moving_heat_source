@@ -98,3 +98,6 @@ def test():
     referenceFile = "post_TransportedMRF_reference/TransportedMRF_2.vtu"
     newFile = "post_TransportedMRF/TransportedMRF_2.vtu"
     assert filecmp.cmp( referenceFile, newFile )
+
+if __name__=="__main__":
+    test()

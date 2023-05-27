@@ -40,7 +40,8 @@ def specWritePos( p ):
     )
 
     postMesh.write(
-        "tmp.vtu",  # str, os.PathLike, or buffer/open file
+        "tmp.vtk",  # str, os.PathLike, or buffer/open file
+        binary=False,
     )
 
 def run():
@@ -64,6 +65,9 @@ def run():
 
 def test():
     run()
-    ref = "tmp_reference.vtu"
-    new = "tmp.vtu"
+    ref = "tmp_reference.vtk"
+    new = "tmp.vtk"
     assert filecmp.cmp(ref, new)
+
+if __name__=="__main__":
+    test()
