@@ -96,7 +96,7 @@ class Problem {
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
-    mesh::MeshTag<int> externalActiveElements( const Problem &pExt );//TODO: rename this!
+    mesh::MeshTag<int> getActiveInExternal( const Problem &pExt );//TODO: rename this!
     void deactivateFromExternal( const Problem &pExt );
     void intersectFromExternal( const Problem &pExt );
     void interpolate2dirichlet( fem::Function &extFEMFunc);

@@ -2,8 +2,6 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Move down intersection to domain level
-- [ ] Rename "externalActiveElements"
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [ ] 1 main loop
@@ -12,6 +10,9 @@ To-do:
   - [ ] 1 main loop
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
+- [ ] Move down intersection to domain level
+  - Difficult because ActiveNodes interpolation relies on FEM Function
+  , which ActiveMesh does not know aobut
 
 Ideas:
 ------
@@ -22,3 +23,4 @@ Dependencies:
 
 - pybind11
 - Eigen
+- pytest

@@ -179,7 +179,11 @@ void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector
   dirichletValues = mesh::MeshTag<double>( domain.mesh, otherDirichletNodes, otherDirichletValues, 0 );
 }
 
-mesh::MeshTag<int> Problem::externalActiveElements( const Problem &pExt ) {
+mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt ) {
+  /*
+   * Current problem asks external problem if 
+   * element is active in external
+   */
   mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
   // External activation to function on external
   fem::Function extActiveNodes_ext = fem::Function( &pExt.domain,  domain.activeNodes );
@@ -208,7 +212,7 @@ mesh::MeshTag<int> Problem::externalActiveElements( const Problem &pExt ) {
 
 void Problem::deactivateFromExternal( const Problem &pExt ) {
   mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
-  mesh::MeshTag<int> activeInExternal = externalActiveElements( pExt );
+  mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
     if (domain.activeElements[ielem] && not(activeInExternal[ielem]) ) {
       activationCriterion[ielem] = 1;
@@ -219,7 +223,7 @@ void Problem::deactivateFromExternal( const Problem &pExt ) {
 
 void Problem::intersectFromExternal( const Problem &pExt ) {
   mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
-  mesh::MeshTag<int> activeInExternal = externalActiveElements( pExt );
+  mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
     if (domain.activeElements[ielem] && activeInExternal[ielem]) {
       activationCriterion[ielem] = 1;
