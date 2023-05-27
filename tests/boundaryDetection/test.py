@@ -6,7 +6,7 @@ import numpy as np
 import meshzoo
 import meshio
 from wrapper import Problem, readInput
-import pdb
+import filecmp
 
 def mesh():
     #cell_type="quad4"
@@ -43,7 +43,7 @@ def specWritePos( p ):
         "tmp.vtu",  # str, os.PathLike, or buffer/open file
     )
 
-if __name__=="__main__":
+def run():
     inputFile = "input.txt"
     problemInput = readInput( inputFile )
 
@@ -55,10 +55,15 @@ if __name__=="__main__":
     m = mhs.Mesh( meshInput )
 
     p = mhs.Problem( m, problemInput )
-    #p = mhs.Problem( m, problemInput, caseName="boundaryDetection" )
 
     R0 = 0.0
     Rfinal = 1.0
     R = R0 + (5+1.0)/10*(Rfinal - R0)
     specActive(p, np.zeros(3), R)
     specWritePos( p )
+
+def test():
+    run()
+    ref = "tmp_reference.vtu"
+    new = "tmp.vtu"
+    assert filecmp.cmp(ref, new)

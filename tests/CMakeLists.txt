@@ -8,3 +8,8 @@ add_test(
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_rectangleTransportAdvection"
   )
+add_test(
+  NAME boundaryDetection
+  COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/boundaryDetection"
+  )
