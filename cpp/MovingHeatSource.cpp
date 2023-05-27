@@ -53,6 +53,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("activeNodes", &mesh::ActiveMesh::activeNodes)
         .def_readonly("activeElements", &mesh::ActiveMesh::activeElements)
         .def_readonly("justActivatedBoundary", &mesh::ActiveMesh::justActivatedBoundary)
+        .def_readonly("boundaryFacets", &mesh::ActiveMesh::boundaryFacets)
         .def_readonly("mesh", &mesh::ActiveMesh::mesh)
         .def("setActivation", &mesh::ActiveMesh::setActivation)
         .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement);

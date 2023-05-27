@@ -1,11 +1,11 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 import meshio
-from wrapper import Problem
+from wrapper import Problem, readInput
 import pdb
 
 def mesh():
@@ -14,67 +14,51 @@ def mesh():
     points, cells = meshzoo.ngon(9, 8)
     print( "nels = ", cells.shape[0] )
     cells = cells.astype( int )
-    return points, cells
+    return points, cells, "triangle3"
 
 def specActive( p, center, d ):
-    activeEls = np.zeros( p.mesh.nels, dtype=int )
-    for iel in range( p.mesh.nels ) :
-        e = p.mesh.getElement( iel )
+    activeEls = np.zeros( p.domain.mesh.nels, dtype=int )
+    for iel in range( p.domain.mesh.nels ) :
+        e = p.domain.mesh.getElement( iel )
         centroid = e.getCentroid()
 
         if (np.linalg.norm( centroid  - center ) < d):
             activeEls[iel] = 1
 
-    return activeEls
+    activeElements = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
+    p.domain.setActivation( activeElements )
 
 
-def specWritePos( p, iter ):
-    auxIsBoun = np.zeros( p.mesh.con_FacetPoint.nels_oDim )
-    auxIsBoun[ p.mesh.boundaryFacets ] = 1.0
+def specWritePos( p ):
     # write post
     postMesh = meshio.Mesh(
-        p.mesh.pos,
+        p.domain.mesh.pos,
         #[ ("triangle", p.mesh.con_CellPoint.con), ],
-        [ ("line", p.mesh.con_FacetPoint.con), ],
+        [ ("line", p.domain.mesh.con_FacetPoint.con), ],
         #point_data={"BoundaryNodes": bNodes},
-        cell_data={"isBoun":[auxIsBoun]},
+        cell_data={"isBoun":[p.domain.boundaryFacets.x]},
     )
 
     postMesh.write(
-        "tmp_{}.vtu".format( iter ),  # str, os.PathLike, or buffer/open file
+        "tmp.vtu",  # str, os.PathLike, or buffer/open file
     )
 
 if __name__=="__main__":
     inputFile = "input.txt"
+    problemInput = readInput( inputFile )
 
-    p     = Problem("FRF")
+    points, cells, cell_type = mesh()
+    meshInput = {}
+    meshInput["points"] = points
+    meshInput["cells"] = cells
+    meshInput["cell_type"]= cell_type
+    m = mhs.Mesh( meshInput )
 
-    points, cells = mesh()
-    p.input["points"] = points
-    p.input["cells"] = cells
-    p.input["cell_type"]="triangle3"
+    p = mhs.Problem( m, problemInput )
+    #p = mhs.Problem( m, problemInput, caseName="boundaryDetection" )
 
-    #read input
-    p.parseInput( inputFile )
-
-    p.initialize()
-
-    '''
-    isPointInside = np.zeros( p.mesh.nels )
-    point = np.array(
-            [0.75,
-             0.42,
-             0.0] )
-    owner = p.mesh.findOwnerElement( point )
-    if owner >= 0:
-        isPointInside[owner] = 1
-    '''
-
-    numIter = 10
     R0 = 0.0
     Rfinal = 1.0
-    for iter in range( 10 ):
-        R = R0 + (iter+1.0)/numIter*(Rfinal - R0)
-        activeEls = specActive(p, np.zeros(3), R)
-        p.activate( activeEls )
-        specWritePos( p, iter )
+    R = R0 + (5+1.0)/10*(Rfinal - R0)
+    specActive(p, np.zeros(3), R)
+    specWritePos( p )
