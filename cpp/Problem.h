@@ -21,7 +21,7 @@ class Problem {
     fem::Function unknown;
     list<fem::Function> previousValues;
     HeatSource mhs;
-    map<string,double> material;
+    double density = 1.0, conductivity = 1.0, specificHeat = 1.0, convectionCoeff = 0.0;
     double time = 0.0;
     double dt = 0.0;
     int iter;
@@ -77,7 +77,7 @@ class Problem {
     void solve();
     void cleanupLinearSystem();
     void updateFRFpos();
-    void assembleSpatialLHS();//mass, diffusion, advection
+    void assembleSpatialPDE();//mass, diffusion, advection
     void assembleSpatialRHS();//source term
     void assembleConvectionLHS();
     void assembleConvectionRHS();

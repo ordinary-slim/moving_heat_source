@@ -28,9 +28,6 @@ void Problem::assembleStabilization() {
   double asss_lhs_ij, asss_rhs_i;
   double tau, advectionEstimate, diffusionEstimate;//stabilization parameter
   double h;// size of element in advection direction
-  double rho = material["rho"];
-  double cp = material["cp"];
-  double k = material["k"];
   double f_xgp;
   Eigen::Vector3d x_gp;
 
@@ -41,14 +38,12 @@ void Problem::assembleStabilization() {
 
     e = domain.getElement( ielem );
 
-    e = domain.getElement( ielem );
-
     //Compute tau
     h = e.getSizeAlongVector( advectionSpeed );
-    advectionEstimate = h / SCA / (rho*cp*norm_advectionSpeed);
+    advectionEstimate = h / SCA / (density*specificHeat*norm_advectionSpeed);
     tau = advectionEstimate;
-    if (k != 0) {
-      diffusionEstimate = pow(h, 2) / (SCD * k);
+    if (conductivity != 0) {
+      diffusionEstimate = pow(h, 2) / (SCD * conductivity);
       tau = 1 / ( 1/advectionEstimate + 1/diffusionEstimate );
     } else {
       tau = advectionEstimate;
@@ -59,7 +54,7 @@ void Problem::assembleStabilization() {
       for (int jnode = 0; jnode < e.nnodes; jnode++) {
         asss_lhs_ij = 0;
         for (int igp = 0; igp < e.ngpoints; igp++) {
-          asss_lhs_ij += (e.gpweight[igp] * e.vol)* rho * cp * tau *
+          asss_lhs_ij += (e.gpweight[igp] * e.vol)* density * specificHeat * tau *
             e.GradBaseGpVals[inode][igp].dot( advectionSpeed ) *
             e.GradBaseGpVals[jnode][igp].dot( advectionSpeed );
         }

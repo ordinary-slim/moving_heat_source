@@ -103,7 +103,7 @@ class Element {
     Element getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl ) const;
     Eigen::VectorXd evalShaFuns( Eigen::Vector3d pos );
     Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
-    double getSizeAlongVector( Eigen::Vector3d vector );
+    double getSizeAlongVector( Eigen::Vector3d vector ) const;
 };
 }
 #define ELEMENT

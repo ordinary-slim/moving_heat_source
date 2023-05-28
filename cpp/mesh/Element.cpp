@@ -152,7 +152,7 @@ void mesh::Element::computeCentroid() {
   centroid /= nnodes;
 }
 
-double mesh::Element::getSizeAlongVector( Eigen::Vector3d vector ){
+double mesh::Element::getSizeAlongVector( Eigen::Vector3d vector ) const{
   // Relies on passing vector by copy
 
   vector /= vector.norm();

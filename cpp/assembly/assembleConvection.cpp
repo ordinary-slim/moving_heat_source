@@ -7,9 +7,6 @@ void Problem::assembleConvectionLHS() {
   vector<T> C_coeffs;
   C_coeffs.reserve( 1*domain.mesh->nnodes );
 
-  double k = material["k"];
-  double h = material["h"];
-
   mesh::Element e;
   double c_ij;
 
@@ -26,7 +23,7 @@ void Problem::assembleConvectionLHS() {
         for (int igp = 0; igp < e.ngpoints; ++igp) {
           c_ij += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * e.BaseGpVals[jnode][igp];
         }
-        c_ij *= h / k;
+        c_ij *= convectionCoeff / conductivity;
         C_coeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], c_ij ) );
       }
     }
@@ -41,9 +38,6 @@ void Problem::assembleConvectionRHS() {
   Eigen::VectorXd convectionRhs;
   convectionRhs.resize( domain.mesh->nnodes );
   convectionRhs.setZero();
-
-  double k = material["k"];
-  double h = material["h"];
 
   mesh::Element e;
   double c_i;
@@ -60,7 +54,7 @@ void Problem::assembleConvectionRHS() {
       for (int igp = 0; igp < e.ngpoints; ++igp) {
         c_i += e.gpweight[igp] * e.vol * e.BaseGpVals[inode][igp] * Tenv;
       }
-      c_i *= h / k;
+      c_i *= convectionCoeff / conductivity;
       convectionRhs[(*e.con)[inode]] += c_i;
     }
   }

@@ -6,9 +6,7 @@ void Problem::assemble() {
   // LHS & RHS, inactive nodes
   forceInactiveNodes();
   // LHS, space
-  assembleSpatialLHS();
-  // RHS, space
-  assembleSpatialRHS();
+  assembleSpatialPDE();
 
   // Neumann BC
   assembleNeumann();
@@ -18,9 +16,9 @@ void Problem::assemble() {
   assembleConvectionRHS();
 
   // LHS & RHS, VMS
-  if (isStabilized) {
-    assembleStabilization();
-  }
+  //if (isStabilized) {
+    //assembleStabilization();
+  //}
 
   // LHS & RHS, time
   assembleTime();

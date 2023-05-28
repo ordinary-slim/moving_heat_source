@@ -19,11 +19,11 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 {
   // MATERIAL
   // TODO: Better DS!
-  material["rho"] = py::cast<double>(input["rho"]);
-  material["k"] = py::cast<double>(input["conductivity"]);
-  material["cp"] = py::cast<double>(input["specific_heat"]);
+  density = py::cast<double>(input["rho"]);
+  conductivity = py::cast<double>(input["conductivity"]);
+  specificHeat = py::cast<double>(input["specific_heat"]);
   if (input.contains("convectionCoeff")) {
-    material["h"] = py::cast<double>(input["convectionCoeff"]);
+    convectionCoeff = py::cast<double>(input["convectionCoeff"]);
     isConvection = true;
   }
 
