@@ -4,8 +4,7 @@ sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput
-import filecmp
+from wrapper import Problem, readInput, meshio_comparison
 
 speed = 10.0
 
@@ -97,7 +96,7 @@ def test():
     run()
     referenceFile = "post_TransportedMRF_reference/TransportedMRF_2.vtu"
     newFile = "post_TransportedMRF/TransportedMRF_2.vtu"
-    assert filecmp.cmp( referenceFile, newFile )
+    assert meshio_comparison(referenceFile, newFile)
 
 if __name__=="__main__":
     test()

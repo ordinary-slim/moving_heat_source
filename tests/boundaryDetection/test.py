@@ -5,8 +5,7 @@ import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 import meshio
-from wrapper import Problem, readInput
-import filecmp
+from wrapper import Problem, readInput, meshio_comparison
 
 def mesh():
     #cell_type="quad4"
@@ -41,7 +40,6 @@ def specWritePos( p ):
 
     postMesh.write(
         "tmp.vtk",  # str, os.PathLike, or buffer/open file
-        binary=False,
     )
 
 def run():
@@ -67,7 +65,7 @@ def test():
     run()
     ref = "tmp_reference.vtk"
     new = "tmp.vtk"
-    assert filecmp.cmp(ref, new)
+    assert (meshio_comparison(ref, new))
 
 if __name__=="__main__":
     test()

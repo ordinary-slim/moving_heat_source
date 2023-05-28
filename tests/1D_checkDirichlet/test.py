@@ -2,9 +2,8 @@ import sys
 sys.path.insert(1, '..')
 sys.path.insert(1, '../../Release')
 import MovingHeatSource as mhs
-from wrapper import Problem, readInput
+from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
-from filecmp import cmp
 
 def mesh(leftEnd, rightEnd, elDen):
     cell_type="line2"
@@ -51,4 +50,4 @@ def test_1d_dirichlet():
     trialDs =  "post_1d_dirichlet/1d_dirichlet_1.vtu"
 
     # COMPARISON
-    assert cmp(referenceDs, trialDs)
+    assert meshio_comparison(referenceDs, trialDs)

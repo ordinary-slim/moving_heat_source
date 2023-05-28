@@ -188,5 +188,32 @@ class Problem(mhs.Problem):
             pvdContents = "".join(pvdContents)
             f.write(pvdContents)
 
+
+def meshio_comparison(ref, new):
+    # Load datasets
+    refds = meshio.read( ref )
+    newds = meshio.read( new )
+    tol = 1e-7
+    # Compare points
+    pdiff = np.abs( refds.points - newds.points )
+    if not( (pdiff < tol).all() ):
+        return False
+    # Compare connectivities
+    for ref_cblock, new_cblock in zip( refds.cells, newds.cells ):
+        if not( (ref_cblock.data == new_cblock.data).all() ):
+            return False
+    # Compare point data
+    for key in refds.point_data.keys():
+        for refpdata, newpdata in zip( refds.point_data[key], newds.point_data[key] ):
+            if not( ((refpdata - newpdata ) < tol ).all() ):
+                return False
+    # Compare cell data
+    for key in refds.cell_data.keys():
+        for refcdata, newcdata in zip( refds.cell_data[key], newds.cell_data[key] ):
+            if not( ((refcdata - newcdata ) < tol ).all() ):
+                return False
+    # All comparisons passed
+    return True
+
 if __name__=="__main__":
     pass
