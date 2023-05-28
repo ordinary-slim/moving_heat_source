@@ -1,15 +1,14 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput
-import pdb
+from wrapper import Problem, readInput, meshio_comparison
 
-maxIter = 50
-dt = 0.5
-Tfinal = 20
+maxIter = 1
+dt = 1
+Tfinal = 5
 def mesh(box, meshDen=1):
     cell_type="quad4"
     points, cells = meshzoo.rectangle_quad(
@@ -33,25 +32,23 @@ def specActivate( p ):
     activeEls = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
     return activeEls
 
-if __name__=="__main__":
+def run():
     inputFile = "input.txt"
-    box = [-16, 16, -5, 5]
+    box = [-5, 5, -5, 5]
 
     # Read input
     problemInput = readInput( inputFile )
     # Mesh
     meshInput = {}
-    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box, meshDen=2)
+    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box, meshDen=1)
     m = mhs.Mesh( meshInput )
 
     # Initialize problems
-    p  = Problem(m, problemInput, caseName="case")
+    p  = Problem(m, problemInput, caseName="2d_neumannWactivation")
 
     activeElements = specActivate( p )
     p.domain.setActivation( activeElements )
 
-    pointInPlane = np.array([0.0, 0.0, 0.0])
-    planeNormal  = np.array([-1.0, 0.0, 0.0])
     def flux(point):
         return np.array([-10.0, 0.0, 0.0])
     p.setNeumann( p.domain.justActivatedBoundary.getTrueIndices(), flux )
@@ -63,3 +60,14 @@ if __name__=="__main__":
         it += 1
         p.iterate()
         p.writepos()
+
+def test():
+    run()
+    refds = "post_2d_neumannWactivation_reference/2d_neumannWactivation_1.vtu"
+    newds = "post_2d_neumannWactivation/2d_neumannWactivation_1.vtu"
+
+    assert meshio_comparison( refds, newds )
+
+if __name__=="__main__":
+    test()
+
