@@ -22,28 +22,26 @@ void Problem::assembleSpatialPDE() {
   MassForm massForm = MassForm( this );
   DiffusionForm diffusionForm = DiffusionForm( this );
   AdvectionForm advectionForm = AdvectionForm( this );
+  ASSSBilinearForm asssLhs = ASSSBilinearForm( this );
+  ASSSLinearForm asssRhs = ASSSLinearForm( this );
+
   bilinearForms.push_back( &diffusionForm );
   if (isAdvection) {
     bilinearForms.push_back( &advectionForm );
   }
-  /*
   if (isStabilized) {
     if (isAdvection && advectionSpeed.norm() > 1e-9) {
-
-      ASSSBilinearForm asssLhs = ASSSBilinearForm( this );
-      ASSSLinearForm asssRhs = ASSSLinearForm( this );
 
       bilinearForms.push_back( &asssLhs );
       linearForms.push_back( &asssRhs );
     }
   }
-  */
+
   // Source term
   mhs.pulse.setZero();
   SourceForm sourceForm = SourceForm( this );
   linearForms.push_back( &sourceForm );
 
-  // matrices assembly
   M.setZero();
 
   mesh::Element e;
@@ -56,6 +54,7 @@ void Problem::assembleSpatialPDE() {
     Eigen::MatrixXd mass_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
     Eigen::MatrixXd lhs_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
     Eigen::VectorXd rhs_loc = Eigen::VectorXd::Zero( e.nnodes );
+    Eigen::VectorXd pulse_loc = Eigen::VectorXd::Zero( e.nnodes );
 
     for (auto lform : linearForms) {
       lform->preGauss( &e );
@@ -75,6 +74,7 @@ void Problem::assembleSpatialPDE() {
         for (auto lform : linearForms) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
         }
+        pulse_loc(inode) += sourceForm.contribute( igp, inode, &e );
         for (int jnode = 0; jnode < e.nnodes; jnode++) {
           mass_loc(inode, jnode) += massForm.contribute( igp, inode, jnode, &e );
           for (auto biForm : bilinearForms) {
@@ -85,7 +85,8 @@ void Problem::assembleSpatialPDE() {
     }
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      mhs.pulse[(*e.con)[inode]] += rhs_loc(inode);
+      mhs.pulse[(*e.con)[inode]] += pulse_loc(inode);
+      rhs[(*e.con)[inode]] += rhs_loc(inode);
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
         massCoeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], mass_loc(inode, jnode) ) );
         lhsCoeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], lhs_loc(inode, jnode) ) );
@@ -94,5 +95,4 @@ void Problem::assembleSpatialPDE() {
   }
 
   M.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
-  rhs += mhs.pulse;
 }

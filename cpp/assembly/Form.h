@@ -127,6 +127,8 @@ class ASSSLinearForm : public LinearForm {
   public:
     ASSSLinearForm( const Problem *problem )
       : LinearForm( problem ) {
+        advectionSpeed = p->advectionSpeed;
+        norm_advectionSpeed = advectionSpeed.norm();
     }
     void preGauss(const mesh::Element *e){
       //Compute tau

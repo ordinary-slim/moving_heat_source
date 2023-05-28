@@ -78,12 +78,10 @@ class Problem {
     void cleanupLinearSystem();
     void updateFRFpos();
     void assembleSpatialPDE();//mass, diffusion, advection
-    void assembleSpatialRHS();//source term
     void assembleConvectionLHS();
     void assembleConvectionRHS();
-    void assembleStabilization();//Only P1/Q1 for the moment!
-    void assembleTime();
     void assembleNeumann();
+    void assembleTime();
     void forceDirichletNodes();
     void forceInactiveNodes();
     void preIterate();
