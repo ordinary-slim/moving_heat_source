@@ -78,9 +78,7 @@ class Problem {
     void cleanupLinearSystem();
     void updateFRFpos();
     void assembleSpatialPDE();//mass, diffusion, advection
-    void assembleConvectionLHS();
-    void assembleConvectionRHS();
-    void assembleNeumann();
+    void assembleWeakBcs();
     void assembleTime();
     void forceDirichletNodes();
     void forceInactiveNodes();

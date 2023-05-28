@@ -59,7 +59,7 @@ def run():
         time += dt
         it += 1
         p.iterate()
-        p.writepos()
+    p.writepos()
 
 def test():
     run()

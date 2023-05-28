@@ -22,6 +22,8 @@ class Element {
     ElementType elementType;
     std::vector<std::vector<double>> BaseGpVals;
     std::vector<std::vector<Eigen::Vector3d>> GradBaseGpVals;
+    int ient = -1;// index of entity in a connectivity
+                  // Set by mesh
     bool openIntegration = false;//default closed integration
 
     const ReferenceElement      *refEl;

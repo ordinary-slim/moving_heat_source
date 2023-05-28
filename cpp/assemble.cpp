@@ -5,20 +5,10 @@ void Problem::assemble() {
   // ASSEMBLY
   // LHS & RHS, inactive nodes
   forceInactiveNodes();
-  // LHS, space
-  assembleSpatialPDE();
 
-  // Neumann BC
-  assembleNeumann();
+  assembleSpatialPDE();// Spatial operator and source term
 
-  // Convection BC
-  assembleConvectionLHS();
-  assembleConvectionRHS();
-
-  // LHS & RHS, VMS
-  //if (isStabilized) {
-    //assembleStabilization();
-  //}
+  assembleWeakBcs();
 
   // LHS & RHS, time
   assembleTime();

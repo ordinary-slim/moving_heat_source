@@ -14,6 +14,7 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
   }
 
   Element e;
+  e.ient = ient;
   e.setElementType( refEl );
 
   e.allocate();

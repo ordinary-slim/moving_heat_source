@@ -189,11 +189,11 @@ class Problem(mhs.Problem):
             f.write(pvdContents)
 
 
-def meshio_comparison(ref, new):
+def meshio_comparison(ref, new, tol=1e-7):
     # Load datasets
     refds = meshio.read( ref )
     newds = meshio.read( new )
-    tol = 1e-7
+    # Compare mesh
     # Compare points
     pdiff = np.abs( refds.points - newds.points )
     if not( (pdiff < tol).all() ):
@@ -204,10 +204,11 @@ def meshio_comparison(ref, new):
             return False
     # Compare point data
     for key in refds.point_data.keys():
-        for refpdata, newpdata in zip( refds.point_data[key], newds.point_data[key] ):
-            pdatadiff = np.abs(refpdata - newpdata )
-            if not( (pdatadiff < tol).all() ):
-                return False
+        refpdata = refds.point_data[key]
+        newpdata = newds.point_data[key]
+        pdatadiff = np.abs(refpdata - newpdata )
+        if not( (pdatadiff < tol).all() ):
+            return False
     # Compare cell data
     for key in refds.cell_data.keys():
         for refcdata, newcdata in zip( refds.cell_data[key], newds.cell_data[key] ):

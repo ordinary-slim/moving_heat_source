@@ -47,7 +47,7 @@ def run():
     # FORWARD
     while (p.time < Tfinal-1e-7):
         p.iterate()#assembly + solve
-        p.writepos()
+    p.writepos()
 
 
 def test():

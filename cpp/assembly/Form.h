@@ -152,4 +152,40 @@ class ASSSLinearForm : public LinearForm {
     }
 };
 
+class ConvectionBilinearForm : public BilinearForm {
+  public:
+    ConvectionBilinearForm( const Problem *problem )
+      : BilinearForm( problem ) {
+    }
+    double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
+      return e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * e->BaseGpVals[jnode][igp] *
+        p->convectionCoeff / p->conductivity;
+    }
+};
+
+class ConvectionLinearForm : public LinearForm {
+  public:
+    ConvectionLinearForm( const Problem *problem )
+      : LinearForm( problem ) {
+    }
+    double contribute( int igp, int inode, const mesh::Element *e ) {
+        return  e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * p->Tenv *
+        p->convectionCoeff / p->conductivity;
+    }
+};
+
+class NeumannLinearForm : public LinearForm {
+  public:
+    NeumannLinearForm( const Problem *problem )
+      : LinearForm( problem ) {
+    }
+    void inGauss(int igp, const mesh::Element *e) {
+      normalDerivative = p->neumannFluxes[e->ient][igp] / p->conductivity;
+    }
+    double contribute( int igp, int inode, const mesh::Element *e ) {
+        return e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * normalDerivative;
+    }
+  private:
+    double normalDerivative = 0.0;
+};
 #endif
