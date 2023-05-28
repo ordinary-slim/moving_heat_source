@@ -205,12 +205,14 @@ def meshio_comparison(ref, new):
     # Compare point data
     for key in refds.point_data.keys():
         for refpdata, newpdata in zip( refds.point_data[key], newds.point_data[key] ):
-            if not( ((refpdata - newpdata ) < tol ).all() ):
+            pdatadiff = np.abs(refpdata - newpdata )
+            if not( (pdatadiff < tol).all() ):
                 return False
     # Compare cell data
     for key in refds.cell_data.keys():
         for refcdata, newcdata in zip( refds.cell_data[key], newds.cell_data[key] ):
-            if not( ((refcdata - newcdata ) < tol ).all() ):
+            cdatadiff = np.abs( refcdata - newcdata )
+            if not( (cdatadiff < tol).all() ):
                 return False
     # All comparisons passed
     return True

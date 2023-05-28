@@ -51,3 +51,6 @@ def test_1d_dirichlet():
 
     # COMPARISON
     assert meshio_comparison(referenceDs, trialDs)
+
+if __name__=="__main__":
+    test_1d_dirichlet()
