@@ -28,3 +28,8 @@ add_test(
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_checkNeumannWactivation"
   )
+add_test(
+  NAME 1D_checkAdvection
+  COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/1D_checkAdvection"
+  )
