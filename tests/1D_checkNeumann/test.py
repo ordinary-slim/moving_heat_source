@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
