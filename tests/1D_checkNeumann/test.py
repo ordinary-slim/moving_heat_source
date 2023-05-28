@@ -2,11 +2,8 @@ import sys
 sys.path.insert(1, '..')
 sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
-from wrapper import Problem, readInput
+from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
-import meshzoo
-import pdb
-import meshio
 
 Tfinal = 5.0
 
@@ -21,19 +18,7 @@ def mesh(leftEnd, rightEnd, elDen):
     cells = np.array( auxCells, dtype=int )
     return points, cells, cell_type
 
-def isInside( mesh, box ):
-    activeElements = []
-    for ielem in range( mesh.nels ):
-        el = mesh.getElement( ielem )
-        pos = mesh.posFRF[el.con]
-        xmin = min(pos[:, 0])
-        xmax = max(pos[:, 0])
-
-        isInside = 1*(xmin>=box[0] and xmax <= box[1])
-        activeElements.append(isInside)
-    return activeElements
-
-if __name__=="__main__":
+def run():
     inputFile = "input.txt"
     # read input
     problemInput = readInput( inputFile )
@@ -47,9 +32,6 @@ if __name__=="__main__":
     meshDict["points"], meshDict["cells"], meshDict["cell_type"] = mesh(boxDomain[0], boxDomain[1], elDen)
     myMesh = mhs.Mesh(meshDict)
 
-    speed = 0.1
-    problemInput["isAdvection"] = 1
-    problemInput["advectionSpeedX"] = -speed
     p = Problem(myMesh, problemInput, caseName="neumann")
 
     # Neumann condition
@@ -63,6 +45,18 @@ if __name__=="__main__":
 
 
     # FORWARD
-    while (p.time < Tfinal):
+    while (p.time < Tfinal-1e-7):
         p.iterate()#assembly + solve
         p.writepos()
+
+
+def test():
+    run()
+    refds = "post_neumann_reference/neumann_1.vtu"
+    newds = "post_neumann/neumann_1.vtu"
+
+    # COMPARISON
+    assert meshio_comparison(refds, newds)
+
+if __name__=="__main__":
+    test()

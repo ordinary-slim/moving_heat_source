@@ -3,7 +3,7 @@ power		00.0
 initialPositionX	  0.0
 initialPositionY		0.0
 initialPositionZ		0.0
-dt	0.1
+dt	5.0
 t		0.0
 Tfinal		5
 maxIter		100
