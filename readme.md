@@ -5,7 +5,7 @@ To-do:
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [ ] 1 main loop
-  - [ ] Inner assembly routines to routines
+  - [x] Inner assembly routines to routines
   - [ ] 2 main loops (LHS, RHS)
   - [ ] 1 main loop
 - [ ] Interface with gmsh
@@ -13,7 +13,7 @@ To-do:
 - [ ] Move down intersection to domain level
   - Difficult because ActiveNodes interpolation relies on FEM Function
   , which ActiveMesh does not know aobut
-- Modify assertion in tests:
+- [ ] Modify assertion in tests:
   - [x] Load dataset using meshio
   - [x] Compare datasets
 

@@ -1,2 +1,5 @@
+build
 Debug
 Release
+__pycache__
+nohup.out
