@@ -60,7 +60,7 @@ void Problem::assembleWeakBcs() {
 
       for (int inode = 0; inode < e.nnodes; ++inode) {
 
-        // ls.rhs-contrib
+        // rhs-contrib
         for (auto lform : linearForms ) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
         }
@@ -77,11 +77,11 @@ void Problem::assembleWeakBcs() {
     }
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      ls.rhs[ls.dofNumbering[(*e.con)[inode]]] += rhs_loc(inode);
+      ls->rhs[dofNumbering[(*e.con)[inode]]] += rhs_loc(inode);
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        ls.lhsCoeffs.push_back( T(
-              ls.dofNumbering[(*e.con)[inode]],
-              ls.dofNumbering[(*e.con)[jnode]],
+        ls->lhsCoeffs.push_back( T(
+              dofNumbering[(*e.con)[inode]],
+              dofNumbering[(*e.con)[jnode]],
               lhs_loc(inode, jnode) ) );
       }
     }

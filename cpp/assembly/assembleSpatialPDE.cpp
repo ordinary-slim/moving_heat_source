@@ -86,15 +86,15 @@ void Problem::assembleSpatialPDE() {
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       mhs.pulse[(*e.con)[inode]] += pulse_loc(inode);
-      ls.rhs[(*e.con)[inode]] += rhs_loc(inode);
+      ls->rhs[(*e.con)[inode]] += rhs_loc(inode);
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
         domain.massCoeffs.push_back( T(
               (*e.con)[inode],
               (*e.con)[jnode],
               mass_loc(inode, jnode) ) );
-        ls.lhsCoeffs.push_back( T(
-              ls.dofNumbering[(*e.con)[inode]],
-              ls.dofNumbering[(*e.con)[jnode]],
+        ls->lhsCoeffs.push_back( T(
+              dofNumbering[(*e.con)[inode]],
+              dofNumbering[(*e.con)[jnode]],
               lhs_loc(inode, jnode) ) );
       }
     }

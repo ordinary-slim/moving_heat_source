@@ -18,7 +18,9 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   unknown( fem::Function( &domain ) )
 {
   // LINEAR SYSTEM
-  ls = LinearSystem( mesh.nnodes );
+  myls = LinearSystem( *this );
+  // Assume we're assembling to our own linear system
+  ls = &myls;
 
   // MATERIAL
   // TODO: Better DS!

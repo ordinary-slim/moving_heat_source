@@ -31,7 +31,10 @@ class Problem {
     bool isConvection = false;
     Eigen::Vector3d advectionSpeed;
 
-    LinearSystem ls;
+    LinearSystem myls;
+    LinearSystem* ls = NULL;
+    bool assembling2external = false;
+    vector<int> dofNumbering;
 
     // Dirichlet BC
     mesh::MeshTag<int>    dirichletNodes;
@@ -70,11 +73,12 @@ class Problem {
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void assemble();
+    void gather();
     void updateFRFpos();
     void assembleSpatialPDE();//mass, diffusion, advection
     void assembleWeakBcs();
     void assembleTime();
-    void forceDirichletNodes();
+    void updateForcedDofs();
     void forceInactiveNodes();
     void preIterate();
     void postIterate();

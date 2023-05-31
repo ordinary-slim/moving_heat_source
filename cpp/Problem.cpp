@@ -16,7 +16,9 @@ void Problem::updateFRFpos() {
 
 void Problem::preIterate() {
   /* Beginning of iteration operations*/
-  ls.cleanup();
+  if (not(assembling2external)) {
+    ls->cleanup();
+  }
   // initialize data structures
   domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
   domain.massCoeffs.clear();
@@ -27,6 +29,10 @@ void Problem::preIterate() {
   mhs.updatePosition( dt );
   setTime( time + dt );
   ++iter;
+}
+
+void Problem::gather() {
+  unknown.values = ls->sol(dofNumbering);
 }
 
 void Problem::postIterate() {

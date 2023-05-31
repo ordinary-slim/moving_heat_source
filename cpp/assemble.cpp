@@ -2,6 +2,9 @@
 #include "Problem.h"
 
 void Problem::assemble() {
+  if (not(assembling2external)) {
+    ls->allocate();
+  }
   // ASSEMBLY
   // LHS & RHS, inactive nodes
   forceInactiveNodes();
@@ -13,9 +16,11 @@ void Problem::assemble() {
   // LHS & RHS, time
   assembleTime();
 
-  // Proper assembly
-  ls.assemble();
-
   // Dirichlet BC
-  forceDirichletNodes();
+  updateForcedDofs();
+
+  // Proper assembly
+  if (not(assembling2external)) {
+    ls->assemble();
+  }
 }

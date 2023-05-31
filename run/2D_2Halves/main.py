@@ -5,7 +5,6 @@ import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 from wrapper import Problem, readInput
-import pdb
 
 def mesh(box, meshDen=1, variant="up"):
     '''
@@ -36,6 +35,18 @@ def setDirichlet( p ):
         if (abs(abs(pos[0]) - 1) < tol) or (abs(abs(pos[1]) - 1) < tol):
             dirichletNodes.append( inode )
             dirichletValues.append( exactSol(pos) )
+    print(dirichletNodes)
+    print(dirichletValues)
+    p.setDirichlet( dirichletNodes, dirichletValues )
+
+def debugSetDirichlet( p ):
+    #set Dirichlet BC. boundary nodes to 0
+    dirichletNodes = []
+    dirichletValues = []
+    for inode in range(p.domain.mesh.nnodes):
+        pos = p.domain.mesh.pos[inode, :]
+        dirichletNodes.append( inode )
+        dirichletValues.append( exactSol(pos) )
     p.setDirichlet( dirichletNodes, dirichletValues )
 
 def isInsideBox( mesh, box ):
@@ -56,25 +67,25 @@ def isInsideBox( mesh, box ):
 
 if __name__=="__main__":
     inputFile = "input.txt"
-    box = [-1, 1, -1, 1]
     boxLeft = [-1, 0, -1, 1]
+    boxRight = [0, 1, -1, 1]
 
     # Read input
     problemInput = readInput( inputFile )
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    meshDen = 8
-    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
-    #rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="up")
+    meshDen = 1
+    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(boxLeft, meshDen=meshDen, variant="zigzag")
+    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=1, variant="up")
 
     # open integration facets
     leftMeshInput["numberOfGaussPointsFacets"] =  2
     rightMeshInput["numberOfGaussPointsFacets"] = 2
 
     meshLeft = mhs.Mesh(leftMeshInput)
-    #meshRight = mhs.Mesh(rightMeshInput)
-    meshRight = mhs.Mesh(meshLeft)
+    meshRight = mhs.Mesh(rightMeshInput)
+    #meshRight = mhs.Mesh(meshLeft)
 
     # Initialize problems
     pLeft  = Problem(meshLeft, problemInput, caseName="left")
@@ -84,6 +95,41 @@ if __name__=="__main__":
     leftActiveEls = isInsideBox( pLeft.domain.mesh, boxLeft )
     pLeft.domain.setActivation( leftActiveEls )
 
+    # Neumann interface right
+    print("Setting Neumann right...")
+    pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), exactFlux )
+    debugSetDirichlet( pRight )
+
+    # Dirichlet interface left
+    print("Setting Dirichlet left...")
+    pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), exactSol )
+    debugSetDirichlet( pLeft )
+
+    ls = mhs.LinearSystem( pLeft, pRight )
+    ls.cleanup()
+
+    pLeft.preIterate()
+    pLeft.assemble()
+    pRight.preIterate()
+    pRight.assemble()
+
+    ls.assemble()
+
+    ls.solve()
+
+    pLeft.gather()
+    pRight.gather()
+
+    #post
+    for p in [pLeft, pRight]:
+        fexact = p.project( exactSol )
+
+        p.writepos(
+                functions={
+                    "fexact":fexact,
+                    }
+                        )
+    '''
     # Deactivate pRight using pLeft
     pRight.deactivateFromExternal( pLeft )
     pRight.writepos()
@@ -94,7 +140,7 @@ if __name__=="__main__":
         # PRE-SOLVE
         for p in [pLeft, pRight,]:
             p.clearBCs()
-            p.cleanupLinearSystem()
+            p.cleanup()
 
         # RIGHT
         # Dirichlet outside right
@@ -131,3 +177,4 @@ if __name__=="__main__":
                     }
                 )
 
+        '''

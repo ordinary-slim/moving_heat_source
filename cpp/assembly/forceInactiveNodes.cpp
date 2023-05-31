@@ -13,9 +13,9 @@ void Problem::forceInactiveNodes() {
     InacNodes_coeffs.reserve( domain.mesh->nnodes );
     for (int inode = 0; inode < domain.mesh->nnodes; inode++) {
       if (!domain.activeNodes[inode]) {
-        ls.lhsCoeffs.push_back( T(ls.dofNumbering[inode], ls.dofNumbering[inode], 1) );
+        ls->lhsCoeffs.push_back( T(dofNumbering[inode], dofNumbering[inode], 1) );
         domain.massCoeffs.push_back( T(inode, inode, 1) );
-        ls.rhs[ ls.dofNumbering[inode] ] = unknown.values[ inode ];
+        ls->rhs[ dofNumbering[inode] ] = unknown.values[ inode ];
       }
     }
   }

@@ -19,6 +19,10 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("postIterate", &Problem::postIterate)
         .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
+        .def("gather", &Problem::gather)
+        .def_readonly("myls", &Problem::myls)
+        .def_readonly("ls", &Problem::ls)
+        .def_readonly("dofNumbering", &Problem::dofNumbering)
         .def_readonly("unknown", &Problem::unknown)
         .def_readwrite("previousValues", &Problem::previousValues)
         .def_readonly("mhs", &Problem::mhs)
@@ -125,4 +129,14 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("pulse", &HeatSource::pulse)
         .def_readonly("speed", &HeatSource::speed)
         .def("setSpeed", &HeatSource::setSpeed);
+    py::class_<LinearSystem>(m, "LinearSystem")
+        .def(py::init<>())
+        .def_readonly("lhs", &LinearSystem::lhs)
+        .def_readonly("rhs", &LinearSystem::rhs)
+        .def_readonly("sol", &LinearSystem::sol)
+        .def("assemble", &LinearSystem::assemble)
+        .def("solve", &LinearSystem::solve)
+        .def("cleanup", &LinearSystem::cleanup)
+        .def("ndofs", &LinearSystem::getNdofs)
+        .def( py::init<Problem&, Problem&>() );
 }

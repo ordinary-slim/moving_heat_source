@@ -23,18 +23,18 @@ void Problem::assembleTime() {
     timeDerivCoeffs.resize( domain.massCoeffs.size() );
     for (int iMassEntry = 0; iMassEntry < domain.massCoeffs.size(); ++iMassEntry) {
       timeDerivCoeffs[iMassEntry] = Eigen::Triplet<double>(
-          ls.dofNumbering[domain.massCoeffs[iMassEntry].row()],
-          ls.dofNumbering[domain.massCoeffs[iMassEntry].col()],
+          dofNumbering[domain.massCoeffs[iMassEntry].row()],
+          dofNumbering[domain.massCoeffs[iMassEntry].col()],
           timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt );
     }
-    ls.lhsCoeffs.insert( ls.lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
+    ls->lhsCoeffs.insert( ls->lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
 
     //RHS
     int prevValCounter = 0;
     for (fem::Function prevFun: previousValues) {
       Eigen::VectorXd rhsContrib = domain.massMat * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
-        ls.rhs[ls.dofNumbering[inode]] += rhsContrib(inode);
+        ls->rhs[dofNumbering[inode]] += rhsContrib(inode);
       }
       ++prevValCounter;
     }
