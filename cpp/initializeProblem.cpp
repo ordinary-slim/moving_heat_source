@@ -9,6 +9,8 @@
 namespace py = pybind11;
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
+  forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
+  forcedDofsValues( mesh::MeshTag<double>( &mesh, 0, 0.0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
   neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),

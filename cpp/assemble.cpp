@@ -6,8 +6,7 @@ void Problem::assemble() {
     ls->allocate();
   }
   // ASSEMBLY
-  // LHS & RHS, inactive nodes
-  forceInactiveNodes();
+  updateForcedDofs();
 
   assembleSpatialPDE();// Spatial operator and source term
 
@@ -17,7 +16,7 @@ void Problem::assemble() {
   assembleTime();
 
   // Dirichlet BC
-  updateForcedDofs();
+  forceDofs();
 
   // Proper assembly
   if (not(assembling2external)) {

@@ -276,3 +276,19 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   }
   return fh;
 }
+
+void Problem::updateForcedDofs() {
+  forcedDofs.setCteValue( 0 );
+  for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+    if (not(domain.activeNodes[inode])){
+      // Add node to dirichlet nodes
+      forcedDofs[inode] = 1;
+      forcedDofsValues[inode] = unknown.values[inode];
+      // Fill mass matrix
+      domain.massCoeffs.push_back( Eigen::Triplet<double>(inode, inode, 1) );
+    } else if (dirichletNodes[inode]) {
+      forcedDofs[inode] = 1;
+      forcedDofsValues[inode] = dirichletValues[inode];
+    }
+  }
+}

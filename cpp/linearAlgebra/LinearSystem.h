@@ -25,6 +25,8 @@ class LinearSystem {
       lhs.setZero();
       rhs.setZero();
       lhsCoeffs.clear();
+      indicesForcedDofs.clear();
+      valuesForcedDofs.clear();
     }
     int getNdofs() { return _ndofs; }
     void allocate() {

@@ -2,23 +2,24 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Determine if mass matrix is computed or not
-- [ ] Move updateFRFPos to Mesh instead of Problem!
-- [x] Inner assembly routines to routines
-- [x] Reduce number of element loops
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
-- [ ] Move down intersection to domain level
-  - Difficult because ActiveNodes interpolation relies on FEM Function
-  , which ActiveMesh does not know aobut
-- [ ] Modify assertion in tests:
-  - [x] Load dataset using meshio
-  - [x] Compare datasets
+- [ ] Determine if mass matrix is computed or not
+- [ ] Move updateFRFPos to Mesh instead of Problem!
+- [x] Join together treatment of Dirichlet and inactive nodes
+- [ ] Only solve for free dofs
+    - [ ] Compute numbering free dofs
+    - [ ] Allocate only for free dofs
+    - [ ] Assemble only for free dofs
+    - [ ] Solve
 
 Ideas:
 ------
 - Privatize more
 - Timer object
+- Move down intersection to domain level
+Difficult because ActiveNodes interpolation relies on
+FEM Function which ActiveMesh does not know aobut
 
 Dependencies:
 
