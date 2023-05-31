@@ -7,8 +7,7 @@
 #include "Function.h"
 #include "HeatSource.h"
 #include "timeIntegrator.h"
-#include <Eigen/Core>
-#include <Eigen/Sparse>
+#include "linearAlgebra/LinearSystem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
@@ -31,11 +30,8 @@ class Problem {
     bool isStabilized = false;
     bool isConvection = false;
     Eigen::Vector3d advectionSpeed;
-    Eigen::VectorXd rhs;
-    Eigen::SparseMatrix<double> lhs;
-    vector<Eigen::Triplet<double>> lhsCoeffs;
-    Eigen::SparseMatrix<double> M; // mass mat
-    vector<Eigen::Triplet<double>> massCoeffs;
+
+    LinearSystem ls;
 
     // Dirichlet BC
     mesh::MeshTag<int>    dirichletNodes;
@@ -74,8 +70,6 @@ class Problem {
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void assemble();
-    void solve();
-    void cleanupLinearSystem();
     void updateFRFpos();
     void assembleSpatialPDE();//mass, diffusion, advection
     void assembleWeakBcs();

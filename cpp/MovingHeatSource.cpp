@@ -13,8 +13,6 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<mesh::Mesh&, py::dict&>())
         .def("iterate", &Problem::iterate)
         .def("assemble", &Problem::assemble)
-        .def("solve", &Problem::solve)
-        .def("cleanupLinearSystem", &Problem::cleanupLinearSystem)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("updateFRFpos", &Problem::updateFRFpos)
         .def("preIterate", &Problem::preIterate)

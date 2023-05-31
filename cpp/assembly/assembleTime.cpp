@@ -18,18 +18,24 @@ void Problem::assembleTime() {
       timeIntegrator.setCurrentIntegrator( timeIntegrator.desiredIntegrator );
     }
     //Add time dependency
+    //LHS
     vector<Eigen::Triplet<double>> timeDerivCoeffs;
-    timeDerivCoeffs.resize( massCoeffs.size() );
-    for (int iMassEntry = 0; iMassEntry < massCoeffs.size(); ++iMassEntry) {
-      timeDerivCoeffs[iMassEntry] = Eigen::Triplet<double>( massCoeffs[iMassEntry].row(),
-                                                            massCoeffs[iMassEntry].col(),
-                                    timeIntegrator.lhsCoeff*massCoeffs[iMassEntry].value()/dt );
+    timeDerivCoeffs.resize( domain.massCoeffs.size() );
+    for (int iMassEntry = 0; iMassEntry < domain.massCoeffs.size(); ++iMassEntry) {
+      timeDerivCoeffs[iMassEntry] = Eigen::Triplet<double>(
+          ls.dofNumbering[domain.massCoeffs[iMassEntry].row()],
+          ls.dofNumbering[domain.massCoeffs[iMassEntry].col()],
+          timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt );
     }
-    lhsCoeffs.insert( lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
+    ls.lhsCoeffs.insert( ls.lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
 
+    //RHS
     int prevValCounter = 0;
     for (fem::Function prevFun: previousValues) {
-      rhs += M * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
+      Eigen::VectorXd rhsContrib = domain.massMat * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
+      for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+        ls.rhs[ls.dofNumbering[inode]] += rhsContrib(inode);
+      }
       ++prevValCounter;
     }
   }

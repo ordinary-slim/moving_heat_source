@@ -4,7 +4,7 @@ Might move this properly to the library in the future.
 '''
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import os, shutil
 import numpy as np

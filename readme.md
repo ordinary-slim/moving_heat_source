@@ -4,10 +4,8 @@ To-do:
 ------
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
-- [ ] 1 main loop
-  - [x] Inner assembly routines to routines
-  - [ ] 2 main loops (LHS, RHS)
-  - [ ] 1 main loop
+- [x] Inner assembly routines to routines
+- [x] Reduce number of element loops
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
 - [ ] Move down intersection to domain level

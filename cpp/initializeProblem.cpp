@@ -17,6 +17,9 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   domain( mesh::ActiveMesh( &mesh ) ),
   unknown( fem::Function( &domain ) )
 {
+  // LINEAR SYSTEM
+  ls = LinearSystem( mesh.nnodes );
+
   // MATERIAL
   // TODO: Better DS!
   density = py::cast<double>(input["rho"]);
@@ -113,5 +116,4 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   if (input.contains("isStabilized")) {
     isStabilized = py::cast<bool>(input["isStabilized"]);
   }
-
 }

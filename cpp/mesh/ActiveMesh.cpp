@@ -98,7 +98,6 @@ void ActiveMesh::updateAfterActivation() {
   }
 }
 
-
 void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
   updateBeforeActivation();
   if (activationCriterion.dim()==0) {

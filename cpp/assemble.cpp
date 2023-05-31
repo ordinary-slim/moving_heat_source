@@ -14,7 +14,7 @@ void Problem::assemble() {
   assembleTime();
 
   // Proper assembly
-  lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+  ls.assemble();
 
   // Dirichlet BC
   forceDirichletNodes();

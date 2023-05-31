@@ -5,6 +5,7 @@
 #include "MeshTag.h"
 #include "MeshTagImpl.h"
 #include "Element.h"
+#include <Eigen/Sparse>
 
 namespace mesh {
 /*
@@ -14,6 +15,10 @@ namespace mesh {
 class ActiveMesh {
   public:
     mesh::Mesh *mesh;//this should be private
+
+    // Mass matrix
+    Eigen::SparseMatrix<double> massMat;
+    vector<Eigen::Triplet<double>> massCoeffs;
                      
     bool hasInactive;
     mesh::MeshTag<int> activeNodes, activeElements, justDeactivatedElements, justActivatedBoundary;

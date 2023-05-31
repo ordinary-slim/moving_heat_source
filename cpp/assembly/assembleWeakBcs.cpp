@@ -18,7 +18,6 @@ void Problem::assembleWeakBcs() {
 
   // assemble
   vector<int> indicesBoundaryFacets = domain.boundaryFacets.getTrueIndices();
-  int counter = 0;
   for ( int ifacet : indicesBoundaryFacets ) {
 
     bilinearForms.clear();
@@ -35,7 +34,6 @@ void Problem::assembleWeakBcs() {
     if (not(domain.activeElements[ domain.boundaryFacetsParentEls[ifacet] ])) {
       continue;
     }
-    ++counter;
 
     e = domain.getBoundaryFacet( ifacet );
 
@@ -62,14 +60,14 @@ void Problem::assembleWeakBcs() {
 
       for (int inode = 0; inode < e.nnodes; ++inode) {
 
-        // rhs-contrib
+        // ls.rhs-contrib
         for (auto lform : linearForms ) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
         }
 
         for (int jnode = 0; jnode < e.nnodes; jnode++) {
 
-          // lhs-contrib
+          // rhs-contrib
           for (auto bform : bilinearForms ) {
             lhs_loc(inode, jnode) += bform->contribute( igp, inode, jnode, &e );
           }
@@ -79,11 +77,13 @@ void Problem::assembleWeakBcs() {
     }
 
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      rhs[(*e.con)[inode]] += rhs_loc(inode);
+      ls.rhs[ls.dofNumbering[(*e.con)[inode]]] += rhs_loc(inode);
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        lhsCoeffs.push_back( T( (*e.con)[inode], (*e.con)[jnode], lhs_loc(inode, jnode) ) );
+        ls.lhsCoeffs.push_back( T(
+              ls.dofNumbering[(*e.con)[inode]],
+              ls.dofNumbering[(*e.con)[jnode]],
+              lhs_loc(inode, jnode) ) );
       }
     }
   }
-  cout << "Got bcs in " << counter << " faces." << endl;
 }

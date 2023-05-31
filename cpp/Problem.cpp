@@ -16,8 +16,11 @@ void Problem::updateFRFpos() {
 
 void Problem::preIterate() {
   /* Beginning of iteration operations*/
-
-  cleanupLinearSystem();
+  ls.cleanup();
+  // initialize data structures
+  domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
+  domain.massCoeffs.clear();
+  domain.massCoeffs.reserve( 3*domain.mesh->nnodes );
 
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
@@ -25,25 +28,10 @@ void Problem::preIterate() {
   setTime( time + dt );
   ++iter;
 }
-void Problem::cleanupLinearSystem() {
-  // CLEANUP Linear System
-  lhs.resize( domain.mesh->nnodes, domain.mesh->nnodes );
-  rhs.resize( domain.mesh->nnodes );
-  lhs.setZero();
-  rhs.setZero();
-  lhsCoeffs.clear();
-
-  // initialize data structures
-  M.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
-
-  massCoeffs.clear();
-  massCoeffs.reserve( 3*domain.mesh->nnodes );
-}
-
 
 void Problem::postIterate() {
   /* End iteration operations */
-  // STORE last timestep for time-integratino
+  // STORE last timestep for time-integration
   previousValues.push_front( unknown );
   if (previousValues.size() > timeIntegrator.nstepsRequired) {
     previousValues.pop_back();
@@ -54,7 +42,7 @@ void Problem::postIterate() {
   // POST OF PULSE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
   //Solve linear system
-  solver.compute( M );
+  solver.compute( domain.massMat );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
   }
@@ -274,7 +262,7 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   // Solve
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
   //Solve linear system
-  solver.compute( M );//TODO: Make sure mass matrix is ready
+  solver.compute( domain.massMat );//TODO: Make sure mass matrix is ready
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Mass matrix not ready yet. Projection skipped." << std::endl;
   } else {

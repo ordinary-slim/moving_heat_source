@@ -10,10 +10,14 @@ void Problem::forceDirichletNodes() {
   vector<int> dirichletIndices = dirichletNodes.getTrueIndices();
   for (int inode : dirichletIndices) {
     val = dirichletValues[inode];
-    lhs.coeffRef( inode, inode ) = 1.0;
-    rhs[inode] = val;
+    ls.lhs.coeffRef( ls.dofNumbering[inode], ls.dofNumbering[inode] ) = 1.0;
+    ls.rhs[ls.dofNumbering[inode]] = val;
   }
-  lhs.prune( [&dirichletIndices](int i, int j, double) {
-      return ( (find(dirichletIndices.begin(), dirichletIndices.end(), i) == dirichletIndices.end()) || (i==j) );
+  vector<int> globalDirichletIndices( dirichletIndices.size() );
+  for (int idx = 0; idx < dirichletIndices.size(); ++idx) {
+    globalDirichletIndices[idx] = ls.dofNumbering[ dirichletIndices[idx] ];
+  }
+  ls.lhs.prune( [&globalDirichletIndices](int i, int j, double) {
+      return ( (find(globalDirichletIndices.begin(), globalDirichletIndices.end(), i) == globalDirichletIndices.end()) || (i==j) );
       });
 }

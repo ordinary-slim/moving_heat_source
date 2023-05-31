@@ -6,7 +6,8 @@ void Problem::iterate() {
 
   assemble();
 
-  solve();
+  ls.solve();
+  unknown.values = ls.sol;
 
   postIterate();
 }
