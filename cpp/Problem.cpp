@@ -187,57 +187,107 @@ void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector
   dirichletValues = mesh::MeshTag<double>( domain.mesh, otherDirichletNodes, otherDirichletValues, 0 );
 }
 
-mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt ) {
+mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol ) {
   /*
    * Current problem asks external problem if 
    * element is active in external
    */
-  mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
   // External activation to function on external
-  fem::Function extActiveNodes_ext = fem::Function( &pExt.domain,  domain.activeNodes );
+  Eigen::VectorXd activeNodesExt = Eigen::VectorXd( pExt.domain.mesh->nnodes );
+  for (int inode = 0; inode < pExt.domain.mesh->nnodes; ++inode) {
+    activeNodesExt[inode] = double( pExt.domain.activeNodes[inode] );
+  }
+  fem::Function extActiveNodes_ext = fem::Function( &pExt.domain, activeNodesExt );
+
   // To function on local
   fem::Function extActiveNodes = fem::Function( &domain );
   extActiveNodes.interpolate( extActiveNodes_ext );
-  // Check if element owned by external problem
-  const vector<int>* incidentNodes;
-  bool allNodesActive;//if all nodes active, active, else inactive
-  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
-    incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
-    allNodesActive = true;
-    for (int inode: *incidentNodes) {
-      if (extActiveNodes.values[inode] < 1) {
-        allNodesActive = false;
-        break;
-      }
-    }
-    if (allNodesActive) {
-      // Element owned by other problem
-      activeInExternal[ielem] = 1;
-    }
+  // Return nodal MeshTag
+  mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, 0 );
+  for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+    bool isIn = (abs( 1 - extActiveNodes.values[inode] ) < tol);
+    activeInExternal[inode] = int(isIn);
   }
   return activeInExternal;
 }
 
-void Problem::deactivateFromExternal( const Problem &pExt ) {
-  mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
+void Problem::substractExternal( const Problem &pExt, bool updateGamma ) {
+  mesh::MeshTag<int> activationCriterion = domain.activeElements;
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
-  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
-    if (domain.activeElements[ielem] && not(activeInExternal[ielem]) ) {
-      activationCriterion[ielem] = 1;
+
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
+    const vector<int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    bool activeInExt = true;
+    for (int inode : *incidentNodes ) {
+      if (not(activeInExternal[inode])) {
+        activeInExt = false;
+        break;
+      }
+    }
+    if ( activeInExt ) {
+      activationCriterion[ielem] = 0;
     }
   }
+
   domain.setActivation( activationCriterion );
+  if (updateGamma) {
+    findGamma( activeInExternal );
+  }
 }
 
-void Problem::intersectFromExternal( const Problem &pExt ) {
-  mesh::MeshTag<int> activationCriterion = mesh::MeshTag<int>( domain.mesh, domain.mesh->dim, 0 );
+void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
+  mesh::MeshTag<int> activationCriterion = domain.activeElements;
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
-  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem) {
-    if (domain.activeElements[ielem] && activeInExternal[ielem]) {
-      activationCriterion[ielem] = 1;
+
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
+    const vector<int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    bool activeInExt = true;
+    for (int inode : *incidentNodes ) {
+      if (not(activeInExternal[inode])) {
+        activeInExt = false;
+        break;
+      }
+    }
+    if ( not(activeInExt) ) {
+      activationCriterion[ielem] = 0;
     }
   }
+
   domain.setActivation( activationCriterion );
+  if (updateGamma) {
+    findGamma( activeInExternal );
+  }
+}
+
+void Problem::findGamma( const Problem &pExt ) {
+  mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
+  findGamma( activeInExternal );
+}
+
+void Problem::findGamma( mesh::MeshTag<int> &activeInExternal ) {
+  /*
+   * activeInExternal is a tag on the current mesh of which nodes
+   * are owned by another problem
+   */
+  gammaNodes.setCteValue( 0 );
+  gammaFacets.setCteValue( 0 );
+  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getTrueIndices();
+  for ( int ifacet : indicesBoundaryFacets ) {
+    const vector<int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
+    bool isInGamma = true;
+    for ( int inode : *incidentNodes ) {
+      if (not( activeInExternal[inode] )) {
+        isInGamma = false;
+        break;
+      }
+    }
+    if (isInGamma) {
+      gammaFacets[ ifacet ] = 1;
+      for ( int inode : *incidentNodes ) {
+        gammaNodes[ inode ] = 1;
+      }
+    }
+  }
 }
 
 void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {

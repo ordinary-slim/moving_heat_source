@@ -49,6 +49,10 @@ class Problem {
     mesh::MeshTag<int> convectionFacets;
     double Tenv;
 
+    // Coupling BC
+    mesh::MeshTag<int> gammaNodes;
+    mesh::MeshTag<int> gammaFacets;
+
     // integrator
     TimeIntegratorHandler timeIntegrator;
 
@@ -73,6 +77,8 @@ class Problem {
     }
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
+    void findGamma( const Problem &pExt );
+    void findGamma( mesh::MeshTag<int> &activeInExternal );
     void assemble();
     void gather();
     void updateFRFpos();
@@ -91,9 +97,9 @@ class Problem {
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
-    mesh::MeshTag<int> getActiveInExternal( const Problem &pExt );//TODO: rename this!
-    void deactivateFromExternal( const Problem &pExt );
-    void intersectFromExternal( const Problem &pExt );
+    mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-7 );
+    void substractExternal( const Problem &pExt, bool updateGamma = true);
+    void intersectExternal( const Problem &pExt, bool updateGamma = true );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {

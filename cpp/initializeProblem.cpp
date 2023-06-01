@@ -15,6 +15,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
   convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
+  gammaNodes( mesh::MeshTag<int>( &mesh, 0 ) ),
+  gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   domain( mesh::ActiveMesh( &mesh ) ),
   unknown( fem::Function( &domain ) )
 {

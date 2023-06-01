@@ -34,6 +34,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def_readonly("gammaNodes", &Problem::gammaNodes)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setDeltaT", &Problem::setDeltaT)
         .def("setPointers", &Problem::setPointers)
@@ -50,8 +51,16 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from index of facet and flux function.")
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
-        .def("deactivateFromExternal", &Problem::deactivateFromExternal)
-        .def("intersectFromExternal", &Problem::intersectFromExternal);
+        .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
+            "Find interface between two problems")
+        .def("findGamma", static_cast<void (Problem::*)( const Problem &)>(&Problem::findGamma),
+            "Find interface between two problems")
+        .def("findGamma", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::findGamma),
+            "Find interface between two problems given external activation MeshTag")
+        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::substractExternal),
+            "Substract external domain from domain.")
+        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::intersectExternal),
+            "Intersect external domain with domain.");
     py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())
         .def("dim", &mesh::ActiveMesh::dim)
@@ -67,6 +76,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<const mesh::Mesh*, int>())
         .def(py::init<const mesh::Mesh*, int, vector<int>>())
         .def(py::init<const mesh::Mesh*, const std::vector<int>&, const std::vector<int> &, const int>())
+        .def("dim", &mesh::MeshTag<int>::dim)
         .def("setValues", &mesh::MeshTag<int>::setValues)
         .def("getTrueIndices", &mesh::MeshTag<int>::getTrueIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);

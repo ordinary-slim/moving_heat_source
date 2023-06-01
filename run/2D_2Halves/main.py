@@ -5,6 +5,7 @@ import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 from wrapper import Problem, readInput
+import pdb
 
 def mesh(box, meshDen=1, variant="up"):
     '''
@@ -69,6 +70,7 @@ if __name__=="__main__":
     inputFile = "input.txt"
     boxLeft = [-1, 0, -1, 1]
     boxRight = [0, 1, -1, 1]
+    box = [-1, 1, -1, 1]
 
     # Read input
     problemInput = readInput( inputFile )
@@ -76,7 +78,7 @@ if __name__=="__main__":
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
     meshDen = 2
-    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(boxLeft, meshDen=meshDen, variant="zigzag")
+    leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
     rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=meshDen, variant="up")
 
     # open integration facets
@@ -91,9 +93,10 @@ if __name__=="__main__":
     pLeft  = Problem(meshLeft, problemInput, caseName="left")
     pRight  = Problem(meshRight, problemInput, caseName="right")
 
-    # Deactive left of pLeft
-    leftActiveEls = isInsideBox( pLeft.domain.mesh, boxLeft )
-    pLeft.domain.setActivation( leftActiveEls )
+    # Activation
+    pLeft.substractExternal( pRight, True )
+
+    pRight.findGamma( pLeft )
 
     # Neumann interface right
     print("Setting Neumann right...")
@@ -126,11 +129,13 @@ if __name__=="__main__":
     #post
     for p in [pLeft, pRight]:
         fexact = p.project( exactSol )
-
         p.writepos(
                 functions={
                     "fexact":fexact,
-                    }
+                    },
+                nodeMeshTags={
+                    "gammaNodes":p.gammaNodes,
+                    },
                         )
     '''
     # Deactivate pRight using pLeft

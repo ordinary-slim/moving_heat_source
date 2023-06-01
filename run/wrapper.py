@@ -117,6 +117,7 @@ class Problem(mhs.Problem):
                  rf = "FRF",
                  shift=None,
                  functions={},
+                 nodeMeshTags={},
                  cellMeshTags={},
                  ):
         '''
@@ -145,6 +146,9 @@ class Problem(mhs.Problem):
         cell_data={"ActiveElements":[self.domain.activeElements.x]}
         for label, fun in functions.items():
             point_data[label] = fun.values
+
+        for label, tag in nodeMeshTags.items():
+            point_data[label] = tag.x
         for label, tag in cellMeshTags.items():
             cell_data[label] = [tag.x]
 
