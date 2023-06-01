@@ -71,9 +71,26 @@ void MeshTag<T>::setValues(std::vector<T> &v) {
 
 template<typename T>
 std::vector<int> MeshTag<T>::getTrueIndices() {
+  /*
+   * Get indices of MeshTag that evaluate to true.
+   */
   std::vector<int> indices;
   for (int index = 0; index < size(); ++index) {
     if ( bool( x[index] ) ) {
+      indices.push_back( index );
+    }
+  }
+  return indices;
+}
+
+template<typename T>
+std::vector<int> MeshTag<T>::filterIndices( std::function<bool(T)> filter ) {
+  /*
+   * Get indices of MeshTag that evaluate to filter[ MeshTag[index] ]
+   */
+  std::vector<int> indices;
+  for (int index = 0; index < size(); ++index) {
+    if ( filter( x[index] ) ) {
       indices.push_back( index );
     }
   }

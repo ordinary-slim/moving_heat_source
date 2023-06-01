@@ -14,7 +14,6 @@ double massContrib( int igp, int inode, int jnode, const mesh::Element *e, const
 
 void Problem::assembleSpatialPDE() {
   // numerical params
-  double ip;
 
   std::vector<BilinearForm*> bilinearForms;
   std::vector<LinearForm*> linearForms;
@@ -84,18 +83,42 @@ void Problem::assembleSpatialPDE() {
       }
     }
 
+    // Assemble into linear system 
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      mhs.pulse[(*e.con)[inode]] += pulse_loc(inode);
-      ls->rhs[(*e.con)[inode]] += rhs_loc(inode);
+      int inodeGlobal =  (*e.con)[inode] ;
+      int inodeDof = dofNumbering[ inodeGlobal ];
+      if ( inodeDof < 0 ) { continue; }// if forced node, keep going
+                                       //
+      // Assemble into RHS
+      ls->rhs[inodeDof] += rhs_loc(inode);
+
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
+        int jnodeGlobal = (*e.con)[jnode] ;;
+        int jnodeDof = dofNumbering[ jnodeGlobal ];
+        if ( jnodeDof < 0 ) {
+          // Assemble into RHS
+          ls->rhs[inodeDof] += -lhs_loc( inode, jnode ) * unknown.values[ jnodeGlobal ];
+        } else {
+          // Assemble into RHS
+          ls->lhsCoeffs.push_back( T(
+                inodeDof,
+                jnodeDof,
+                lhs_loc(inode, jnode) ) );
+        }
+      }
+    }
+
+    // TODO: Move this somewhere else
+    // Assemble mass and pulse
+    for (int inode = 0; inode < e.nnodes; ++inode) {
+      int inodeGlobal =  (*e.con)[inode] ;
+      mhs.pulse[inodeGlobal] += pulse_loc(inode);
+      for (int jnode = 0; jnode < e.nnodes; ++jnode) {
+        int jnodeGlobal = (*e.con)[jnode];
         domain.massCoeffs.push_back( T(
-              (*e.con)[inode],
-              (*e.con)[jnode],
+              inodeGlobal,
+              jnodeGlobal,
               mass_loc(inode, jnode) ) );
-        ls->lhsCoeffs.push_back( T(
-              dofNumbering[(*e.con)[inode]],
-              dofNumbering[(*e.con)[jnode]],
-              lhs_loc(inode, jnode) ) );
       }
     }
   }

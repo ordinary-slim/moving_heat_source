@@ -14,8 +14,6 @@ class LinearSystem {
     int _ndofs;
     std::vector<Eigen::Triplet<double>> lhsCoeffs;
     Eigen::VectorXd sol;
-    std::vector<int> indicesForcedDofs;
-    std::vector<double> valuesForcedDofs;
 
     LinearSystem() = default;
     LinearSystem(Problem &p);
@@ -25,8 +23,6 @@ class LinearSystem {
       lhs.setZero();
       rhs.setZero();
       lhsCoeffs.clear();
-      indicesForcedDofs.clear();
-      valuesForcedDofs.clear();
     }
     int getNdofs() { return _ndofs; }
     void allocate() {
@@ -36,6 +32,5 @@ class LinearSystem {
 
     void assemble();
     void solve();
-    void forceDofs();
 };
 #endif

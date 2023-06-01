@@ -20,12 +20,21 @@ void Problem::assembleTime() {
     //Add time dependency
     //LHS
     vector<Eigen::Triplet<double>> timeDerivCoeffs;
-    timeDerivCoeffs.resize( domain.massCoeffs.size() );
+    timeDerivCoeffs.reserve( domain.massCoeffs.size() );
     for (int iMassEntry = 0; iMassEntry < domain.massCoeffs.size(); ++iMassEntry) {
-      timeDerivCoeffs[iMassEntry] = Eigen::Triplet<double>(
-          dofNumbering[domain.massCoeffs[iMassEntry].row()],
-          dofNumbering[domain.massCoeffs[iMassEntry].col()],
-          timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt );
+      int inodeDof = dofNumbering[ domain.massCoeffs[iMassEntry].row() ];
+      if ( inodeDof < 0 ) { continue; }// if forced node, keep going
+      int jnodeGlobal = domain.massCoeffs[iMassEntry].col();
+      int jnodeDof = dofNumbering[ jnodeGlobal ];
+      double coeff = timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt;
+      if ( jnodeDof < 0 ) {
+        // To RHS
+        ls->rhs[inodeDof] += - coeff * unknown.values[ jnodeGlobal ];
+      } else {
+        // To LHS
+        timeDerivCoeffs.push_back(  Eigen::Triplet<double>(
+            inodeDof, jnodeDof, coeff) );
+      }
     }
     ls->lhsCoeffs.insert( ls->lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
 
@@ -34,7 +43,10 @@ void Problem::assembleTime() {
     for (fem::Function prevFun: previousValues) {
       Eigen::VectorXd rhsContrib = domain.massMat * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
-        ls->rhs[dofNumbering[inode]] += rhsContrib(inode);
+        int inodeDof = dofNumbering[inode];
+        if (inodeDof >= 0) {
+          ls->rhs[inodeDof] += rhsContrib(inode);
+        }
       }
       ++prevValCounter;
     }

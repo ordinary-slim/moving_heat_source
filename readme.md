@@ -7,11 +7,11 @@ To-do:
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [x] Join together treatment of Dirichlet and inactive nodes
-- [ ] Only solve for free dofs
-    - [ ] Compute numbering free dofs
-    - [ ] Allocate only for free dofs
-    - [ ] Assemble only for free dofs
-    - [ ] Solve
+- [x] Only solve for free dofs
+    - [x] Compute numbering free dofs
+    - [x] Allocate only for free dofs
+    - [x] Assemble only for free dofs
+    - [x] Solve
 
 Ideas:
 ------

@@ -10,7 +10,6 @@ namespace py = pybind11;
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
-  forcedDofsValues( mesh::MeshTag<double>( &mesh, 0, 0.0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
   neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
@@ -19,10 +18,6 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   domain( mesh::ActiveMesh( &mesh ) ),
   unknown( fem::Function( &domain ) )
 {
-  // LINEAR SYSTEM
-  myls = LinearSystem( *this );
-  // Assume we're assembling to our own linear system
-  ls = &myls;
 
   // MATERIAL
   // TODO: Better DS!

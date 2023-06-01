@@ -76,13 +76,28 @@ void Problem::assembleWeakBcs() {
       }
     }
 
+    // Assemble into linear system 
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      ls->rhs[dofNumbering[(*e.con)[inode]]] += rhs_loc(inode);
+      int inodeGlobal =  (*e.con)[inode] ;
+      int inodeDof = dofNumbering[ inodeGlobal ];
+      if ( inodeDof < 0 ) { continue; }// if forced node, keep going
+                                       //
+      // Assemble into RHS
+      ls->rhs[inodeDof] += rhs_loc(inode);
+
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        ls->lhsCoeffs.push_back( T(
-              dofNumbering[(*e.con)[inode]],
-              dofNumbering[(*e.con)[jnode]],
-              lhs_loc(inode, jnode) ) );
+        int jnodeGlobal = (*e.con)[jnode] ;;
+        int jnodeDof = dofNumbering[ jnodeGlobal ];
+        if ( jnodeDof < 0 ) {
+          // Assemble into RHS
+          ls->rhs[inodeDof] += - lhs_loc( inode, jnode ) * unknown.values[ jnodeGlobal ];
+        } else {
+          // Assemble into RHS
+          ls->lhsCoeffs.push_back( T(
+                inodeDof,
+                jnodeDof,
+                lhs_loc(inode, jnode) ) );
+        }
       }
     }
   }

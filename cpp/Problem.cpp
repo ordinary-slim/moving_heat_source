@@ -16,23 +16,37 @@ void Problem::updateFRFpos() {
 
 void Problem::preIterate() {
   /* Beginning of iteration operations*/
-  if (not(assembling2external)) {
-    ls->cleanup();
-  }
-  // initialize data structures
-  domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
-  domain.massCoeffs.clear();
-  domain.massCoeffs.reserve( 3*domain.mesh->nnodes );
-
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
   mhs.updatePosition( dt );
   setTime( time + dt );
   ++iter;
+
+  preAssemble();
+}
+
+void Problem::preAssemble() {
+  /*
+   * Before assembly operations
+  */
+  domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
+  domain.massCoeffs.clear();
+  domain.massCoeffs.reserve( 3*domain.mesh->nnodes );
+
+  updateForcedDofs();
+
+  if (not(assembling2external)) {
+    myls = LinearSystem( *this );
+    ls = &myls;
+  }
 }
 
 void Problem::gather() {
-  unknown.values = ls->sol(dofNumbering);
+  for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+    int inodeDof = dofNumbering[inode] ;
+    if ( inodeDof < 0 ) { continue; }
+    unknown.values[inode] = ls->sol(inodeDof);
+  }
 }
 
 void Problem::postIterate() {
@@ -283,12 +297,11 @@ void Problem::updateForcedDofs() {
     if (not(domain.activeNodes[inode])){
       // Add node to dirichlet nodes
       forcedDofs[inode] = 1;
-      forcedDofsValues[inode] = unknown.values[inode];
       // Fill mass matrix
       domain.massCoeffs.push_back( Eigen::Triplet<double>(inode, inode, 1) );
     } else if (dirichletNodes[inode]) {
       forcedDofs[inode] = 1;
-      forcedDofsValues[inode] = dirichletValues[inode];
+      unknown.values[inode] = dirichletValues[inode];
     }
   }
 }

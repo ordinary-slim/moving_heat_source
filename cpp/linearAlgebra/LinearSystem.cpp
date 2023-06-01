@@ -2,12 +2,19 @@
 #include "LinearSystem.h"
 
 LinearSystem::LinearSystem(Problem &p) {
-  _ndofs = p.domain.mesh->nnodes;
-  p.dofNumbering.resize(_ndofs);
-  for (int i = 0; i < _ndofs; ++i) {
-    p.dofNumbering[i] = i;
+  p.dofNumbering.clear();
+  p.dofNumbering.reserve(p.domain.mesh->nnodes);
+  _ndofs = 0;
+  for (int inode = 0; inode < p.domain.mesh->nnodes; inode++){
+    if (p.forcedDofs[inode] == 0 ) {
+      p.dofNumbering.push_back( _ndofs );
+      ++_ndofs;
+    } else {
+      p.dofNumbering.push_back( -1 );
+    }
   }
   allocate();
+  cleanup();
 }
 LinearSystem::LinearSystem(Problem &p1, Problem &p2) {
   /*
@@ -43,19 +50,4 @@ void LinearSystem::solve() {
 
 void LinearSystem::assemble() {
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
-  forceDofs();
-}
-
-void LinearSystem::forceDofs() {
-  // Has to be last step. Similar treatment to Dirichlet BC
-  // Does it have to be last step?
-  for (int i = 0; i < indicesForcedDofs.size(); ++i) {
-    int inode = indicesForcedDofs[i];
-    double val = valuesForcedDofs[i];
-    lhs.coeffRef( inode, inode ) = 1.0;
-    rhs[inode] = val;
-  }
-  lhs.prune( [this](int i, int j, double) {
-      return ( (find(indicesForcedDofs.begin(), indicesForcedDofs.end(), i) == indicesForcedDofs.end()) || (i==j) );
-      });
 }

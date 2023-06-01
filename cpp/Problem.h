@@ -36,7 +36,6 @@ class Problem {
     bool assembling2external = false;
     vector<int> dofNumbering;
     mesh::MeshTag<int>    forcedDofs;
-    mesh::MeshTag<double> forcedDofsValues;
 
     // Dirichlet BC
     mesh::MeshTag<int>    dirichletNodes;
@@ -81,7 +80,7 @@ class Problem {
     void assembleWeakBcs();
     void assembleTime();
     void updateForcedDofs();
-    void forceDofs();
+    void preAssemble();
     void preIterate();
     void postIterate();
     void setStabilization(bool stabilize) {

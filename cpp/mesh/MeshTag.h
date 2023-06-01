@@ -2,6 +2,7 @@
 #define MESHTAG
 #include <vector>
 #include <utility>
+#include <functional>
 
 namespace mesh {
 
@@ -30,6 +31,7 @@ class MeshTag {
     void setValues(std::vector<T> &v);
 
     std::vector<int> getTrueIndices();
+    std::vector<int> filterIndices( std::function<bool(T)> filter );
 
     int dim() const { return _dim; }
   private:
