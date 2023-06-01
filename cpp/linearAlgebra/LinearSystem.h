@@ -24,6 +24,9 @@ class LinearSystem {
       rhs.setZero();
       lhsCoeffs.clear();
     }
+
+    void concatenateProblem(Problem &p);
+
     int getNdofs() { return _ndofs; }
     void allocate() {
       lhs.resize( _ndofs, _ndofs );

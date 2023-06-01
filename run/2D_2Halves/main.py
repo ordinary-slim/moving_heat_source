@@ -75,9 +75,9 @@ if __name__=="__main__":
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    meshDen = 1
+    meshDen = 2
     leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(boxLeft, meshDen=meshDen, variant="zigzag")
-    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=1, variant="up")
+    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=meshDen, variant="up")
 
     # open integration facets
     leftMeshInput["numberOfGaussPointsFacets"] =  2
@@ -104,6 +104,9 @@ if __name__=="__main__":
     print("Setting Dirichlet left...")
     pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), exactSol )
     debugSetDirichlet( pLeft )
+
+    pLeft.updateForcedDofs()
+    pRight.updateForcedDofs()
 
     ls = mhs.LinearSystem( pLeft, pRight )
     ls.cleanup()

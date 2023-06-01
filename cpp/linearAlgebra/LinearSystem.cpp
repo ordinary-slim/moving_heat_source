@@ -1,10 +1,12 @@
 #include "../Problem.h"
 #include "LinearSystem.h"
 
-LinearSystem::LinearSystem(Problem &p) {
+void LinearSystem::concatenateProblem(Problem &p) {
+  /*
+   * Add problem to numbering
+   */
   p.dofNumbering.clear();
   p.dofNumbering.reserve(p.domain.mesh->nnodes);
-  _ndofs = 0;
   for (int inode = 0; inode < p.domain.mesh->nnodes; inode++){
     if (p.forcedDofs[inode] == 0 ) {
       p.dofNumbering.push_back( _ndofs );
@@ -13,33 +15,39 @@ LinearSystem::LinearSystem(Problem &p) {
       p.dofNumbering.push_back( -1 );
     }
   }
+}
+
+LinearSystem::LinearSystem(Problem &p) {
+  _ndofs = 0;
+  concatenateProblem( p );
   allocate();
   cleanup();
 }
+
 LinearSystem::LinearSystem(Problem &p1, Problem &p2) {
   /*
    * Linear system shared by two problems.
    * Could be a vector of problems but don't know how
    * to pass by reference from Python side
    */
-  _ndofs = p1.domain.mesh->nnodes + p2.domain.mesh->nnodes ;
-  p1.dofNumbering.resize( p1.domain.mesh->nnodes );
-  for (int inode = 0; inode < p1.domain.mesh->nnodes; ++inode ) {
-    p1.dofNumbering[inode] = inode;
-  }
+  _ndofs = 0 ;
+
+  concatenateProblem( p1 );
   p1.ls = this;
   p1.assembling2external = true;
-  p2.dofNumbering.resize( p2.domain.mesh->nnodes );
-  for (int inode = p1.domain.mesh->nnodes; inode < _ndofs; ++inode ) {
-    p2.dofNumbering[inode-p1.domain.mesh->nnodes] = inode;
-  }
+
+  concatenateProblem( p2 );
   p2.ls = this;
   p2.assembling2external = true;
+
   allocate();
+  cleanup();
 }
+
 void LinearSystem::solve() {
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
   //Solve linear system
+  if (not(_ndofs)) { return; }
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;

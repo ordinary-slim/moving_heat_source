@@ -12,6 +12,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<Problem>())//copy constructor
         .def(py::init<mesh::Mesh&, py::dict&>())
         .def("preIterate", &Problem::preIterate)
+        .def("preAssemble", &Problem::preAssemble)
+        .def("updateForcedDofs", &Problem::updateForcedDofs)
         .def("assemble", &Problem::assemble)
         .def("iterate", &Problem::iterate)
         .def("gather", &Problem::gather)
