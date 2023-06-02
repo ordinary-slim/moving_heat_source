@@ -45,7 +45,7 @@ void Problem::assembleSpatialPDE() {
 
   mesh::Element e;
 
-  vector<int> activeElementsIndices = domain.activeElements.getTrueIndices();
+  vector<int> activeElementsIndices = domain.activeElements.getIndices();
   for (int ielem : activeElementsIndices) {
 
     e = domain.getElement( ielem );

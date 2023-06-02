@@ -40,7 +40,7 @@ class ActiveMesh {
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
       return mesh->getEntity(ient, connectivity, refEl);
     }
-    Element getElement(int ielem) {
+    Element getElement(int ielem) const {
       return mesh->getElement(ielem);
     }
     Element getBoundaryFacet(int ifacet) {

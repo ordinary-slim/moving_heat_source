@@ -36,18 +36,19 @@ def setDirichlet( p ):
         if (abs(abs(pos[0]) - 1) < tol) or (abs(abs(pos[1]) - 1) < tol):
             dirichletNodes.append( inode )
             dirichletValues.append( exactSol(pos) )
-    print(dirichletNodes)
-    print(dirichletValues)
     p.setDirichlet( dirichletNodes, dirichletValues )
 
 def debugSetDirichlet( p ):
     #set Dirichlet BC. boundary nodes to 0
     dirichletNodes = []
     dirichletValues = []
-    for inode in range(p.domain.mesh.nnodes):
-        pos = p.domain.mesh.pos[inode, :]
-        dirichletNodes.append( inode )
-        dirichletValues.append( exactSol(pos) )
+    bfacets = p.domain.boundaryFacets.getIndices()
+    for ifacet in bfacets:
+        inciNodes = p.domain.mesh.con_FacetPoint.getLocalCon( ifacet )
+        for inode in inciNodes:
+            pos = p.domain.mesh.pos[inode, :]
+            dirichletNodes.append( inode )
+            dirichletValues.append( exactSol(pos) )
     p.setDirichlet( dirichletNodes, dirichletValues )
 
 def isInsideBox( mesh, box ):
@@ -77,7 +78,7 @@ if __name__=="__main__":
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    meshDen = 2
+    meshDen = 4
     leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
     rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=meshDen, variant="up")
 
@@ -95,28 +96,30 @@ if __name__=="__main__":
 
     # Activation
     pLeft.substractExternal( pRight, True )
-
     pRight.findGamma( pLeft )
 
-    # Neumann interface right
-    print("Setting Neumann right...")
-    pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), exactFlux )
-    debugSetDirichlet( pRight )
+    # BC outside
+    setDirichlet( pRight )
 
+    # Neumann interface right
     # Dirichlet interface left
     print("Setting Dirichlet left...")
-    pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), exactSol )
-    debugSetDirichlet( pLeft )
+    setDirichlet( pLeft )
+    pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getIndices(), exactSol )
 
-    pLeft.updateForcedDofs()
-    pRight.updateForcedDofs()
-
+    # Pre-assembly, updating free dofs
+    pLeft.preAssemble()
+    pRight.preAssemble()
+    # Allocate linear system
     ls = mhs.LinearSystem( pLeft, pRight )
     ls.cleanup()
 
-    pLeft.preIterate()
+    print("Setting Neumann right...")
+    #pRight.setNeumann( pRight.domain.justActivatedBoundary.getIndices(), exactFlux )
+    pRight.assembleNeumannGamma( pLeft )
+
+
     pLeft.assemble()
-    pRight.preIterate()
     pRight.assemble()
 
     ls.assemble()
@@ -134,6 +137,7 @@ if __name__=="__main__":
                     "fexact":fexact,
                     },
                 nodeMeshTags={
+                    "dirichletNodes":p.dirichletNodes,
                     "gammaNodes":p.gammaNodes,
                     },
                         )
@@ -155,7 +159,7 @@ if __name__=="__main__":
         setDirichlet( pRight )
         # Neumann interface right
         print("Setting Neumann right...")
-        pRight.setNeumann( pRight.domain.justActivatedBoundary.getTrueIndices(), pLeft.unknown.evaluateGrad )
+        pRight.setNeumann( pRight.domain.justActivatedBoundary.getIndices(), pLeft.unknown.evaluateGrad )
         # Solve pRight
         pRight.assemble()
         pRight.solve()
@@ -173,7 +177,7 @@ if __name__=="__main__":
         setDirichlet( pLeft )
         # Dirichlet interface left
         print("Setting Dirichlet left...")
-        pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getTrueIndices(), pRight.unknown.evaluate )
+        pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getIndices(), pRight.unknown.evaluate )
         # Solve pLeft
         pLeft.assemble()
         pLeft.solve()

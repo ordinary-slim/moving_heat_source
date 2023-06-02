@@ -34,6 +34,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
+        .def_readonly("dirichletNodes", &Problem::dirichletNodes)
         .def_readonly("gammaNodes", &Problem::gammaNodes)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setDeltaT", &Problem::setDeltaT)
@@ -49,6 +50,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from plane.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
+        .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
         .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
@@ -78,7 +80,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<const mesh::Mesh*, const std::vector<int>&, const std::vector<int> &, const int>())
         .def("dim", &mesh::MeshTag<int>::dim)
         .def("setValues", &mesh::MeshTag<int>::setValues)
-        .def("getTrueIndices", &mesh::MeshTag<int>::getTrueIndices)
+        .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         .def(py::init<const mesh::Mesh&>())

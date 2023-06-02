@@ -17,7 +17,7 @@ void Problem::assembleWeakBcs() {
   mesh::Element e;
 
   // assemble
-  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getTrueIndices();
+  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();
   for ( int ifacet : indicesBoundaryFacets ) {
 
     bilinearForms.clear();
@@ -86,7 +86,7 @@ void Problem::assembleWeakBcs() {
       ls->rhs[inodeDof] += rhs_loc(inode);
 
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        int jnodeGlobal = (*e.con)[jnode] ;;
+        int jnodeGlobal = (*e.con)[jnode] ;
         int jnodeDof = dofNumbering[ jnodeGlobal ];
         if ( jnodeDof < 0 ) {
           // Assemble into RHS

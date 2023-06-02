@@ -85,6 +85,8 @@ class Problem {
     void assembleSpatialPDE();//mass, diffusion, advection
     void assembleWeakBcs();
     void assembleTime();
+    void assembleDirichletGamma( const Problem &pExt ); 
+    void assembleNeumannGamma( const Problem &pExt ); 
     void updateForcedDofs();
     void preAssemble();
     void preIterate();

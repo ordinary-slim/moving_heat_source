@@ -27,7 +27,8 @@ void Problem::preIterate() {
 
 void Problem::preAssemble() {
   /*
-   * Before assembly operations
+   * BEFORE assembly operations
+   * AFTER setting Dirichlet and activation
   */
   domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
   domain.massCoeffs.clear();
@@ -86,7 +87,7 @@ void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux )
   //
   int  idxMatch;
   int nfacetgpoints = domain.mesh->refFacetEl.ngpoints;
-  vector<int> indicesBounFacets = domain.boundaryFacets.getTrueIndices();
+  vector<int> indicesBounFacets = domain.boundaryFacets.getIndices();
   for (vector<int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
@@ -117,7 +118,7 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
   mesh::Element e;
   bool isInPlane;
   Eigen::Vector3d distance;
-  vector<int> indicesBounFacets = domain.boundaryFacets.getTrueIndices();
+  vector<int> indicesBounFacets = domain.boundaryFacets.getIndices();
   for (int iBFacet : indicesBounFacets) {
     isInPlane = false;
     e = domain.getBoundaryFacet( iBFacet );
@@ -271,7 +272,7 @@ void Problem::findGamma( mesh::MeshTag<int> &activeInExternal ) {
    */
   gammaNodes.setCteValue( 0 );
   gammaFacets.setCteValue( 0 );
-  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getTrueIndices();
+  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();
   for ( int ifacet : indicesBoundaryFacets ) {
     const vector<int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
     bool isInGamma = true;
@@ -310,7 +311,7 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   fem::Function fh = fem::Function( &domain );
   // Assemble RHS
   Eigen::VectorXd rhsProjection = Eigen::VectorXd::Zero( domain.mesh->nnodes );
-  vector<int> indicesActiveElements = domain.activeElements.getTrueIndices();
+  vector<int> indicesActiveElements = domain.activeElements.getIndices();
   double fx, rhs_i;
   Eigen::Vector3d x_gp;
   mesh::Element e;

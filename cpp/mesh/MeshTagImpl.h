@@ -70,7 +70,7 @@ void MeshTag<T>::setValues(std::vector<T> &v) {
 }
 
 template<typename T>
-std::vector<int> MeshTag<T>::getTrueIndices() {
+std::vector<int> MeshTag<T>::getIndices() const {
   /*
    * Get indices of MeshTag that evaluate to true.
    */

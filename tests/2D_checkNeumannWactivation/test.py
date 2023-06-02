@@ -51,7 +51,7 @@ def run():
 
     def flux(point):
         return np.array([-10.0, 0.0, 0.0])
-    p.setNeumann( p.domain.justActivatedBoundary.getTrueIndices(), flux )
+    p.setNeumann( p.domain.justActivatedBoundary.getIndices(), flux )
 
     it = 0
     time = 0.0
