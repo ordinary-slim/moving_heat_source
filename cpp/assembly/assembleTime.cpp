@@ -22,7 +22,7 @@ void Problem::assembleTime() {
     vector<Eigen::Triplet<double>> timeDerivCoeffs;
     timeDerivCoeffs.reserve( domain.massCoeffs.size() );
     for (int iMassEntry = 0; iMassEntry < domain.massCoeffs.size(); ++iMassEntry) {
-      int inodeDof = dofNumbering[ domain.massCoeffs[iMassEntry].row() ];
+      int inodeDof = freeDofsNumbering[ domain.massCoeffs[iMassEntry].row() ];
       if ( inodeDof < 0 ) { continue; }// if forced node, keep going
       int jnodeGlobal = domain.massCoeffs[iMassEntry].col();
       int jnodeDof = dofNumbering[ jnodeGlobal ];
@@ -43,7 +43,7 @@ void Problem::assembleTime() {
     for (fem::Function prevFun: previousValues) {
       Eigen::VectorXd rhsContrib = domain.massMat * (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
-        int inodeDof = dofNumbering[inode];
+        int inodeDof = freeDofsNumbering[inode];
         if (inodeDof >= 0) {
           ls->rhs[inodeDof] += rhsContrib(inode);
         }

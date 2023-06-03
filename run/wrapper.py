@@ -89,6 +89,10 @@ class Problem(mhs.Problem):
         except FileNotFoundError:
             pass
 
+    def preiterate(self):
+        self.iter += 1
+        super(Problem, self).preIterate()
+
     def iterate(self):
         self.iter += 1
         super(Problem, self).iterate()

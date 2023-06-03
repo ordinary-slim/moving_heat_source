@@ -7,12 +7,22 @@ void LinearSystem::concatenateProblem(Problem &p) {
    */
   p.dofNumbering.clear();
   p.dofNumbering.reserve(p.domain.mesh->nnodes);
+  p.freeDofsNumbering.clear();
+  p.freeDofsNumbering.reserve(p.domain.mesh->nnodes);
+
   for (int inode = 0; inode < p.domain.mesh->nnodes; inode++){
     if (p.forcedDofs[inode] == 0 ) {
       p.dofNumbering.push_back( _ndofs );
+      p.freeDofsNumbering.push_back( _ndofs );
       ++_ndofs;
-    } else {
+    } else if (p.forcedDofs[inode] == 1) {
       p.dofNumbering.push_back( -1 );
+      p.freeDofsNumbering.push_back( -1 );
+    } else if (p.forcedDofs[inode] == 2) {
+      // Gamma Dirichlet nodes, special treatment
+      p.dofNumbering.push_back( _ndofs );
+      p.freeDofsNumbering.push_back( -1 );
+      ++_ndofs;
     }
   }
 }

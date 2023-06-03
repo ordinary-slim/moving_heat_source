@@ -22,10 +22,10 @@ void Problem::preIterate() {
   setTime( time + dt );
   ++iter;
 
-  preAssemble();
+  preAssemble( assembling2external );
 }
 
-void Problem::preAssemble() {
+void Problem::preAssemble(bool isLsExternal) {
   /*
    * BEFORE assembly operations
    * AFTER setting Dirichlet and activation
@@ -45,7 +45,9 @@ void Problem::preAssemble() {
 void Problem::gather() {
   for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
     int inodeDof = dofNumbering[inode] ;
-    if ( inodeDof < 0 ) { continue; }
+    if ( inodeDof < 0 ) {
+        continue;
+    }
     unknown.values[inode] = ls->sol(inodeDof);
   }
 }
@@ -342,6 +344,13 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   return fh;
 }
 
+void Problem::setGamma2Dirichlet() {
+  vector<int> gammaNodesIndices = gammaNodes.getIndices();
+  for (int inode : gammaNodesIndices) {
+    dirichletNodes[inode] = 2;
+  }
+}
+
 void Problem::updateForcedDofs() {
   forcedDofs.setCteValue( 0 );
   for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
@@ -350,9 +359,13 @@ void Problem::updateForcedDofs() {
       forcedDofs[inode] = 1;
       // Fill mass matrix
       domain.massCoeffs.push_back( Eigen::Triplet<double>(inode, inode, 1) );
-    } else if (dirichletNodes[inode]) {
+    } else if (dirichletNodes[inode] == 1) {
       forcedDofs[inode] = 1;
       unknown.values[inode] = dirichletValues[inode];
+    } else if (dirichletNodes[inode] == 2) {
+      // Gamma Dirichlet node
+      // Needs to remain untouched and still be assembled
+      forcedDofs[inode] = 2;
     }
   }
 }

@@ -34,7 +34,7 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
       for (int inode = 0; inode < facet.nnodes; ++inode) {
 
         int inodeGlobal =  (*facet.con)[inode];
-        int inodeDof = dofNumbering[ inodeGlobal ];
+        int inodeDof = freeDofsNumbering[ inodeGlobal ];
         if ( inodeDof < 0 ) { continue; }// if forced node, keep going
 
         for (int jnode = 0; jnode < e_ext.nnodes; jnode++) {
@@ -62,4 +62,36 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 }
 
 void Problem::assembleDirichletGamma(const Problem &pExt) {
+  vector<int> indicesGammaNodes = gammaNodes.getIndices();
+  for (int inode: indicesGammaNodes) {
+    Eigen::Vector3d xnode = domain.mesh->pos.row( inode );
+
+    int idx_el_ext = pExt.domain.findOwnerElement( xnode ) ;
+    mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
+
+    Eigen::VectorXd shaFuns = e_ext.evalShaFuns( xnode );
+
+    // Assemble
+    int inodeDof = dofNumbering[inode];
+
+    ls->lhsCoeffs.push_back( T(
+          inodeDof,
+          inodeDof,
+          -1.0 ) ); 
+    for (int jnode = 0; jnode < e_ext.nnodes; ++jnode) {
+      int jnodeGlobal_ext =  (*e_ext.con)[jnode];
+      int jnodeDof = pExt.dofNumbering[ jnodeGlobal_ext ];
+      if ( jnodeDof < 0 ) {
+        // Assemble to RHS
+        ls->rhs[inodeDof] += - shaFuns[jnode] * pExt.unknown.values[ jnodeGlobal_ext ];
+      } else {
+        // Assemble to LHS
+        ls->lhsCoeffs.push_back( T(
+              inodeDof,
+              jnodeDof,
+              shaFuns[jnode] ) ); 
+      }
+    }
+
+  }
 }

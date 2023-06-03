@@ -35,6 +35,7 @@ class Problem {
     LinearSystem* ls = NULL;
     bool assembling2external = false;
     vector<int> dofNumbering;
+    vector<int> freeDofsNumbering;// Necessary to assemble Gamma Dirichlet nodes
     mesh::MeshTag<int>    forcedDofs;
 
     // Dirichlet BC
@@ -75,6 +76,11 @@ class Problem {
       advectionSpeed = inputAdvectionSpeed;
       if (advectionSpeed.norm() > 1e-10) isAdvection = true;
     }
+
+    void setAssembling2External(bool isLsExternal){
+      assembling2external = isLsExternal;
+    }
+
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void findGamma( const Problem &pExt );
@@ -88,7 +94,7 @@ class Problem {
     void assembleDirichletGamma( const Problem &pExt ); 
     void assembleNeumannGamma( const Problem &pExt ); 
     void updateForcedDofs();
-    void preAssemble();
+    void preAssemble(bool isLsExternal=true);
     void preIterate();
     void postIterate();
     void setStabilization(bool stabilize) {
@@ -99,6 +105,7 @@ class Problem {
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
+    void setGamma2Dirichlet();
     mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-7 );
     void substractExternal( const Problem &pExt, bool updateGamma = true);
     void intersectExternal( const Problem &pExt, bool updateGamma = true );

@@ -7,17 +7,25 @@ import meshzoo
 from wrapper import Problem, readInput
 import pdb
 
-def mesh(box, meshDen=1, variant="up"):
+def mesh(box, meshDen=1, variant="up", cell_type="triangle3"):
     '''
     Variant = "zigzag",  or "up", "down", "center"
     '''
-    cell_type="triangle3"
-    points, cells = meshzoo.rectangle_tri(
-        np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
-        np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
-        #cell_type=cell_type,
-        variant=variant
-    )
+    if cell_type=="triangle3":
+        points, cells = meshzoo.rectangle_tri(
+            np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
+            np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
+            #cell_type=cell_type,
+            variant=variant)
+    elif cell_type=="quad4":
+        points, cells = meshzoo.rectangle_quad(
+            np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
+            np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
+            cell_type=cell_type
+            #variant="zigzag",  # or "up", "down", "center"
+        )
+    else:
+        exit()
     cells = cells.astype( int )
     return points, cells, cell_type
 
@@ -80,7 +88,7 @@ if __name__=="__main__":
     leftMeshInput, rightMeshInput = {}, {}
     meshDen = 4
     leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
-    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=meshDen, variant="up")
+    rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=2*meshDen, variant="up", cell_type="quad4")
 
     # open integration facets
     leftMeshInput["numberOfGaussPointsFacets"] =  2
@@ -98,29 +106,25 @@ if __name__=="__main__":
     pLeft.substractExternal( pRight, True )
     pRight.findGamma( pLeft )
 
-    # BC outside
+    print("Setting BCs...")
+    setDirichlet( pLeft )
     setDirichlet( pRight )
 
-    # Neumann interface right
     # Dirichlet interface left
-    print("Setting Dirichlet left...")
-    setDirichlet( pLeft )
-    pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getIndices(), exactSol )
+    pRight.setGamma2Dirichlet()
 
     # Pre-assembly, updating free dofs
-    pLeft.preAssemble()
-    pRight.preAssemble()
+    pLeft.preAssemble(True)
+    pRight.preAssemble(True)
     # Allocate linear system
     ls = mhs.LinearSystem( pLeft, pRight )
     ls.cleanup()
 
-    print("Setting Neumann right...")
-    #pRight.setNeumann( pRight.domain.justActivatedBoundary.getIndices(), exactFlux )
-    pRight.assembleNeumannGamma( pLeft )
-
-
     pLeft.assemble()
     pRight.assemble()
+
+    pRight.assembleDirichletGamma( pLeft )
+    pLeft.assembleNeumannGamma( pRight )
 
     ls.assemble()
 
@@ -141,52 +145,3 @@ if __name__=="__main__":
                     "gammaNodes":p.gammaNodes,
                     },
                         )
-    '''
-    # Deactivate pRight using pLeft
-    pRight.deactivateFromExternal( pLeft )
-    pRight.writepos()
-
-    numSolves = 5
-    for it in range(numSolves):
-        print("Solve #{}".format( it+1 ) )
-        # PRE-SOLVE
-        for p in [pLeft, pRight,]:
-            p.clearBCs()
-            p.cleanup()
-
-        # RIGHT
-        # Dirichlet outside right
-        setDirichlet( pRight )
-        # Neumann interface right
-        print("Setting Neumann right...")
-        pRight.setNeumann( pRight.domain.justActivatedBoundary.getIndices(), pLeft.unknown.evaluateGrad )
-        # Solve pRight
-        pRight.assemble()
-        pRight.solve()
-        #post
-        fexactRight = pRight.project( exactSol )
-
-        pRight.writepos(
-                functions={
-                    "fexact":fexactRight,
-                    }
-                        )
-
-        # LEFT
-        # Dirichlet outside left
-        setDirichlet( pLeft )
-        # Dirichlet interface left
-        print("Setting Dirichlet left...")
-        pLeft.setDirichlet( pLeft.domain.justActivatedBoundary.getIndices(), pRight.unknown.evaluate )
-        # Solve pLeft
-        pLeft.assemble()
-        pLeft.solve()
-        # post
-        fexactLeft = pLeft.project( exactSol )
-        pLeft.writepos(
-                functions={
-                    "fexact":fexactLeft,
-                    }
-                )
-
-        '''

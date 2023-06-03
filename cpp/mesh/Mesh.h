@@ -25,6 +25,7 @@ class Mesh {
     int nels, nnodes, nnodes_per_el;
     Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
       pos, posFRF;// node positions in xi and x
+                  // position of point with idx i = row(i)
     Eigen::Vector3d shiftFRF = Eigen::Vector3d::Zero();//pos + shift = posFRF
     Eigen::Vector3d speedFRF = Eigen::Vector3d::Zero();//domain speed with respect to FRF
     Connectivity  con_CellPoint;

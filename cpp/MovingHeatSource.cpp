@@ -26,6 +26,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("myls", &Problem::myls)
         .def_readonly("ls", &Problem::ls)
         .def_readonly("dofNumbering", &Problem::dofNumbering)
+        .def_readonly("freeDofsNumbering", &Problem::freeDofsNumbering)
         .def_readonly("unknown", &Problem::unknown)
         .def_readwrite("previousValues", &Problem::previousValues)
         .def_readonly("mhs", &Problem::mhs)
@@ -37,6 +38,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dirichletNodes", &Problem::dirichletNodes)
         .def_readonly("gammaNodes", &Problem::gammaNodes)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
+        .def("setAssembling2External", &Problem::setAssembling2External)
         .def("setDeltaT", &Problem::setDeltaT)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
@@ -50,7 +52,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from plane.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
+        .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
         .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
+        .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
         .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
@@ -93,6 +97,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("con_FacetCell", &mesh::Mesh::con_FacetCell)//Debugging
         .def_readonly("nels", &mesh::Mesh::nels)
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
+        .def_readonly("speedFRF", &mesh::Mesh::speedFRF)
         .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
         .def_readonly("dim", &mesh::Mesh::dim)
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)

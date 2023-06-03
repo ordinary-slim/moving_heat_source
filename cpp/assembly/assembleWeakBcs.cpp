@@ -79,7 +79,7 @@ void Problem::assembleWeakBcs() {
     // Assemble into linear system 
     for (int inode = 0; inode < e.nnodes; ++inode) {
       int inodeGlobal =  (*e.con)[inode] ;
-      int inodeDof = dofNumbering[ inodeGlobal ];
+      int inodeDof = freeDofsNumbering[ inodeGlobal ];
       if ( inodeDof < 0 ) { continue; }// if forced node, keep going
                                        //
       // Assemble into RHS
