@@ -55,8 +55,8 @@ class ActiveMesh {
 
     void computeBoundary();
     int findOwnerElement( const Eigen::Vector3d &point ) const;
-    void resetActivatino();
     void setActivation(const MeshTag<int> &activation);
+    void resetActivation();
     void updateActiveNodes();
     void updateActiveElements();
     void updateBeforeActivation();

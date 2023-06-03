@@ -77,6 +77,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("boundaryFacets", &mesh::ActiveMesh::boundaryFacets)
         .def_readonly("mesh", &mesh::ActiveMesh::mesh)
         .def("setActivation", &mesh::ActiveMesh::setActivation)
+        .def("resetActivation", &mesh::ActiveMesh::resetActivation)
         .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::Mesh*>())

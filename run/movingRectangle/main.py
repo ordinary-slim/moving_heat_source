@@ -40,7 +40,8 @@ def setAdimR( adimR, input ):
 if __name__=="__main__":
     inputFile = "input.txt"
     boxDomain = [-16, 16, -5, 5]
-    adimR = 1
+    adimR_tstep = 1
+    adimR_domain = 2
 
     # read input
     problemInput = readInput( inputFile )
@@ -51,14 +52,14 @@ if __name__=="__main__":
     # Mesh
     meshInputFixed, meshInputMoving = {}, {}
     meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain)
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR, movingProblemInput)
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
 
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
 
     # Problem params
     # set dt
-    dt = setAdimR( adimR, fixedProblemInput )
+    dt = setAdimR( adimR_tstep, fixedProblemInput )
     for input in [fixedProblemInput, movingProblemInput,]:
         input["dt"] = dt
 
@@ -78,22 +79,41 @@ if __name__=="__main__":
         pFixed.setAssembling2External( True )
         pMoving.setAssembling2External( True )
 
-        # PRE-ITERATE
-        pFixed.preiterate()
-        pMoving.preiterate()
-        pFixed.updateFRFpos()
-        pMoving.updateFRFpos()
+        # PRE-ITERATE AND DOMAIN OPERATIONS
+        pMoving.domain.resetActivation()
+        pFixed.domain.resetActivation()
+        pMoving.intersectExternal( pFixed, False, False )
+        pFixed.preiterate(False)
+        pMoving.preiterate(False)
+        pMoving.intersectExternal( pFixed, False, True )
+        pFixed.substractExternal( pMoving, False, True )
 
-        # DOMAIN OPERATIONS
-        pFixed.substractExternal( pMoving, True, True )
+        #Dirichet gamma
+        pFixed.setGamma2Dirichlet()
 
-        #pFixed.gather()
-        #pMoving.gather()
+        # Pre-assembly, updating free dofs
+        pMoving.preAssemble(True)
+        pFixed.preAssemble(True)
+        # Allocate linear system
+        ls = mhs.LinearSystem( pMoving, pFixed )
+        ls.cleanup()
 
-        #pFixed.postIterate()
-        #pMoving.postIterate()
+        pMoving.assemble()
+        pFixed.assemble()
+
+        pFixed.assembleDirichletGamma( pMoving )
+        pMoving.assembleNeumannGamma( pFixed )
+
+        ls.assemble()
+
+        ls.solve()
+
+        pFixed.gather()
+        pMoving.gather()
 
         pFixed.writepos(
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
                 )
-        pMoving.writepos()
+        pMoving.writepos(
+            nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
+            )

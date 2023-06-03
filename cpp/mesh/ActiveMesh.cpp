@@ -119,6 +119,11 @@ void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
   updateAfterActivation();
 }
 
+void ActiveMesh::resetActivation() {
+  MeshTag<int> allActive = MeshTag<int>( mesh, mesh->dim, 1);
+  setActivation( allActive );
+}
+
 int ActiveMesh::findOwnerElement( const Eigen::Vector3d &point ) const {
   int activeOwnerElement = -1;
   vector<int> owners = mesh->findOwnerElement( point );

@@ -6,6 +6,7 @@ To-do:
 - [ ] Interface with PyMesh
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
+  - Moved it to preIterate
 - [x] Join together treatment of Dirichlet and inactive nodes
 - [x] Only solve for free dofs
     - [x] Compute numbering free dofs
