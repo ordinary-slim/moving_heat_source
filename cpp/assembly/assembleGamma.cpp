@@ -11,11 +11,11 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 
     for (int igp = 0; igp < facet.ngpoints; ++igp) {
 
-      Eigen::Vector3d xgp = facet.gpos.row( igp );
-      int idx_el_ext = pExt.domain.findOwnerElement( xgp );
+      Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
+      int idx_el_ext = pExt.domain.findOwnerElement( xgp_ext );
       mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
-      Dense3ColMat gradShaFuns = e_ext.evaluateGradShaFuns( xgp );
+      Dense3ColMat gradShaFuns = e_ext.evaluateGradShaFuns( xgp_ext );
 
       Eigen::MatrixXd lhs_loc = Eigen::MatrixXd::Zero( facet.nnodes, e_ext.nnodes );
 
@@ -64,12 +64,12 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 void Problem::assembleDirichletGamma(const Problem &pExt) {
   vector<int> indicesGammaNodes = gammaNodes.getIndices();
   for (int inode: indicesGammaNodes) {
-    Eigen::Vector3d xnode = domain.mesh->pos.row( inode );
+    Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
 
-    int idx_el_ext = pExt.domain.findOwnerElement( xnode ) ;
+    int idx_el_ext = pExt.domain.findOwnerElement( xnode_ext ) ;
     mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
-    Eigen::VectorXd shaFuns = e_ext.evalShaFuns( xnode );
+    Eigen::VectorXd shaFuns = e_ext.evalShaFuns( xnode_ext );
 
     // Assemble
     int inodeDof = dofNumbering[inode];

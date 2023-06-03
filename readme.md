@@ -13,6 +13,7 @@ To-do:
     - [x] Allocate only for free dofs
     - [x] Assemble only for free dofs
     - [x] Solve
+- [ ] Add interpolation of inactive nodes
 
 Ideas:
 ------

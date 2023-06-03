@@ -6,6 +6,7 @@
 struct AABB {
   double bounds[3][2];
   int dim;
+  double pad = 1e-5;
 
   AABB() {
   }
@@ -13,8 +14,8 @@ struct AABB {
   AABB( mesh::Element e ) {
     dim = e.dim;
     for (int idim = 0; idim < dim; ++idim) {
-      bounds[idim][0] = e.pos.col(idim).minCoeff();
-      bounds[idim][1] = e.pos.col(idim).maxCoeff();
+      bounds[idim][0] = e.pos.col(idim).minCoeff() - pad;
+      bounds[idim][1] = e.pos.col(idim).maxCoeff() + pad;
     }
   }
 
