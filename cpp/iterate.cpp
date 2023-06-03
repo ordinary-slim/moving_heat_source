@@ -2,7 +2,9 @@
 #include "Problem.h"
 
 void Problem::iterate() {
-  preIterate();
+  if (not(hasPreIterated)) {
+    preIterate();
+  }
 
   assemble();
 

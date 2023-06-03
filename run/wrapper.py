@@ -89,12 +89,13 @@ class Problem(mhs.Problem):
         except FileNotFoundError:
             pass
 
-    def preiterate(self):
+    def preiterate(self, canPreassemble):
         self.iter += 1
-        super(Problem, self).preIterate()
+        super(Problem, self).preIterate(canPreassemble)
 
     def iterate(self):
-        self.iter += 1
+        if not(self.hasPreIterated):
+            self.preiterate(True)
         super(Problem, self).iterate()
         print( "{} iter# {}, time={}".format(
             self.caseName,
@@ -103,7 +104,7 @@ class Problem(mhs.Problem):
 
     def fakeIter(self):
         self.iter += 1
-        super(Problem, self).preIterate()
+        super(Problem, self).preIterate(True)
         print( "{} fake iter# {}, time={}".format(
             self.caseName,
             self.iter,

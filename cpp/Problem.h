@@ -20,6 +20,7 @@ class Problem {
     fem::Function unknown;
     list<fem::Function> previousValues;
     HeatSource mhs;
+    bool hasPreIterated = false;
     double density = 1.0, conductivity = 1.0, specificHeat = 1.0, convectionCoeff = 0.0;
     double time = 0.0;
     double dt = 0.0;
@@ -95,7 +96,7 @@ class Problem {
     void assembleNeumannGamma( const Problem &pExt ); 
     void updateForcedDofs();
     void preAssemble(bool isLsExternal=true);
-    void preIterate();
+    void preIterate(bool canPreassemble=true);
     void postIterate();
     void setStabilization(bool stabilize) {
       isStabilized = stabilize;

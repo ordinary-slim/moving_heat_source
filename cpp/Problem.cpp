@@ -14,15 +14,20 @@ void Problem::updateFRFpos() {
   }
 }
 
-void Problem::preIterate() {
+void Problem::preIterate( bool canPreassemble ) {
   /* Beginning of iteration operations*/
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
   mhs.updatePosition( dt );
+  updateFRFpos();
   setTime( time + dt );
   ++iter;
 
-  preAssemble( assembling2external );
+  if (canPreassemble) {
+    preAssemble( assembling2external );
+  }
+
+  hasPreIterated = true;
 }
 
 void Problem::preAssemble(bool isLsExternal) {
@@ -70,6 +75,8 @@ void Problem::postIterate() {
     std::cout << "Singular matrix!" << std::endl;
   }
   mhs.pulse = solver.solve(mhs.pulse);
+
+  hasPreIterated = false;
 }
 
 void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {

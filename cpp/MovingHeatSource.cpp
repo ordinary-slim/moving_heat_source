@@ -32,6 +32,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("mhs", &Problem::mhs)
         .def_readonly("domain", &Problem::domain)
         .def_readwrite("time", &Problem::time)
+        .def_readwrite("hasPreIterated", &Problem::hasPreIterated)
         .def_readonly("dt", &Problem::dt)
         .def_readonly("isAdvection", &Problem::isAdvection)
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
