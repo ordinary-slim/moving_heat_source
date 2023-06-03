@@ -214,8 +214,11 @@ mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol
   return activeInExternal;
 }
 
-void Problem::substractExternal( const Problem &pExt, bool updateGamma ) {
+void Problem::substractExternal( const Problem &pExt, bool resetActivation, bool updateGamma ) {
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
+  if (resetActivation) {
+    activationCriterion.setCteValue( 1 );
+  }
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
@@ -238,8 +241,11 @@ void Problem::substractExternal( const Problem &pExt, bool updateGamma ) {
   }
 }
 
-void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
+void Problem::intersectExternal( const Problem &pExt, bool resetActivation, bool updateGamma ) {
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
+  if (resetActivation) {
+    activationCriterion.setCteValue( 1 );
+  }
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {

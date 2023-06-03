@@ -85,7 +85,7 @@ if __name__=="__main__":
         pMoving.updateFRFpos()
 
         # DOMAIN OPERATIONS
-        pFixed.substractExternal( pMoving, True )
+        pFixed.substractExternal( pMoving, True, True )
 
         #pFixed.gather()
         #pMoving.gather()

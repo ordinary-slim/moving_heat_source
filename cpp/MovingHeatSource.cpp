@@ -63,9 +63,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Find interface between two problems")
         .def("findGamma", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::findGamma),
             "Find interface between two problems given external activation MeshTag")
-        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::substractExternal),
+        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool, bool)>(&Problem::substractExternal),
             "Substract external domain from domain.")
-        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::intersectExternal),
+        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool, bool)>(&Problem::intersectExternal),
             "Intersect external domain with domain.");
     py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())

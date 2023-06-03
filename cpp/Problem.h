@@ -107,8 +107,8 @@ class Problem {
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
     void setGamma2Dirichlet();
     mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-7 );
-    void substractExternal( const Problem &pExt, bool updateGamma = true);
-    void intersectExternal( const Problem &pExt, bool updateGamma = true );
+    void substractExternal( const Problem &pExt, bool resetActivation = false, bool updateGamma = true);
+    void intersectExternal( const Problem &pExt, bool resetActivation = false, bool updateGamma = true );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {
