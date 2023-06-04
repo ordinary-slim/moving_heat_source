@@ -84,8 +84,8 @@ class Problem {
 
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
-    void findGamma( const Problem &pExt );
-    void findGamma( mesh::MeshTag<int> &activeInExternal );
+    void updateInterface( const Problem &pExt );
+    void updateInterface( mesh::MeshTag<int> &activeInExternal );
     void assemble();
     void gather();
     void updateFRFpos();

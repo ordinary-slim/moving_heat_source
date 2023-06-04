@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
@@ -40,8 +40,8 @@ def setAdimR( adimR, input ):
 if __name__=="__main__":
     inputFile = "input.txt"
     boxDomain = [-16, 16, -5, 5]
-    adimR_tstep = 1
-    adimR_domain = 2
+    adimR_tstep = 3
+    adimR_domain = 4
 
     # read input
     problemInput = readInput( inputFile )
@@ -70,11 +70,13 @@ if __name__=="__main__":
     movingProblemInput["HeatSourceSpeedX"] = 0.0
 
     pFixed         = Problem(meshFixed, fixedProblemInput, caseName="fixed")
+    pFRF           = Problem(meshFixed, fixedProblemInput, caseName="FRF")
     pMoving        = Problem(meshMoving, movingProblemInput, caseName="moving")
 
     maxIter = pFixed.input["maxIter"]
-    # FORWARD
+
     for iteration in range(maxIter):
+        pFRF.iterate()
 
         pFixed.setAssembling2External( True )
         pMoving.setAssembling2External( True )
@@ -111,10 +113,18 @@ if __name__=="__main__":
         pFixed.gather()
         pMoving.gather()
 
+        # Get inactive points information from other
+        pFixed.unknown.interpolateInactive( pMoving.unknown )
+        pMoving.unknown.interpolateInactive( pFixed.unknown )
+
+        pFixed.postIterate()
+        pMoving.postIterate()
+
+        pFRF.writepos(
+                )
         pFixed.writepos(
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
                 )
         pMoving.writepos(
             nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
             )
-        pdb.set_trace()

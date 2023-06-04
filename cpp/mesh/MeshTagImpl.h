@@ -84,7 +84,7 @@ std::vector<int> MeshTag<T>::getIndices() const {
 }
 
 template<typename T>
-std::vector<int> MeshTag<T>::filterIndices( std::function<bool(T)> filter ) {
+std::vector<int> MeshTag<T>::filterIndices( std::function<bool(T)> filter ) const {
   /*
    * Get indices of MeshTag that evaluate to filter[ MeshTag[index] ]
    */

@@ -60,9 +60,9 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("project", &Problem::project)
         .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
             "Find interface between two problems")
-        .def("findGamma", static_cast<void (Problem::*)( const Problem &)>(&Problem::findGamma),
+        .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
             "Find interface between two problems")
-        .def("findGamma", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::findGamma),
+        .def("updateInterface", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::updateInterface),
             "Find interface between two problems given external activation MeshTag")
         .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool, bool)>(&Problem::substractExternal),
             "Substract external domain from domain.")
@@ -111,7 +111,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def(py::init<const mesh::ActiveMesh*, const Eigen::VectorXd&>())
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
-        .def("interpolate", &fem::Function::interpolate)
+        .def("interpolate", static_cast<void (fem::Function::*)(const fem::Function&)>(&fem::Function::interpolate) )
+        .def("interpolateInactive", &fem::Function::interpolateInactive)
         .def("setValues", &fem::Function::setValues)
         .def_readonly("values", &fem::Function::values);
     //This export won't work unless list<Function> is made into

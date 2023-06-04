@@ -11,8 +11,8 @@ double Function::evaluate( Eigen::Vector3d point ) const {
 
   // GET VALS OF SHAPE FUNCS AT POINT
   int idxOwnerEl = domain->findOwnerElement( point );
-  if (idxOwnerEl < 0) {// Point outside of domain->mesh
-    return -1;
+  if (idxOwnerEl < 0) {
+    throw std::invalid_argument( "Point outside of domain." );
   }
   mesh::Element e = domain->mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::VectorXd shaFunVals = e.evalShaFuns( point );
@@ -45,15 +45,33 @@ Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
 }
 
 
-void Function::interpolate( Function &extFEMFunc ){
-
-  Eigen::Vector3d posExt;
-  values.setZero();//TODO: Rethink!
+void Function::interpolate( const Function &extFEMFunc ) {
 
   for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
     // Move to reference frame of external
-    posExt = domain->mesh->pos.row(inode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
-    values[inode] = extFEMFunc.evaluate( posExt );
+    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    try {
+      values[inode] = extFEMFunc.evaluate( posExt );
+    } catch ( const std::invalid_argument &e ) {
+      // Point outside of domain
+      if (domain->activeNodes[inode]) {
+        throw;
+      } else {
+        values[inode] = -1;
+      }
+    }
+  }
+}
+
+void Function::interpolateInactive( const Function &extFEMFunc ) {
+  // code duplicated from interpolate
+  Eigen::Vector3d posExt;
+
+  vector<int> indicesInactive = domain->activeNodes.filterIndices( [](int v){return (v==0);});
+  for (int inactiveNode : indicesInactive) {
+    // Move to reference frame of external
+    posExt = domain->mesh->pos.row(inactiveNode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    values[inactiveNode] = extFEMFunc.evaluate( posExt );
   }
 }
 
@@ -82,6 +100,27 @@ void interpolate( list<Function> &targetFunctions, const list<Function> &sourceF
     targetFunsIterator = targetFunctions.begin();
     sourceFunsIterator = sourceFunctions.begin();
   }
+}
+
+fem::Function interpolate( const fem::Function &extFEMFunc,
+                           const mesh::ActiveMesh *domain,
+                           bool ignoreOutside ) {
+  Eigen::VectorXd vals = Eigen::VectorXd::Zero( domain->mesh->nnodes );
+
+  for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
+    // Move to reference frame of external
+    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    try {
+      vals[inode] = extFEMFunc.evaluate( posExt );
+    } catch ( const std::invalid_argument &e ) {
+      // Point outside of domain
+      if (not( ignoreOutside )) {
+        throw;
+      }
+    }
+  }
+
+  return fem::Function( domain, vals );
 }
 
 }

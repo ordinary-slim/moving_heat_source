@@ -210,8 +210,8 @@ mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol
   fem::Function extActiveNodes_ext = fem::Function( &pExt.domain, activeNodesExt );
 
   // To function on local
-  fem::Function extActiveNodes = fem::Function( &domain );
-  extActiveNodes.interpolate( extActiveNodes_ext );
+  fem::Function extActiveNodes = fem::interpolate( extActiveNodes_ext, &domain, true );
+
   // Return nodal MeshTag
   mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, 0 );
   for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
@@ -244,7 +244,7 @@ void Problem::substractExternal( const Problem &pExt, bool resetActivation, bool
 
   domain.setActivation( activationCriterion );
   if (updateGamma) {
-    findGamma( activeInExternal );
+    updateInterface( activeInExternal );
   }
 }
 
@@ -271,20 +271,29 @@ void Problem::intersectExternal( const Problem &pExt, bool resetActivation, bool
 
   domain.setActivation( activationCriterion );
   if (updateGamma) {
-    findGamma( activeInExternal );
+    updateInterface( activeInExternal );
   }
 }
 
-void Problem::findGamma( const Problem &pExt ) {
+void Problem::updateInterface( const Problem &pExt ) {
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
-  findGamma( activeInExternal );
+  updateInterface( activeInExternal );
 }
 
-void Problem::findGamma( mesh::MeshTag<int> &activeInExternal ) {
+void Problem::updateInterface( mesh::MeshTag<int> &activeInExternal ) {
   /*
    * activeInExternal is a tag on the current mesh of which nodes
    * are owned by another problem
    */
+
+  // Clear BCs @ old gamma
+  vector<int> oldGammaNodes = gammaNodes.getIndices();
+  for (int inode : oldGammaNodes) {
+    if (dirichletNodes[inode] == 2) {
+      dirichletNodes[inode] = 0;
+    }
+  }
+  // Find new Gamma
   gammaNodes.setCteValue( 0 );
   gammaFacets.setCteValue( 0 );
   vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();

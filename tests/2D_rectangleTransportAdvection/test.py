@@ -77,12 +77,13 @@ def run():
     for iteration in range(maxIter):
         #iter transportedMRF
         pTransportedMRF.preiterate(False)#motion
+        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxPhys )
+        pTransportedMRF.domain.setActivation( activeElements )
+
         pTransportedMRF.unknown.interpolate( pMRFTransporter.unknown )
         for tF, sF in zip(pTransportedMRF.previousValues, pMRFTransporter.previousValues):
             tF.interpolate( sF )
 
-        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxPhys )
-        pTransportedMRF.domain.setActivation( activeElements )
 
         pTransportedMRF.preAssemble(False)#update forced dofs, reallocate
         pTransportedMRF.iterate()

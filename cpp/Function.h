@@ -43,11 +43,16 @@ class Function{
 
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
-    void interpolate(Function &extFEMFunc );
+    void interpolate(const Function &extFEMFunc );
+    void interpolateInactive( const Function &extFEMFunc );
     void setValues( const Eigen::VectorXd &otherValues ) {
       values = otherValues;
     }
 };
 void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
+
+fem::Function interpolate( const fem::Function &extFEMFunc,
+                           const mesh::ActiveMesh *domain,
+                           bool ignoreOutside = false );
 }
 #endif

@@ -104,7 +104,7 @@ if __name__=="__main__":
 
     # Activation
     pLeft.substractExternal( pRight, True )
-    pRight.findGamma( pLeft )
+    pRight.updateInterface( pLeft )
 
     print("Setting BCs...")
     setDirichlet( pLeft )

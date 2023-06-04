@@ -1,5 +1,5 @@
 radius		1.0
-power		300.0
+power		100.0
 initialPositionX	-10.0
 initialPositionY		0.0
 initialPositionZ		0.0
