@@ -63,7 +63,7 @@ void Function::interpolate( const Function &extFEMFunc ) {
   }
 }
 
-void Function::interpolateInactive( const Function &extFEMFunc ) {
+void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutside ) {
   // code duplicated from interpolate
   Eigen::Vector3d posExt;
 
@@ -71,7 +71,15 @@ void Function::interpolateInactive( const Function &extFEMFunc ) {
   for (int inactiveNode : indicesInactive) {
     // Move to reference frame of external
     posExt = domain->mesh->pos.row(inactiveNode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
-    values[inactiveNode] = extFEMFunc.evaluate( posExt );
+    try {
+      values[inactiveNode] = extFEMFunc.evaluate( posExt );
+    } catch (const std::invalid_argument &e) {
+      if (ignoreOutside) {
+        values[inactiveNode] = -1;
+      } else {
+        throw;
+      }
+    }
   }
 }
 

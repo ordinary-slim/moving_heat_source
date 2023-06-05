@@ -44,7 +44,7 @@ class Function{
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
     void interpolate(const Function &extFEMFunc );
-    void interpolateInactive( const Function &extFEMFunc );
+    void interpolateInactive( const Function &extFEMFunc, bool ignoreOutside );
     void setValues( const Eigen::VectorXd &otherValues ) {
       values = otherValues;
     }
