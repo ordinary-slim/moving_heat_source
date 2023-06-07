@@ -59,6 +59,7 @@ class Problem(mhs.Problem):
             self.iter = problem.iter
         else:
             super().__init__(mesh, input)
+        self.cleanupPrevPost()
 
     # PREPROCESSING
     # Process params

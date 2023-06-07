@@ -1,11 +1,10 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
+sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput
-import pdb
+from wrapper import Problem, readInput, meshio_comparison
 
 def mesh(box, meshDen=1, variant="up", cell_type="triangle3"):
     '''
@@ -75,9 +74,8 @@ def isInsideBox( mesh, box ):
     activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
     return activeElements
 
-if __name__=="__main__":
+def run():
     inputFile = "input.txt"
-    boxLeft = [-1, 0, -1, 1]
     boxRight = [0, 1, -1, 1]
     box = [-1, 1, -1, 1]
 
@@ -86,24 +84,23 @@ if __name__=="__main__":
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
-    meshDen = 4
+    meshDen = 2
     leftMeshInput["points"], leftMeshInput["cells"], leftMeshInput["cell_type"] = mesh(box, meshDen=meshDen, variant="zigzag")
     rightMeshInput["points"], rightMeshInput["cells"], rightMeshInput["cell_type"] = mesh(boxRight, meshDen=2*meshDen, variant="up", cell_type="quad4")
 
     # open integration facets
-    leftMeshInput["numberOfGaussPointsFacets"] =  2
-    rightMeshInput["numberOfGaussPointsFacets"] = 2
+    leftMeshInput["numberOfGaussPointsFacets"] =  3
+    rightMeshInput["numberOfGaussPointsFacets"] = 3
 
     meshLeft = mhs.Mesh(leftMeshInput)
     meshRight = mhs.Mesh(rightMeshInput)
-    #meshRight = mhs.Mesh(meshLeft)
 
     # Initialize problems
     pLeft  = Problem(meshLeft, problemInput, caseName="left")
     pRight  = Problem(meshRight, problemInput, caseName="right")
 
     # Activation
-    pLeft.substractExternal( pRight, True )
+    pLeft.substractExternal( pRight, False, True )
     pRight.updateInterface( pLeft )
 
     print("Setting BCs...")
@@ -133,6 +130,9 @@ if __name__=="__main__":
     pLeft.gather()
     pRight.gather()
 
+    pLeft.postIterate()
+    pRight.postIterate()
+
     #post
     for p in [pLeft, pRight]:
         fexact = p.project( exactSol )
@@ -145,3 +145,14 @@ if __name__=="__main__":
                     "gammaNodes":p.gammaNodes,
                     },
                         )
+def test():
+    run()
+    leftNew = "post_left/left_0.vtu"
+    leftReference = "post_left_reference.vtu"
+    rightNew = "post_right/right_0.vtu"
+    rightReference = "post_right_reference.vtu"
+    assert meshio_comparison(leftNew, leftReference) and \
+            meshio_comparison(rightNew, rightReference)
+
+if __name__=="__main__":
+    test()

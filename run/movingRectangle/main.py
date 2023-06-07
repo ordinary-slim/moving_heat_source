@@ -24,9 +24,11 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
     radius = problemInput["radius"]
     initialPositionX = problemInput["initialPositionX"]
     initialPositionY = problemInput["initialPositionY"]
-    halfLength = adimR * radius
-    box = [initialPositionX - halfLength, initialPositionX + halfLength,
-           initialPositionY - halfLength, initialPositionY + halfLength]
+    trailLength = adimR * radius
+    capotLength = min( trailLength, 3*radius )
+    halfLengthY = min( trailLength, capotLength )
+    box = [initialPositionX - trailLength, initialPositionX + capotLength,
+           initialPositionY - halfLengthY, initialPositionY + halfLengthY]
     return mesh(box, meshDen)
 
 def setAdimR( adimR, input ):
@@ -39,20 +41,22 @@ def setAdimR( adimR, input ):
 
 if __name__=="__main__":
     inputFile = "input.txt"
-    boxDomain = [-16, 16, -5, 5]
-    adimR_tstep = 3
-    adimR_domain = 4
+    boxDomain = [-25, 25, -5, 5]
+    adimR_tstep = 2
+    adimR_domain = 7
 
     # read input
     problemInput = readInput( inputFile )
 
     fixedProblemInput = dict( problemInput )
+    referenceProblemInput = dict( problemInput )
     movingProblemInput = dict( problemInput )
 
     # Mesh
+    meshDen = 4
     meshInputFixed, meshInputMoving = {}, {}
-    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain)
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
+    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen)
 
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
@@ -62,6 +66,7 @@ if __name__=="__main__":
     dt = setAdimR( adimR_tstep, fixedProblemInput )
     for input in [fixedProblemInput, movingProblemInput,]:
         input["dt"] = dt
+    referenceProblemInput["dt"] = setAdimR( 0.2, referenceProblemInput )
 
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
@@ -71,57 +76,68 @@ if __name__=="__main__":
 
     pFixed         = Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pFRF           = Problem(meshFixed, fixedProblemInput, caseName="FRF")
+    #pFineFRF       = Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
     pMoving        = Problem(meshMoving, movingProblemInput, caseName="moving")
 
-    maxIter = pFixed.input["maxIter"]
+    Tfinal = pFixed.input["Tfinal"]
 
-    for iteration in range(maxIter):
+    tol = 1e-7
+    while (pMoving.time < Tfinal - tol) :
+        # FRF ITERATE
         pFRF.iterate()
 
+        '''
+        # Fine FRF ITERATE
+        while (pFineFRF.time < pFRF.time - tol):
+            pFineFRF.iterate()
+        '''
+
+        # MY SCHEME ITERATE
         pFixed.setAssembling2External( True )
         pMoving.setAssembling2External( True )
-
         # PRE-ITERATE AND DOMAIN OPERATIONS
         pMoving.domain.resetActivation()
         pFixed.domain.resetActivation()
         pMoving.intersectExternal( pFixed, False, False )
         pFixed.preiterate(False)
         pMoving.preiterate(False)
-        pMoving.intersectExternal( pFixed, False, True )
+        pMoving.intersectExternal( pFixed, False, False )
         pFixed.substractExternal( pMoving, False, True )
-
+        pMoving.updateInterface( pFixed )
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
-
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(True)
         pFixed.preAssemble(True)
         # Allocate linear system
         ls = mhs.LinearSystem( pMoving, pFixed )
         ls.cleanup()
-
+        # Assembly
         pMoving.assemble()
         pFixed.assemble()
-
+        # Assembly Gamma
         pFixed.assembleDirichletGamma( pMoving )
         pMoving.assembleNeumannGamma( pFixed )
-
+        # Build ls
         ls.assemble()
-
+        # Solve ls
         ls.solve()
-
+        # Recover solution
         pFixed.gather()
         pMoving.gather()
-
-        # Get inactive points information from other
-        pFixed.unknown.interpolateInactive( pMoving.unknown )
-        pMoving.unknown.interpolateInactive( pFixed.unknown )
-
+        pFixed.unknown.interpolateInactive( pMoving.unknown, False )
+        pMoving.unknown.interpolateInactive( pFixed.unknown, True )
+        # Post iteration
         pFixed.postIterate()
         pMoving.postIterate()
 
+        # POSTPROCESSING ALL
         pFRF.writepos(
                 )
+        '''
+        pFineFRF.writepos(
+                )
+        '''
         pFixed.writepos(
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
                 )

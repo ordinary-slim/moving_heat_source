@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+<!--This file was created by meshio v5.3.4-->
+<UnstructuredGrid>
+<Piece NumberOfPoints="45" NumberOfCells="32">
+<Points>
+<DataArray type="Float64" Name="Points" NumberOfComponents="3" format="binary">
+AQAAAACAAAA4BAAAcgAAAA==eJx1z7ERgDAQA0F3Rum0QAkKFaoER/yA4D7zet43Xus5OV/HdR3/LnCDB3z2oNsucIMHfN6DbrvADR7w6UC3XeAGDzjN3e0RuMEDTp35b7nADR7wfq+77QI3eMB7r7vtAjd4wPu+u+0CN3g+vgEwOF/N
+</DataArray>
+</Points>
+<Cells>
+<DataArray type="Int64" Name="connectivity" format="binary">
+AQAAAACAAAAABAAApQAAAA==eJxd0DUSAwEQxEAzM7PPjP9/nwNLyWzSVcpmS6X/lbGB9dDexU5oH+EwtM9xFto3uA7tRzyE9iteQvsLn+juCjaxEdp72A3tYxyF9gXOQ/sWN6G9wGNov+E1tL/RP7i7ii1shvY+9kL7BMehfYmL0L7DbWg/YRHa73gL7R/0D+6uYRtboX2A/dA+xUloX+EytO9xF9rPeArtD7yH9i/6hx/jHQsB
+</DataArray>
+<DataArray type="Int64" Name="offsets" format="binary">
+AQAAAACAAAAAAQAAUwAAAA==eJwtxRECgwAAAMAgCIIgCIIgCIJgEATBYBAEQTAYBEEwCIKgpwfdyYXBI3LsxKkz5y5cunLtxi+37tz77Y8Hj548++ufF6/e/Pfuw6cv3+0eCEE=
+</DataArray>
+<DataArray type="Int64" Name="types" format="binary">
+AQAAAACAAAAAAQAADwAAAA==eJzjZIAAzhFKAwCVgAEh
+</DataArray>
+</Cells>
+<PointData>
+<DataArray type="Float64" Name="T" format="binary">
+AQAAAACAAABoAQAAwwAAAA==eJxjYACDBgi1YT+EvgClH0HpD/vb/PcVMapetX+5OYW9+8sV+/0fZp1m5ztqz627geWk7UG4eoi6p/b3m5uThIWf2Eu7aAplHrtrLxy9RPHKr6P2MPMFJKcXr+F8Zf/pcAfXpZMv7VMN64+1b39iP7GjfLPyuWv2MPfMeZRfEv7unX2pY2cvQ/Abe//Zi9ewnXpm/24ir4HomVtQdQwMfGjmpUDN60MzrxXqvnto7hNEc187Dv/yoPmXgcjwAwCld4KU
+</DataArray>
+<DataArray type="Float64" Name="Pulse" format="binary">
+AQAAAACAAABoAQAAEgAAAA==eJxjYAABAQeGUZqmNAC9zw4R
+</DataArray>
+<DataArray type="Int64" Name="ActiveNodes" format="binary">
+AQAAAACAAABoAQAAEAAAAA==eJxjZIAAxlGapjQAIcAALg==
+</DataArray>
+<DataArray type="Float64" Name="fexact" format="binary">
+AQAAAACAAABoAQAAUAAAAA==eJxjYEAGG/ZD6AtQ+hGU/gCl79hD6BtQ+gSUPoCm/gVU/BmUfoCmHmb+Oyj/DZp6mPkw93ywR1UPMx/mHhgg1jxi3Uesf2EAd/gBACYFNfU=
+</DataArray>
+<DataArray type="Int64" Name="dirichletNodes" format="binary">
+AQAAAACAAABoAQAAFwAAAA==eJxjYoAARgI0EwN+MNLVEQo/ABmwACI=
+</DataArray>
+<DataArray type="Int64" Name="gammaNodes" format="binary">
+AQAAAACAAABoAQAAEQAAAA==eJxjZCAOMI6qo0gdAAhwAAo=
+</DataArray>
+</PointData>
+<CellData>
+<DataArray type="Int64" Name="ActiveElements" format="binary">
+AQAAAACAAAAAAQAADwAAAA==eJxjZIAAxhFKAwARgAAh
+</DataArray>
+</CellData>
+</Piece>
+</UnstructuredGrid>
+</VTKFile>

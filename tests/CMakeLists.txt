@@ -34,7 +34,7 @@ add_test(
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/1D_checkAdvection"
   )
 add_test(
-  NAME nd_nonOverlapping_movingHS_1d
+  NAME 2D_nd_coupling
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/nd_nonOverlapping_movingHS_1d"
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_nd_coupling"
   )

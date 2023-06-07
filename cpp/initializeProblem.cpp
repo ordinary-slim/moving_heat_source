@@ -69,8 +69,10 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   // TIME DEPENDENCY
   if (input.contains("steadyState")) {
     isSteady = py::cast<bool>(input["steadyState"]);
-  } else {
-    // TSTEPPING
+  }
+
+  // TSTEPPING
+  if ( not(isSteady)) {
     dt = py::cast<double>(input["dt"]);
   }
 
