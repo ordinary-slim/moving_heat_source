@@ -90,18 +90,18 @@ void Problem::initializeIntegrator(Eigen::MatrixXd pSols) {
   timeIntegrator.nstepsStored = pSols.cols();
 }
 
-void Problem::setNeumann( vector<vector<int>> neumannNodes, double neumannFlux ) {
+void Problem::setNeumann( vector<vector<unsigned int>> neumannNodes, double neumannFlux ) {
   //TODO: Can I improve this search?
   // For each facet, compare against each boundary facet
   //
   int  idxMatch;
   int nfacetgpoints = domain.mesh->refFacetEl.ngpoints;
   vector<int> indicesBounFacets = domain.boundaryFacets.getIndices();
-  for (vector<int> potentialFacet : neumannNodes ) {
+  for (vector<unsigned int> potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
     for (int iBFacet : indicesBounFacets) {
-      vector<int> bFacetNodes = vector<int>( *domain.mesh->con_FacetPoint.getLocalCon( iBFacet ) );
+      vector<unsigned int> bFacetNodes = vector<unsigned int>( *domain.mesh->con_FacetPoint.getLocalCon( iBFacet ) );
       std::sort( bFacetNodes.begin(), bFacetNodes.end() );
 
       // test if match
@@ -181,7 +181,7 @@ void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<doub
       printf("%i is not a boundary facet, skipped\n", ifacet);
       continue;
     }
-    const vector<int> *incidentNodes = domain.mesh->con_FacetPoint.getLocalCon( ifacet );
+    const vector<unsigned int> *incidentNodes = domain.mesh->con_FacetPoint.getLocalCon( ifacet );
     for (int inode : *incidentNodes) {
       // get position
       Eigen::Vector3d pos = domain.mesh->pos.row( inode );
@@ -229,7 +229,7 @@ void Problem::substractExternal( const Problem &pExt, bool resetActivation, bool
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
-    const vector<int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    const vector<unsigned int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
     bool activeInExt = true;
     for (int inode : *incidentNodes ) {
       if (not(activeInExternal[inode])) {
@@ -256,7 +256,7 @@ void Problem::intersectExternal( const Problem &pExt, bool resetActivation, bool
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
-    const vector<int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    const vector<unsigned int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
     bool activeInExt = true;
     for (int inode : *incidentNodes ) {
       if (not(activeInExternal[inode])) {
@@ -298,7 +298,7 @@ void Problem::updateInterface( mesh::MeshTag<int> &activeInExternal ) {
   gammaFacets.setCteValue( 0 );
   vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();
   for ( int ifacet : indicesBoundaryFacets ) {
-    const vector<int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
+    const vector<unsigned int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
     bool isInGamma = true;
     for ( int inode : *incidentNodes ) {
       if (not( activeInExternal[inode] )) {

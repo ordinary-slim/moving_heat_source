@@ -13,7 +13,7 @@ class Element {
   public:
     int nnodes, ngpoints;
     Dense3ColMat pos, gpos;
-    const std::vector<int>*  con;
+    const std::vector<unsigned int>*  con;
     std::vector<double> gpweight;
     double vol;
     Eigen::Vector3d centroid;
@@ -102,7 +102,7 @@ class Element {
 
     void computeCentroid();
     void computeNormal( Eigen::Vector3d parentCentroid );
-    Element getFacetElement( const std::vector<int>* vertices, ReferenceElement &facetRefEl ) const;
+    Element getFacetElement( const std::vector<unsigned int>* vertices, ReferenceElement &facetRefEl ) const;
     Eigen::VectorXd evalShaFuns( Eigen::Vector3d pos );
     Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
     double getSizeAlongVector( Eigen::Vector3d vector ) const;

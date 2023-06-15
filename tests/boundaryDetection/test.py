@@ -12,7 +12,7 @@ def mesh():
     meshDen = 1
     points, cells = meshzoo.ngon(9, 8)
     print( "nels = ", cells.shape[0] )
-    cells = cells.astype( int )
+    cells = cells.astype( np.uint32 )
     return points, cells, "triangle3"
 
 def specActive( p, center, d ):

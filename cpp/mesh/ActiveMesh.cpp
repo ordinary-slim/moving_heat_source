@@ -13,7 +13,7 @@ void ActiveMesh::computeBoundary() {
   for (int ifacet = 0; ifacet < mesh->con_FacetCell.nels_oDim; ++ifacet) {
     activeElsPerFacet = 0;
     incident2JustDeactivated = false;
-    const vector<int>* incidentElements = mesh->con_FacetCell.getLocalCon( ifacet );
+    const vector<unsigned int>* incidentElements = mesh->con_FacetCell.getLocalCon( ifacet );
     for (int ielem : *incidentElements ) {
       if (activeElements.x[ielem]) {
         ++activeElsPerFacet;
@@ -41,7 +41,7 @@ void ActiveMesh::updateActiveNodes() {
    * Update activeNodes after a change in activeElements
    * If a node belongs to an active element, set it to active.
    */
-  const vector<int>* incidentElements;
+  const vector<unsigned int>* incidentElements;
   for (int inode = 0; inode < activeNodes.size(); ++inode) {
     activeNodes.x[inode] = false;
     incidentElements = mesh->con_PointCell.getLocalCon( inode );
@@ -59,7 +59,7 @@ void ActiveMesh::updateActiveElements() {
    * Update activeElements after a change in activeNodes
    * If all the nodes of an element are active, activate it.
    */
-  const vector<int>* incidentNodes;
+  const vector<unsigned int>* incidentNodes;
   bool allNodesActive;
   for (int ielem = 0; ielem < activeElements.size(); ++ielem) {
     incidentNodes = mesh->con_CellPoint.getLocalCon( ielem );

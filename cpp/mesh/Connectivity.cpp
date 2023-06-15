@@ -12,16 +12,16 @@ using namespace std;
 
 namespace mesh
 {
-vector<vector<int>> getVertexSets_Dd( const vector<int> &localCon_D0,
+vector<vector<unsigned int>> getVertexSets_Dd( const vector<unsigned int> &localCon_D0,
     int d, ElementType entD_elType) {
 
-  vector<vector<int>> vertexSets;
+  vector<vector<unsigned int>> vertexSets;
 
   ElementType entd_elType = getIncidentElType( entD_elType, d );
   int nnodes = localCon_D0.size();
   int windowSize = getNnodesElType(entd_elType);
 
-  vector<int> vSet;
+  vector<unsigned int> vSet;
   vSet.resize( windowSize );
 
   switch (entD_elType){
@@ -47,12 +47,12 @@ vector<vector<int>> getVertexSets_Dd( const vector<int> &localCon_D0,
   return vertexSets;
 }
 
-int get_dIndex( vector<vector<int>> &connec_Dd,
-    vector<vector<int>> &connec_d0,
-    int j, vector<int> &v){
+int get_dIndex( vector<vector<unsigned int>> &connec_Dd,
+    vector<vector<unsigned int>> &connec_d0,
+    int j, vector<unsigned int> &v){
 
   for (int idcell : connec_Dd[j]) {
-    vector<int> vtest = connec_d0[idcell];
+    vector<unsigned int> vtest = connec_d0[idcell];
     if (vtest == v) {
       return idcell;
     }
@@ -88,7 +88,7 @@ Connectivity auxCon2Con(vector<vector<int>> auxCon, int oDim, int tDim, int nels
 }
 */
 
-void addEntry( vector<vector<int>> &auxCon, int i, int j ) {
+void addEntry( vector<vector<unsigned int>> &auxCon, int i, int j ) {
   auto it = find( auxCon[i].begin(), auxCon[i].end(), j);
   if (it == auxCon[i].end() ) {
     auxCon[i].push_back( j );
@@ -96,10 +96,10 @@ void addEntry( vector<vector<int>> &auxCon, int i, int j ) {
 }
 
 Connectivity transpose(Connectivity inCon) {
-  vector<vector<int>> tCon;
+  vector<vector<unsigned int>> tCon;
   tCon.resize( inCon.nels_tDim );
   for (int ient_odim = 0; ient_odim < inCon.nels_oDim; ient_odim++ ) {
-    const vector<int> *localCon = inCon.getLocalCon( ient_odim );
+    const vector<unsigned int> *localCon = inCon.getLocalCon( ient_odim );
     for ( auto p_ient_tdim = localCon->begin(); p_ient_tdim != localCon->end(); ++p_ient_tdim ) {
       addEntry( tCon, *p_ient_tdim, ient_odim );
     }
@@ -109,7 +109,7 @@ Connectivity transpose(Connectivity inCon) {
 }
 
 Connectivity intersect(Connectivity inCon1, Connectivity inCon2) {
-  vector<vector<int>> intersecCon;
+  vector<vector<unsigned int>> intersecCon;
   intersecCon.resize( inCon1.nels_oDim );
 
   if (inCon1.oDim != inCon2.tDim ) {
@@ -118,9 +118,9 @@ Connectivity intersect(Connectivity inCon1, Connectivity inCon2) {
   }
   for (int enti = 0; enti < inCon1.nels_oDim; enti++) {
     int idx_entj = 0;
-    const vector<int>* locCon1 = inCon1.getLocalCon(enti);
+    const vector<unsigned int>* locCon1 = inCon1.getLocalCon(enti);
     for ( auto pentk = locCon1->begin(); (pentk != locCon1->end())&&(*pentk != -1); ++pentk ) {
-      const vector<int>* locCon2 = inCon2.getLocalCon(*pentk);
+      const vector<unsigned int>* locCon2 = inCon2.getLocalCon(*pentk);
       for ( auto pentj = locCon2->begin(); (pentj != locCon2->end())&&(*pentj != -1); ++pentj ) {
         if (enti != *pentj){
           addEntry( intersecCon, enti, *pentj );
@@ -133,28 +133,28 @@ Connectivity intersect(Connectivity inCon1, Connectivity inCon2) {
 
 std::tuple<Connectivity, Connectivity> build(int d, Connectivity DO_connec, Connectivity DD_connec) {
   int D = DO_connec.oDim;
-  vector<vector<int>> connec_Dd;
-  vector<vector<int>> connec_d0;
+  vector<vector<unsigned int>> connec_Dd;
+  vector<vector<unsigned int>> connec_d0;
 
   connec_Dd.resize( DD_connec.nels_oDim );
 
   int k = 0;
-  vector<vector<int>> Vi, Vj;
+  vector<vector<unsigned int>> Vi, Vj;
   vector<bool> newEntity;
   for (int icell = 0; icell < DD_connec.nels_oDim; icell++){
     Vi = getVertexSets_Dd(*DO_connec.getLocalCon(icell), d, DO_connec.oelType);
     newEntity.resize(Vi.size());
     fill(newEntity.begin(), newEntity.end(), true);
 
-    const vector<int>* locCon = DD_connec.getLocalCon(icell);
+    const vector<unsigned int>* locCon = DD_connec.getLocalCon(icell);
     for ( auto pjcell = locCon->begin(); (pjcell != locCon->end())&&(*pjcell != -1); ++pjcell ) {
       if (*pjcell > icell) continue;
 
       Vj = getVertexSets_Dd(*DO_connec.getLocalCon(*pjcell), d, DO_connec.oelType);
 
       for (int ient = 0; ient < Vi.size(); ient++) {
-        vector<int> vi = Vi[ient];
-        for (vector<int> vj : Vj ) {
+        vector<unsigned int> vi = Vi[ient];
+        for (vector<unsigned int> vj : Vj ) {
           if (vi==vj) {
             int l = get_dIndex(connec_Dd, connec_d0, *pjcell, vi);
             addEntry( connec_Dd, icell, l );

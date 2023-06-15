@@ -25,7 +25,7 @@ def mesh(box, meshDen=1, variant="up", cell_type="triangle3"):
         )
     else:
         exit()
-    cells = cells.astype( int )
+    cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
 def exactSol( x ):

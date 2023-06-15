@@ -48,7 +48,7 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   }
 
   //Narrow Phase
-  const vector<int>* facets;
+  const vector<unsigned int>* facets;
   Element cellEl;
   Element facetEl;
 

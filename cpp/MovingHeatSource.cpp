@@ -47,7 +47,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Dirichlet condition from indices of facets and function.")
         .def("setDirichlet", static_cast<void (Problem::*)(const vector<int>&, const vector<double>&)>(&Problem::setDirichlet),
             "Set Dirichlet condition from indices of facets and function.")
-        .def("setNeumann", static_cast<void (Problem::*)(vector<vector<int>>, double)>(&Problem::setNeumann),
+        .def("setNeumann", static_cast<void (Problem::*)(vector<vector<unsigned int>>, double)>(&Problem::setNeumann),
             "Set Neumann condition from array of nodes.")
         .def("setNeumann", static_cast<void (Problem::*)(Eigen::Vector3d, Eigen::Vector3d, double)>(&Problem::setNeumann),
             "Set Neumann condition from plane.")

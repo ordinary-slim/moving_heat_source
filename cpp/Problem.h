@@ -101,7 +101,7 @@ class Problem {
     void setStabilization(bool stabilize) {
       isStabilized = stabilize;
     }
-    void setNeumann( vector<vector<int>> otherNeumannFacets, double neumannFlux );
+    void setNeumann( vector<vector<unsigned int>> otherNeumannNodes, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );

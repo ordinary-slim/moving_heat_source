@@ -13,10 +13,10 @@ def mesh(box, meshDen=1):
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], meshDen*(box[1]-box[0])+1),
         np.linspace(box[2], box[3], meshDen*(box[3]-box[2])+1),
-        cell_type=cell_type
+        cell_type=cell_type,
         #variant="zigzag",  # or "up", "down", "center"
     )
-    cells = cells.astype( int )
+    cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
 def isInsideBox( mesh, box ):

@@ -49,7 +49,7 @@ mesh::Mesh::Mesh(const py::dict &input) {
   nnodes_per_el = cells.shape(1);
   con_CellPoint.con.resize( nels );
   elementTypes.resize( nels );
-  auto aux_cells = cells.unchecked<int>();//Receiving uint here breaks code
+  auto aux_cells = cells.unchecked<unsigned int>();
   for ( int icell = 0; icell < nels; icell++) {
     con_CellPoint.con[icell].resize( nnodes_per_el );
     for ( int inode = 0; inode < nnodes_per_el; inode++) {

@@ -20,7 +20,7 @@ def mesh(box):
         cell_type=cell_type
         #variant="zigzag",  # or "up", "down", "center"
     )
-    cells = cells.astype( int )
+    cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
 def run():

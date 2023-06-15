@@ -16,11 +16,11 @@ class Connectivity {
     int nels_tDim = -1;
     ElementType oelType;
     ElementType telType;
-    std::vector<std::vector<int>> con;// connectivy
+    std::vector<std::vector<unsigned int>> con;// connectivy
 
     Connectivity() {}
 
-    Connectivity( std::vector<std::vector<int>> in_con, int in_oDim, int in_tDim, int in_nels_oDim, int in_nels_tDim,
+    Connectivity( std::vector<std::vector<unsigned int>> in_con, int in_oDim, int in_tDim, int in_nels_oDim, int in_nels_tDim,
         ElementType in_oelType, ElementType in_telType) {
       con = in_con;
       oDim = in_oDim;
@@ -31,7 +31,7 @@ class Connectivity {
       telType = in_telType;
     }
 
-    const std::vector<int>* getLocalCon( int idx ) const {
+    const std::vector<unsigned int>* getLocalCon( int idx ) const {
       return &con[ idx ];
     }
     /*

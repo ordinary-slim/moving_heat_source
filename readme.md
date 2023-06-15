@@ -6,7 +6,6 @@ To-do:
 - [ ] Interface with PyMesh
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
-- [x] Add test 2 halves diffusion
 
 Ideas:
 ------
