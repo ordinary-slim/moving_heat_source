@@ -1,9 +1,11 @@
 classdef Subproblem  < handle
     % Member of a 1D coupled problem
   properties
+    tstepcounter = 0.0;
     mesh Mesh
     numbering = [];
     U = [];
+    Uprev = [];
     dt = 0.0;
     time  = 0.0;
     vdomain = 0.0;
@@ -17,12 +19,15 @@ classdef Subproblem  < handle
     power = 0.0;
     radius = 0.0;
     vsource = 0.0;
+    gammaNodes = [];
+    bcNodes = [];
   end
   methods
       function [obj] = Subproblem( mesh, numbering, params )
         obj.mesh = mesh;
         obj.numbering = numbering;
         obj.U = params.ic( mesh.pos );
+        obj.Uprev = obj.U;
         obj.dt = params.dt;
         obj.vdomain = params.vdomain;
         % Material properties
@@ -34,9 +39,13 @@ classdef Subproblem  < handle
         obj.x0 = params.x0;
         obj.power = params.power;
         obj.radius = params.radius;
-        obj.vsource = params.vsource;
+        obj.vsource = params.vsource;   
+        if (isfield(params, "bcNodes"))
+            obj.bcNodes = params.bcNodes;
+        end
       end
       function [obj]= preIterate(obj)
+          obj.tstepcounter = obj.tstepcounter + 1;
           obj.time = obj.time + obj.dt;
           obj.x0 = obj.x0 + obj.dt * obj.vsource;
           obj.mesh.updatePosFixed( obj.mesh.shiftFixed + obj.dt * obj.vdomain);
@@ -108,6 +117,7 @@ classdef Subproblem  < handle
               obj Subproblem
               linearSystem LinearSystem
           end
+          obj.Uprev = obj.U( logical( logical(obj.mesh.activeNodes) ) );
           % Time derivative
           linearSystem.lhs(obj.numbering, obj.numbering) = linearSystem.lhs(obj.numbering, obj.numbering) + ...
                   obj.rho*obj.cp*obj.mesh.mass / obj.dt;
@@ -142,6 +152,23 @@ classdef Subproblem  < handle
             end
           end
       end
+      function obj = interpolateOther( obj, otherProblem )
+          arguments
+              obj Subproblem
+              otherProblem Subproblem
+          end
+          for inode=1:obj.mesh.nnodes
+            posNode_other = obj.mesh.posFixed(inode) - otherProblem.mesh.shiftFixed;
+            val = otherProblem.evaluate( posNode_other );
+            if isnumeric(val)
+                if ~(obj.mesh.activeNodes(inode))
+                    obj.U(inode) =  val;
+                else
+                    obj.U(inode) =  (obj.U(inode) + val)/2;
+                end
+            end
+          end
+      end
       function u = evaluate( obj, x )
           % Return false if x not in mesh
           u = false;
@@ -163,6 +190,18 @@ classdef Subproblem  < handle
           else
             tau = advectionEstimate;
           end
+      end
+      function updateGammaNodes(obj, meshExt, isOverlapping)
+          obj.gammaNodes = [];
+          potentialGammaNodes = [];
+          for inode=obj.mesh.bounNodes
+              incidentEls = obj.mesh.conPointCell.getLocalCon( inode );
+              posNode_other = obj.mesh.posFixed(inode) - meshExt.shiftFixed;
+              if meshExt.findOwnerElement(posNode_other) >= 0
+                  potentialGammaNodes = [potentialGammaNodes, inode];
+              end
+          end
+          obj.gammaNodes = setdiff( potentialGammaNodes, obj.bcNodes );
       end
       function [pd] = powerDensity(obj, x)
           pd = 2*(obj.power) / pi / obj.radius^2 * exp( - 2*(x - obj.x0).^2/obj.radius^2);

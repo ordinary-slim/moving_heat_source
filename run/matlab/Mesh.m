@@ -31,20 +31,23 @@ classdef Mesh  < handle
           obj.updateActiveNodes();
           obj.postActivation();
       end
-      function [obj, newInterface] = substract( obj, otherMesh, reset )
+      function [obj, newInterface] = substract( obj, otherMesh, reset, pad )
           % 1D
           % If element is contained in other mesh, deactivate
           arguments
               obj Mesh
               otherMesh Mesh
               reset = true
+              pad = 0.0;
           end
           if reset
             obj.activeElements = ones([obj.nels, 1]);
           end
           % Assuming otherMesh has no holes
           otherMeshLeft = otherMesh.posFixed( find(otherMesh.activeNodes, 1) );
+          otherMeshLeft = otherMeshLeft + pad;
           otherMeshRight = otherMesh.posFixed( find(otherMesh.activeNodes, 1, "last") );
+          otherMeshRight = otherMeshRight - pad;
           for iel=1:obj.nels
               e = obj.getElement(iel);
               elLeft = e.pos(1);
@@ -73,6 +76,31 @@ classdef Mesh  < handle
               elRight = e.pos(2) + obj.shiftFixed;
 
               if (otherMesh.posFixed(1) > elLeft ) || (otherMesh.posFixed(end) < elRight)
+                  obj.activeElements(iel) = 0;
+              end
+          end
+          [~, newInterface] = obj.postActivateElements();
+      end
+      function [obj, newInterface] = intersectBall( obj, center, radius, reset )
+          % 1D
+          % If element is NOT contained in other mesh, deactivate
+          arguments
+              obj Mesh
+              center
+              radius
+              reset = true
+          end
+          if reset
+            obj.activeElements = ones([obj.nels, 1]);
+          end
+          leftBound = center - radius;
+          rightBound = center + radius;
+          for iel=1:obj.nels
+              e = obj.getElement(iel);
+              elLeft = e.pos(1);
+              elRight = e.pos(2);
+
+              if (leftBound > elLeft ) || (rightBound < elRight)
                   obj.activeElements(iel) = 0;
               end
           end

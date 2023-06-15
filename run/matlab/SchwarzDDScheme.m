@@ -1,4 +1,4 @@
-classdef MyDDScheme < handle
+classdef SchwarzDDScheme < handle
     properties
         ls LinearSystem
         numberingPart
@@ -8,20 +8,16 @@ classdef MyDDScheme < handle
         problemPart Subproblem
         problemHS Subproblem
         posInterface = [];
-        currRadiusSubdomain = -1;
-        hasChangedRadiusSubdomain = false;
-        tstepcounter = 0.0;
-        label = "My scheme";
+        pad = 0.0;
     end
     methods
-        function [obj] = MyDDScheme(params)
+        function [obj] = SchwarzDDScheme(params)
             %MESHING
-            obj.currRadiusSubdomain = params.radiusSubdomain;
             nelsPart = (params.rightBound - params.leftBound) * params.meshDensity;
             nelsHS = params.radiusSubdomain*2*params.meshDensity;
             obj.meshPart = Mesh( params.leftBound, params.rightBound, nelsPart );
             obj.meshSubdomain = Mesh( params.x0-params.radiusSubdomain, params.x0+params.radiusSubdomain, nelsHS );
-            
+            obj.pad = params.pad;
             
             ndofs = obj.meshPart.nnodes + obj.meshSubdomain.nnodes;
             %NUMBERING DOFS
@@ -30,35 +26,29 @@ classdef MyDDScheme < handle
             obj.ls = LinearSystem( ndofs );
             
             % Subproblems
+            params.vadv = -params.speed;
+            params.vsource = 0.0;
+            params.vdomain = params.speed;
+            obj.problemHS = Subproblem(obj.meshSubdomain, obj.numberingSubdomain, params);
             params.vadv = 0.0;
             params.vsource = params.speed;
             params.vdomain = 0.0;
             params.bcNodes = [1, obj.meshPart.nnodes];
             obj.problemPart = Subproblem(obj.meshPart, obj.numberingPart, params);
-            params.vadv = -params.speed;
-            params.vsource = 0.0;
-            params.vdomain = params.speed;
-            params.bcNodes = [];
-            obj.problemHS = Subproblem(obj.meshSubdomain, obj.numberingSubdomain, params);
+ 
         end
         function [obj] = iterate(obj)
-          obj.tstepcounter = obj.tstepcounter + 1;
           %% pre-iteration
           obj.ls.cleanup();
-          % Motion is done here
+          % Domain OPS
           obj.problemHS.mesh.intersect( obj.problemPart.mesh, true );
           obj.problemPart.preIterate();
           obj.problemHS.preIterate();
-          % Domain OPS
-          if (obj.hasChangedRadiusSubdomain)
-            obj.problemHS.mesh.intersectBall( obj.problemHS.x0, obj.currRadiusSubdomain, false );
-          end
           obj.problemHS.mesh.intersect( obj.problemPart.mesh, false );
-          obj.problemPart.mesh.substract( obj.problemHS.mesh );
+          obj.problemPart.mesh.substract( obj.problemHS.mesh, true, obj.pad );
           % Determine Gamma boundary
-          % Determine Gamma boundary
-          obj.problemHS.updateGammaNodes( obj.meshPart, false );
-          obj.problemPart.updateGammaNodes( obj.meshSubdomain, false );
+          obj.problemHS.updateGammaNodes( obj.meshPart, true );
+          obj.problemPart.updateGammaNodes( obj.meshSubdomain, true );
 
           %% Assembly
           obj.problemPart.assemblePDE(obj.ls);
@@ -79,28 +69,20 @@ classdef MyDDScheme < handle
               obj.ls.lhs(globIdx_receiveDirichlet, globIdx_receiveDirichlet) = -1;
               obj.ls.lhs(globIdx_receiveDirichlet, globIdx_sendDirichlet) = coeffs;
           end
-          % obj.problemHS receives NEUMANN from Part
+          % obj.problemHS receives Dirichlet from Part
           for inode=obj.problemHS.gammaNodes
-              posNode = obj.problemHS.mesh.pos( inode );
               posNode_other = obj.problemHS.mesh.posFixed(inode) - obj.problemPart.mesh.shiftFixed;
-              % Compute normal
-              % Find parentEl
-              ownerEls = obj.meshSubdomain.conPointCell.getLocalCon( inode );
-              idxParentEl = ownerEls( logical(obj.meshSubdomain.activeElements(ownerEls)) );
-              parentEl = obj.meshSubdomain.getElement( idxParentEl );
-              normal = posNode - parentEl.centroid;
-              normal = normal / abs(normal);
-              % Get corresponding element neighbour mesh
               iowner = obj.problemPart.mesh.findOwnerElement( posNode_other );
               e = obj.problemPart.mesh.getElement( iowner );
-              %TODO: THink about conductivities here!
-              dn_coeffs = normal*[e.gradBaseFuns{1}(posNode_other), e.gradBaseFuns{2}(posNode_other)];
+              coeffs = [e.baseFuns{1}(posNode_other), e.baseFuns{2}(posNode_other)];
 
-              globIdx_receiveNeumann = obj.problemHS.numbering( inode );
-              globIdx_sendNeumann = obj.problemPart.numbering( e.con );
-              
-              obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) = obj.ls.lhs(globIdx_receiveNeumann, globIdx_sendNeumann) ...
-                  - obj.problemHS.k * dn_coeffs;
+              globIdx_receiveDirichlet = obj.problemHS.numbering( inode );
+              globIdx_sendDirichlet = obj.problemPart.numbering( e.con );
+
+              obj.ls.rhs(globIdx_receiveDirichlet) = 0;
+              obj.ls.lhs(globIdx_receiveDirichlet, :) = 0.0;
+              obj.ls.lhs(globIdx_receiveDirichlet, globIdx_receiveDirichlet) = -1;
+              obj.ls.lhs(globIdx_receiveDirichlet, globIdx_sendDirichlet) = coeffs;
           end
 
           obj.problemPart.assembleInactiveNodes(obj.ls);
@@ -111,39 +93,44 @@ classdef MyDDScheme < handle
           obj.problemPart.U = obj.ls.U(obj.problemPart.numbering);
           obj.problemHS.U = obj.ls.U(obj.problemHS.numbering);
           % Interpolate inactive nodes of obj.problemPart
-          obj.problemPart.interpolateInactive( obj.problemHS );
+          obj.problemPart.interpolateOther( obj.problemHS );
           obj.problemHS.interpolateInactive( obj.problemPart );
+          % Save interface positions for post
+          obj.posInterface = obj.problemPart.mesh.posFixed( obj.problemPart.gammaNodes );
         end
         function [t] = getTime(obj)
             t = obj.problemHS.time;
         end
-        function [obj] = setDt(obj, dt)
-            obj.problemHS.dt = dt;
-            obj.problemPart.dt = dt;
-        end
         function [] = plotInterface(obj)
             posGammaPart = obj.problemPart.mesh.pos( obj.problemPart.gammaNodes );
-            for idx=1:length(obj.problemPart.gammaNodes)
+            posGammaHS = obj.problemHS.mesh.pos( obj.problemHS.gammaNodes ) + obj.problemHS.mesh.shiftFixed;
+            for idx=1:length(posGammaPart)
                 xGamma = posGammaPart(idx);
                 if idx==1
                     xline(xGamma, ...
-                'DisplayName', obj.label + ", $\Gamma$")
+                '--r', 'DisplayName', "Schwarz, $\Gamma$ fixed domain")
                 else
                     xline(xGamma, ...
-                'HandleVisibility', "off")
+                '--r', 'HandleVisibility', "off")
                 end
             end
-        end
-        function obj = setRadiusSubdomain(obj, r)
-            obj.currRadiusSubdomain = r;
-            obj.hasChangedRadiusSubdomain = true;
+            for idx=1:length(posGammaHS)
+                xGamma = posGammaHS(idx);
+                if idx==1
+                    xline(xGamma, ...
+                '--k', 'DisplayName', "Schwarz, $\Gamma$ moving subdomain")
+                else
+                    xline(xGamma, ...
+                '--k', 'HandleVisibility', "off")
+                end
+            end
         end
     end
 end
 
 function plotActiveInactive( scheme )
     arguments
-        scheme MyDDScheme
+        scheme SchwarzDDScheme
     end
     figure
     scatter(scheme.meshPart.posFixed(~logical(scheme.meshPart.activeNodes)), 1, "r")

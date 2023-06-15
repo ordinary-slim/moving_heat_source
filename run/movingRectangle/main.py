@@ -40,10 +40,14 @@ def setAdimR( adimR, input ):
     return (adimR * r / speed)
 
 if __name__=="__main__":
+    runReference = False
+    if (len(sys.argv)>1):
+        if sys.argv[1]=="True":
+            runReference = True
     inputFile = "input.txt"
     boxDomain = [-25, 25, -5, 5]
-    adimR_tstep = 2
-    adimR_domain = 7
+    adimR_tstep = 10
+    adimR_domain = 11
 
     # read input
     problemInput = readInput( inputFile )
@@ -53,7 +57,7 @@ if __name__=="__main__":
     movingProblemInput = dict( problemInput )
 
     # Mesh
-    meshDen = 4
+    meshDen = 2
     meshInputFixed, meshInputMoving = {}, {}
     meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
     meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen)
@@ -76,7 +80,8 @@ if __name__=="__main__":
 
     pFixed         = Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pFRF           = Problem(meshFixed, fixedProblemInput, caseName="FRF")
-    #pFineFRF       = Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
+    if runReference:
+        pFineFRF = Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
     pMoving        = Problem(meshMoving, movingProblemInput, caseName="moving")
 
     Tfinal = pFixed.input["Tfinal"]
@@ -86,11 +91,10 @@ if __name__=="__main__":
         # FRF ITERATE
         pFRF.iterate()
 
-        '''
         # Fine FRF ITERATE
-        while (pFineFRF.time < pFRF.time - tol):
-            pFineFRF.iterate()
-        '''
+        if runReference:
+            while (pFineFRF.time < pFRF.time - tol):
+                pFineFRF.iterate()
 
         # MY SCHEME ITERATE
         pFixed.setAssembling2External( True )
@@ -134,10 +138,10 @@ if __name__=="__main__":
         # POSTPROCESSING ALL
         pFRF.writepos(
                 )
-        '''
-        pFineFRF.writepos(
-                )
-        '''
+        if runReference:
+            pFineFRF.writepos(
+                    )
+
         pFixed.writepos(
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
                 )

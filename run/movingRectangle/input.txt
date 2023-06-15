@@ -1,6 +1,7 @@
 radius		1.0
-power		100.0
-initialPositionX	-20.0
+power		200.0
+Tfinal		2.0
+initialPositionX	-10.0
 initialPositionY		0.0
 initialPositionZ		0.0
 HeatSourceSpeedX		10
@@ -8,7 +9,6 @@ HeatSourceSpeedY		0
 HeatSourceSpeedZ		0
 dt	0.1
 t		0.0
-Tfinal		4.0
 maxIter		5
 rho		1
 conductivity		1
@@ -24,4 +24,4 @@ advectionSpeedZ 0.0
 speedFRF_X 0.0
 speedFRF_Y 0.0
 speedFRF_Z 0.0
-isStabilized 0
+isStabilized 1
