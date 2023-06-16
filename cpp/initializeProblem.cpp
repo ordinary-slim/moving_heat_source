@@ -60,8 +60,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
         } else if (domain.mesh->dim == 2 ) {
           mhs.powerDensity = &gaussianPowerDensity2D;
         } else {
-          printf("Dim > 2 not ready yet\n");
-          exit(EXIT_FAILURE);
+          mhs.powerDensity = &gaussianPowerDensity3D;
         }
         break; }
   }
@@ -71,19 +70,19 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
     isSteady = py::cast<bool>(input["steadyState"]);
   }
 
-  // TSTEPPING
-  if ( not(isSteady)) {
-    dt = py::cast<double>(input["dt"]);
-  }
-
-  // TIME INTEGRATOR
-  timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
   unknown.values = Eigen::VectorXd::Constant( domain.mesh->nnodes, Tenv );
-  // update time integrator
-  previousValues.push_front(  unknown );
-  ++timeIntegrator.nstepsStored;
+
+  // TSTEPPING
+  if ( not(isSteady)) {
+    dt = py::cast<double>(input["dt"]);
+    // TIME INTEGRATOR
+    timeIntegrator.setRequiredSteps( py::cast<int>(input["timeIntegration"] ));
+    // update time integrator
+    previousValues.push_front(  unknown );
+    ++timeIntegrator.nstepsStored;
+  }
 
   // DIRICHLET BC
   if (input.contains("dirichletNodes")) {

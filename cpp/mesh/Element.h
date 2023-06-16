@@ -103,7 +103,7 @@ class Element {
     void computeCentroid();
     void computeNormal( Eigen::Vector3d parentCentroid );
     Element getFacetElement( const std::vector<unsigned int>* vertices, ReferenceElement &facetRefEl ) const;
-    Eigen::VectorXd evalShaFuns( Eigen::Vector3d pos );
+    Eigen::VectorXd evaluateShaFuns( Eigen::Vector3d pos );
     Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
     double getSizeAlongVector( Eigen::Vector3d vector ) const;
 };

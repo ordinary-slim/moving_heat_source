@@ -8,15 +8,9 @@ namespace py = pybind11;
 
 mesh::Mesh::Mesh(const py::dict &input) {
   //SET ELEMENT TYPE
-  ElementType cell_type_flag;
-  string aux_cell_type = py::cast<string>( input["cell_type"] );
-  if        (aux_cell_type == "line2") {
-    cell_type_flag = line2;
-  } else if (aux_cell_type == "triangle3") {
-    cell_type_flag = triangle3;
-  } else if (aux_cell_type == "quad4") {
-    cell_type_flag = quad4;
-  }
+  ElementType cell_type_flag =
+    string2ElementType( py::cast<string>( input["cell_type"] ) );
+
   int ngpointsCell = -1, ngpointsFacet = -1;
   if (input.contains("numberOfGaussPoints")){
     ngpointsCell = py::cast<int>( input["numberOfGaussPointsCells"] );
@@ -26,7 +20,7 @@ mesh::Mesh::Mesh(const py::dict &input) {
   }
   // reference element. no support for mixed meshes yet
   refCellEl = ReferenceElement(cell_type_flag, ngpointsCell);
-  ElementType FacetElType = getIncidentElType(cell_type_flag, refCellEl.dim-1);
+  ElementType FacetElType = getFacetElType(cell_type_flag);
   refFacetEl = ReferenceElement(FacetElType, ngpointsFacet);
 
   //READ POINTS
@@ -88,7 +82,7 @@ mesh::Mesh::Mesh(const py::dict &input) {
   begin = std::chrono::steady_clock::now();
   printf("Build (Facet, Points), (Cells, facet)\n");
 
-  tie(con_FacetPoint, con_CellFacet) = mesh::build( refCellEl.dim-1, con_CellPoint, con_CellCell );
+  tie(con_FacetPoint, con_CellFacet) = mesh::buildBoundaryConnectivities( con_CellPoint, con_CellCell );
 
   end = std::chrono::steady_clock::now();
   std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;;

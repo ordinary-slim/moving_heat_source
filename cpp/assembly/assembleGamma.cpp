@@ -69,7 +69,7 @@ void Problem::assembleDirichletGamma(const Problem &pExt) {
     int idx_el_ext = pExt.domain.findOwnerElement( xnode_ext ) ;
     mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
-    Eigen::VectorXd shaFuns = e_ext.evalShaFuns( xnode_ext );
+    Eigen::VectorXd shaFuns = e_ext.evaluateShaFuns( xnode_ext );
 
     // Assemble
     int inodeDof = dofNumbering[inode];

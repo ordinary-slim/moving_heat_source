@@ -4,38 +4,41 @@
 namespace mesh
 {
 void mesh::Element::computeLocRefMappings() {
-  // Build helper matrices
-  Eigen::Matrix3d X;
-  // Compute
-  X.setZero();
-  for (int inode = 0; inode<dim; inode++) {
-    X.row( inode )  = pos.row( inode+1 ) - pos.row( 0 );
+  /*
+   * Solving X = ref2locMatrix * XI
+   */
+  // Build helper matrix X
+  Eigen::Matrix3d X = Eigen::Matrix3d::Zero();
+  for (int idx = 1; idx<refEl->refNodesMapping.size(); idx++) {
+    X.row( idx-1 )  = pos.row( refEl->refNodesMapping[idx] ) - pos.row( refEl->refNodesMapping[0] );
   }
 
-  // Obtain second vector
-  if (dim == 0) {
-    X.setIdentity();
-  } else if (dim < 2) {
-    double tol = 1e-7;
-    //Eigen::Vector3d e1 = X.row( 0 );
-    Eigen::Vector3d e2;
-    // Try cross product with canonical basis
-    // Looking for a non-zero vector
-    e2 << 0.0, X(0,2), -X(0,1);// x1 x e1
-    if (e2.norm() < tol) {
-      e2 << -X(0,2), 0.0, X(0,0);// x1 x e2
-      if (e2.norm() < tol) {
-        e2 << X(0,1), -X(0,0), 0.0;// x1 x e3
-      }
-    }
-    e2 /= e2.norm();
-
-    X.row( 1 ) = e2;
-  }
   if (dim < 3) {
+    // Complete X
+    if (dim == 0) {
+      X.row( 0 ) << 1.0, 0.0, 0.0;
+    }
+    if (dim < 2) {
+      double tol = 1e-7;
+      //Eigen::Vector3d e1 = X.row( 0 );
+      Eigen::Vector3d e2;
+      // Try cross product with canonical basis
+      // Looking for a non-zero vector
+      e2 << 0.0, X(0,2), -X(0,1);// x1 x e1
+      if (e2.norm() < tol) {
+        e2 << -X(0,2), 0.0, X(0,0);// x1 x e2
+        if (e2.norm() < tol) {
+          e2 << X(0,1), -X(0,0), 0.0;// x1 x e3
+        }
+      }
+      e2 /= e2.norm();
+
+      X.row( 1 ) = e2;
+    }
     X.row( 2 ) = X.row(0).cross( X.row(1) );// e1 x e2 = e3 <=> right handed
     X.row( 2 ) /= X.row(2).norm();
   }
+
   X.transposeInPlace();
   
   // Compute local <-> reference mappings
@@ -80,7 +83,7 @@ Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertice
   return e;
 }
 
-Eigen::VectorXd mesh::Element::evalShaFuns( Eigen::Vector3d pos ) {
+Eigen::VectorXd mesh::Element::evaluateShaFuns( Eigen::Vector3d pos ) {
   /*
   Evaluate shape funcs at a point
   */

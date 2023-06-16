@@ -45,6 +45,7 @@ class Problem(mhs.Problem):
             "line2" : "line",
             "quad4" : "quad",
             "triangle3" : "triangle",
+            "hexa8" : "hexahedron",
         }
     def __init__(self, mesh, input, problem=None, caseName="case"):
         self.caseName= caseName

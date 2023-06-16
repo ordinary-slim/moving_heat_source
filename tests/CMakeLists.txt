@@ -9,9 +9,9 @@ add_test(
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_rectangleTransportAdvection"
   )
 add_test(
-  NAME boundaryDetection
+  NAME 2D_triaBounDetection
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/boundaryDetection"
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_triaBounDetection"
   )
 add_test(
   NAME 2D_checkConvection
@@ -37,4 +37,9 @@ add_test(
   NAME 2D_nd_coupling
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/2D_nd_coupling"
+  )
+add_test(
+  NAME 3D_cubeLaplace
+  COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/3D_cubeLaplace"
   )

@@ -15,7 +15,7 @@ double Function::evaluate( Eigen::Vector3d point ) const {
     throw std::invalid_argument( "Point outside of domain." );
   }
   mesh::Element e = domain->mesh->getElement( idxOwnerEl );//Load element containing point
-  Eigen::VectorXd shaFunVals = e.evalShaFuns( point );
+  Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
 
   val = values( *e.con ).dot( shaFunVals );
 

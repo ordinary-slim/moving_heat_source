@@ -125,7 +125,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("nels_tDim", &mesh::Connectivity::nels_tDim);
     m.def( "transpose", &mesh::transpose, "(d -> d') ---> (d' -> d)" );
     m.def( "intersect", &mesh::intersect, "(d -> d''), (d'' -> d') ---> (d -> d')" );
-    m.def( "build", &mesh::build, "(D -> 0), (D -> D) ---> (d -> 0), (D -> d)" );
+    m.def( "buildBoundaryConnectivities", &mesh::buildBoundaryConnectivities, "(D -> 0), (D -> D) ---> (D-1 -> 0), (D -> D-1)" );
     py::class_<mesh::Element>(m, "mesh::Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &mesh::Element::pos)
@@ -138,14 +138,16 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("dimension", &mesh::Element::dim)
         .def_readonly("elementType", &mesh::Element::elementType)
         .def_readonly("GradBaseGpVals", &mesh::Element::GradBaseGpVals)
-        .def("computeDerivatives", &mesh::Element::computeDerivatives)
         .def("getCentroid", &mesh::Element::getCentroid)
-        .def("getSizeAlongVector", &mesh::Element::getSizeAlongVector);
+        .def("getSizeAlongVector", &mesh::Element::getSizeAlongVector)
+        .def("evaluateShaFuns", &mesh::Element::evaluateShaFuns)
+        .def("evaluateGradShaFuns", &mesh::Element::evaluateGradShaFuns);
     py::enum_<ElementType>(m, "ElementType")
         .value("point1", ElementType::point1)
         .value("line2", ElementType::line2)
         .value("triangle3", ElementType::triangle3)
-        .value("quad4", ElementType::quad4);
+        .value("quad4", ElementType::quad4)
+        .value("hexa8", ElementType::hexa8);
     py::class_<HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &HeatSource::currentPosition)
