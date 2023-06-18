@@ -62,7 +62,7 @@ def test():
     refds = "post_stable_reference/stable_5.vtu"
     newds = "post_stable/stable_5.vtu"
 
-    assert meshio_comparison( refds, newds )
+    assert meshio_comparison( refds, newds, 1e-5 )
 
 if __name__=="__main__":
     test()

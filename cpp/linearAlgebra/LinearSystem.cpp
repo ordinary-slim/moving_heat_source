@@ -55,7 +55,8 @@ LinearSystem::LinearSystem(Problem &p1, Problem &p2) {
 }
 
 void LinearSystem::solve() {
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  //Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+  Eigen::BiCGSTAB<Eigen::SparseMatrix<double> > solver;
   //Solve linear system
   if (not(_ndofs)) { return; }
   solver.compute( lhs );

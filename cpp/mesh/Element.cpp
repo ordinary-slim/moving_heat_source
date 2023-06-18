@@ -129,12 +129,15 @@ void mesh::Element::computeNormal( Eigen::Vector3d parentCentroid ) {
       Eigen::Vector3d lineVec = pos.row(1) - pos.row(0);
       normal(0) = -lineVec( 1 );
       normal(1) = +lineVec( 0 );
-      normal /= lineVec.norm();
+      normal.normalize();
       break;
     }
     case 2: {
-      printf("Normal computation for 2D els not implemented yet\n");
-      exit(EXIT_FAILURE);
+      Eigen::Vector3d inPlaneVec1 = pos.row( refEl->refNodesMapping[1] ) - pos.row( refEl->refNodesMapping[0] );
+      Eigen::Vector3d inPlaneVec2 = pos.row( refEl->refNodesMapping[2] ) - pos.row( refEl->refNodesMapping[0] );
+      normal = inPlaneVec1.cross( inPlaneVec2 );
+      normal.normalize();
+      break;
     }
     default: {
       printf("This normal computation is not implemented yet.");
