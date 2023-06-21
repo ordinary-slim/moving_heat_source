@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
+sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo

@@ -7,18 +7,20 @@
 #include "Element.h"
 #include "RefElement.h"
 #include "ElementTypes.h"
-#include "AABB.h"
 #include "../../external/pybind11/include/pybind11/pybind11.h"
 #include "MeshTag.h"
+#include "cgal_interface.h"
 
 using namespace std;
+using AABB_tree = CGAL::AABB_tree<CGAL::AABB_traits<CGAL::Simple_cartesian<double>,
+      myBboxPrimitive>>;
 
 namespace mesh
 {
 class Mesh {
   public:
     // Copy constructor
-    Mesh(const Mesh& mesh) = default;
+    //Mesh(const Mesh& mesh) = default;
     // Construct from python dict with points, cells and cell_type
     Mesh(const pybind11::dict &input);
     int dim;
@@ -37,7 +39,9 @@ class Mesh {
     vector<ElementType> elementTypes;
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
-    vector<AABB> elementAABBs;
+    // Fast spatial search
+    vector<myAABB> elementAABBs;
+    AABB_tree tree;
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement &refEl ) const;
     Element getElement(int ielem) const;

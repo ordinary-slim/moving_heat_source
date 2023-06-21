@@ -23,3 +23,4 @@ Dependencies:
 - meshio
 - meshzoo==0.11.0
 - pytest
+- CGAL

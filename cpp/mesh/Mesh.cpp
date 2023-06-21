@@ -41,11 +41,9 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   vector<int> idxOwnerEl;
   vector<int> potentialOwners;
   //Broad  Phase Search
-  for (int ielem = 0; ielem < nels; ++ielem) {
-    if ( elementAABBs[ielem].isPointInside( point ) ) {
-      potentialOwners.push_back( ielem );
-    }
-  }
+  //Convert to CGAL point and use bounding boxes tree
+  CGAL::Simple_cartesian<double>::Point_3 cgalPoint( point[0], point[1], point[2] );
+  tree.all_intersected_primitives( cgalPoint, std::back_inserter( potentialOwners ) );
 
   //Narrow Phase
   const vector<unsigned int>* facets;
@@ -71,22 +69,24 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   }
   return idxOwnerEl;
 }
-void mesh::Mesh::setAABBs() {
 
+void mesh::Mesh::setAABBs() {
+  // CGAL AABB tree
   auto begin = std::chrono::steady_clock::now();
 
-  elementAABBs.resize( nels );
-
-  Element e;
+  elementAABBs.reserve( nels );
 
   for (int ielem = 0; ielem < nels; ++ielem) {
-    e = getElement(ielem);
-    elementAABBs[ielem] = AABB( e );
+    Element e = getElement(ielem);
+    elementAABBs.push_back( myAABB( e ) );
   }
+
+  tree.rebuild(elementAABBs.begin(), elementAABBs.end());
 
   auto end = std::chrono::steady_clock::now();
   std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 }
+
 MeshTag<int> mark( const Mesh &mesh, int dim, const vector<int> &indices ) {
   vector<int> values = vector<int>( mesh.getNumEntities( dim ), 0 );
   for (int index : indices) {

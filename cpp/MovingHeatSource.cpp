@@ -89,7 +89,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
-        .def(py::init<const mesh::Mesh&>())
+        //.def(py::init<const mesh::Mesh&>()) AABB_tree doesnt allow this
         .def(py::init<const py::dict&>())
         .def_readonly("pos", &mesh::Mesh::pos)
         .def_readonly("posFRF", &mesh::Mesh::posFRF)
