@@ -1,5 +1,6 @@
 #include "mesh/Element.h"
 #include "Problem.h"
+#include "Printer.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
@@ -164,4 +165,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("cleanup", &LinearSystem::cleanup)
         .def("ndofs", &LinearSystem::getNdofs)
         .def( py::init<Problem&, Problem&>() );
+    py::class_<Printer>(m, "Printer")
+        .def( py::init<mesh::Mesh*, double, double>() )
+        .def("mark", &Printer::mark);
 }

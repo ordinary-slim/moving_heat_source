@@ -52,6 +52,7 @@ ElementType string2ElementType(std::string aux_cell_type) {
 
 std::vector<std::vector<unsigned int>> getFacetVertexSets( const std::vector<unsigned int> &localCon_D0, ElementType entD_elType) {
   /*
+   * Returns global indices of facets
    * Some spaghetti coding going on here
    * Gotta figure this out
    */
@@ -101,4 +102,44 @@ std::vector<std::vector<unsigned int>> getFacetVertexSets( const std::vector<uns
       throw std::invalid_argument( "getFacetVertexSets not implemented yet for " + elementType2String(entD_elType) );
   }
   return setsOfVertices;
+}
+
+std::vector<std::vector<unsigned int>> getFacetVertexSets( ElementType entD_elType) {
+  /*
+   * Returns local indices of facets
+   */
+  std::vector<std::vector<unsigned int>> setsOfIndices;
+  ElementType facetElType = getFacetElType( entD_elType );
+  int nnodesCell  = getNnodesElType(entD_elType);
+  int nnodesFacet = getNnodesElType(facetElType);
+  std::vector<unsigned int> vset;//single set of vertices
+
+  switch (entD_elType){
+    case line2:
+      setsOfIndices.push_back( std::vector<unsigned int>{0} );
+      setsOfIndices.push_back( std::vector<unsigned int>{1} );
+      break;
+    case triangle3: case quad4:
+      vset.resize( nnodesFacet );
+      for (int ipoin = 0; ipoin < nnodesCell; ipoin++) {
+        for (int jpoin = 0; jpoin < nnodesCell; jpoin++) {
+          vset[jpoin] = (ipoin + jpoin)%nnodesCell;
+        }
+        setsOfIndices.push_back( vset );
+      }
+      break;
+    case hexa8: {
+      setsOfIndices.push_back( std::vector<unsigned int>{0, 1, 2, 3} );
+      setsOfIndices.push_back( std::vector<unsigned int>{4, 5, 6, 7} );
+      setsOfIndices.push_back( std::vector<unsigned int>{0, 1, 5, 4} );
+      setsOfIndices.push_back( std::vector<unsigned int>{3, 2, 6, 7} );
+      setsOfIndices.push_back( std::vector<unsigned int>{0, 3, 7, 4} );
+      setsOfIndices.push_back( std::vector<unsigned int>{1, 2, 6, 5} );
+      break;
+    }
+    default:
+      throw std::invalid_argument( "getFacetVertexSets not implemented yet for " + elementType2String(entD_elType) );
+  }
+
+  return setsOfIndices;
 }

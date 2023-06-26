@@ -27,6 +27,8 @@ class Element {
     bool openIntegration = false;//default closed integration
 
     const ReferenceElement      *refEl;
+    const ReferenceElement      *facetRefEl;
+
     // x : loc coordinate; xi : reference coordinate
     // x = ref2locShift + ref2locMatrix · xi
     // xi = loc2refShift + loc2refMatrix · x
@@ -76,8 +78,8 @@ class Element {
       }
     }
 
-    void setElementType( const ReferenceElement &target_refEl ) {
-      refEl = &target_refEl;
+    void setElementType( const ReferenceElement *target_refEl ) {
+      refEl = target_refEl;
       elementType = refEl->elementType;
       nnodes = refEl->nnodes;
       ngpoints = refEl->ngpoints;
@@ -102,10 +104,23 @@ class Element {
 
     void computeCentroid();
     void computeNormal( Eigen::Vector3d parentCentroid );
-    Element getFacetElement( const std::vector<unsigned int>* vertices, ReferenceElement &facetRefEl ) const;
+    Element getFacetElement( const std::vector<unsigned int>* vertices ) const;
     Eigen::VectorXd evaluateShaFuns( Eigen::Vector3d pos );
     Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
     double getSizeAlongVector( Eigen::Vector3d vector ) const;
+    template<typename Plane>
+    void appendPlanes(std::vector<Plane> &v) const {
+      v.reserve( std::min<int>(v.size(), 2*getNnodesElType( facetRefEl->elementType ) ) );
+      std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( refEl->elementType );
+      for ( std::vector<unsigned int> facetLocalCon : setsFacetLocalCons ) {
+        Element facetEl = getFacetElement( &facetLocalCon );
+        v.push_back( Plane( +facetEl.normal[0],
+                            +facetEl.normal[1],
+                            +facetEl.normal[2],
+                            -(facetEl.centroid.dot( facetEl.normal ))
+                             ) );
+      }
+    }
 };
 }
 #define ELEMENT

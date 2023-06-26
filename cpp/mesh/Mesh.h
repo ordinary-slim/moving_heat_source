@@ -43,7 +43,7 @@ class Mesh {
     vector<myAABB> elementAABBs;
     AABB_tree tree;
 
-    Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement &refEl ) const;
+    Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
     Element getElement(int ielem) const;
 
     void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
@@ -63,6 +63,7 @@ class Mesh {
     }
     void setAABBs();
     vector<int> findOwnerElement( const Eigen::Vector3d &point );
+    vector<int> findCollidingElement( const myOBB &obb );
 };
 MeshTag<int> mark( const Mesh &mesh, int dim = 0, const std::vector<int> &indices = std::vector<int>() );
 }

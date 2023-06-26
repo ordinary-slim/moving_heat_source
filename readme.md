@@ -7,6 +7,10 @@ To-do:
 - [ ] Determine if mass matrix is computed or not
 - [ ] Move updateFRFPos to Mesh instead of Problem!
 - [x] Implement reference nodes in reference element for map2loc mapping
+- [ ] Sync getEnts from ActiveMesh and Mesh
+- [ ] Sync the getFacetVertexSets implementations
+- [ ] Cleanup CMAKE so that I dont have to link with Qt5
+- [ ] Give domain to printer instead of mesh
 
 Ideas:
 ------

@@ -7,7 +7,7 @@
 namespace mesh
 {
 
-Element Mesh::getEntity(int ient, const Connectivity &connectivity, const ReferenceElement &refEl ) const {
+Element Mesh::getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl ) const {
 
   if (ient < 0) {
     throw std::invalid_argument( "received negative value." );
@@ -16,6 +16,9 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
   Element e;
   e.ient = ient;
   e.setElementType( refEl );
+  if (facetRefEl) {
+    e.facetRefEl = facetRefEl;
+  }
 
   e.allocate();
 
@@ -35,7 +38,7 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
 }
 
 Element Mesh::getElement(int ielem) const {
-  return getEntity( ielem, con_CellPoint, refCellEl );
+  return getEntity( ielem, con_CellPoint, &refCellEl, &refFacetEl );
 }
 vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   vector<int> idxOwnerEl;
@@ -46,17 +49,17 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   tree.all_intersected_primitives( cgalPoint, std::back_inserter( potentialOwners ) );
 
   //Narrow Phase
-  const vector<unsigned int>* facets;
   Element cellEl;
   Element facetEl;
 
   for ( int ielem : potentialOwners ) {
     bool isInside = true;
     cellEl = getElement( ielem );
-    facets = con_CellFacet.getLocalCon( ielem );
-    for ( int ifacet : *facets ) {
-      facetEl = cellEl.getFacetElement( con_FacetPoint.getLocalCon(ifacet),
-                                        refFacetEl);
+
+    std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( cellEl.refEl->elementType );
+
+    for ( std::vector<unsigned int> facetLocalCon : setsFacetLocalCons ) {
+      facetEl = cellEl.getFacetElement( &facetLocalCon );
 
       if ( facetEl.normal.dot( point - facetEl.centroid )  > 0 ) {
         isInside = false;
@@ -64,6 +67,23 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
       }
     }
     if (isInside) {
+      idxOwnerEl.push_back( ielem );
+    }
+  }
+  return idxOwnerEl;
+}
+vector<int> mesh::Mesh::findCollidingElement( const myOBB &obb ) {
+  vector<int> idxOwnerEl;
+  vector<int> potentialOwners;
+  //Broad  Phase Search
+  //Convert to CGAL aabb and use bounding boxes tree
+  auto cgal_aabb = static_cast<inex_K::Iso_cuboid_3>( obb );
+  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialOwners ) );
+
+  //Narrow Phase
+  for ( int ielem : potentialOwners ) {
+    Element cellEl = getElement( ielem );
+    if (obb.hasCollided( cellEl )) {
       idxOwnerEl.push_back( ielem );
     }
   }

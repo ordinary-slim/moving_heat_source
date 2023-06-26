@@ -61,8 +61,9 @@ void mesh::Element::computeDerivatives() {
   }
 }
 
-Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertices, ReferenceElement &facetRefEl ) const {
+Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertices ) const {
   /*
+   * Vertices: Local connectivity of facet
    * TODO: facetRefEl should come from somewhere else!
    */
   Element e;
@@ -72,8 +73,7 @@ Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertice
   // positions
   int locInode;
   int counter = 0;
-  for (int globInode : *vertices ) {
-    locInode = std::find(con->begin(), con->end(), globInode) - con->begin();
+  for (int locInode : *vertices ) {
     e.pos.row( counter ) = pos.row( locInode );
     counter++;
   }

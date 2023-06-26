@@ -16,4 +16,5 @@ std::string elementType2String(ElementType elType);
 ElementType string2ElementType(std::string aux_cell_type);
 std::vector<std::vector<unsigned int>> getFacetVertexSets(
     const std::vector<unsigned int> &localCon_D0, ElementType entD_elType);
+std::vector<std::vector<unsigned int>> getFacetVertexSets( ElementType entD_elType);
 #endif
