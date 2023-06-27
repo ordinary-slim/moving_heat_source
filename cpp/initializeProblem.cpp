@@ -72,6 +72,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
+  Tdeposition = Tenv;
   unknown.values = Eigen::VectorXd::Constant( domain.mesh->nnodes, Tenv );
 
   // TSTEPPING

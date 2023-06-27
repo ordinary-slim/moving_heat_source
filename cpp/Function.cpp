@@ -74,9 +74,7 @@ void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutsi
     try {
       values[inactiveNode] = extFEMFunc.evaluate( posExt );
     } catch (const std::invalid_argument &e) {
-      if (ignoreOutside) {
-        values[inactiveNode] = -1;
-      } else {
+      if (not(ignoreOutside)) {
         throw;
       }
     }

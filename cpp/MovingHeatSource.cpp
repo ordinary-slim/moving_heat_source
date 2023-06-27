@@ -81,6 +81,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("resetActivation", &mesh::ActiveMesh::resetActivation)
         .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
+        .def(py::init<const mesh::MeshTag<int>&>())
         .def(py::init<const mesh::Mesh*>())
         .def(py::init<const mesh::Mesh*, int>())
         .def(py::init<const mesh::Mesh*, int, vector<int>>())
@@ -107,6 +108,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
         .def("getElement", &mesh::Mesh::getElement);
+    m.def( "mark", &mesh::mark, "Return MeshTag of entity of dim d of 0s and 1s" );
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<const mesh::ActiveMesh*>())
         .def(py::init<const mesh::ActiveMesh*, const Eigen::VectorXd&>())
@@ -166,6 +168,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("ndofs", &LinearSystem::getNdofs)
         .def( py::init<Problem&, Problem&>() );
     py::class_<Printer>(m, "Printer")
-        .def( py::init<mesh::Mesh*, double, double>() )
-        .def("mark", &Printer::mark);
+        .def( py::init<Problem*, double, double>() )
+        .def("collide", &Printer::collide)
+        .def("deposit", &Printer::deposit);
 }

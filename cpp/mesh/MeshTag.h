@@ -22,6 +22,8 @@ class MeshTag {
 
     MeshTag(const mesh::Mesh *mesh, const std::vector<int> &indices, const std::vector<T> &values, const int dim=0);
 
+    MeshTag(const mesh::MeshTag<T> &mt) = default;
+
     T& operator[](int idx);
 
     const T& operator[](int idx) const;

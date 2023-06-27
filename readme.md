@@ -10,7 +10,9 @@ To-do:
 - [ ] Sync getEnts from ActiveMesh and Mesh
 - [ ] Sync the getFacetVertexSets implementations
 - [ ] Cleanup CMAKE so that I dont have to link with Qt5
-- [ ] Give domain to printer instead of mesh
+- [x] Give domain to printer instead of mesh
+- [ ] Add default OBB constructor
+- [ ] Reduce number of tags in ActiveMesh
 
 Ideas:
 ------

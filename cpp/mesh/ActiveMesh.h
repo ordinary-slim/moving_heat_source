@@ -21,7 +21,8 @@ class ActiveMesh {
     vector<Eigen::Triplet<double>> massCoeffs;
                      
     bool hasInactive;
-    mesh::MeshTag<int> activeNodes, activeElements, justDeactivatedElements, justActivatedBoundary;
+    mesh::MeshTag<int> activeNodes, activeElements;
+    mesh::MeshTag<int> justDeactivatedElements, justActivatedBoundary;//Are these useful?
     MeshTag<int> boundaryFacets, boundaryFacetsParentEls;
 
     ActiveMesh(Mesh *m) :
@@ -57,8 +58,8 @@ class ActiveMesh {
     int findOwnerElement( const Eigen::Vector3d &point ) const;
     void setActivation(const MeshTag<int> &activation);
     void resetActivation();
-    void updateActiveNodes();
-    void updateActiveElements();
+    void updateActiveNodes(const MeshTag<int> *newActiveNodes = NULL);
+    void updateActiveElements(const MeshTag<int> *newActiveEls = NULL);
     void updateBeforeActivation();
     void updateAfterActivation();
   private:

@@ -143,8 +143,12 @@ if __name__=="__main__":
                     )
 
         pFixed.writepos(
-            nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
+            nodeMeshTags={ "gammaNodes":pFixed.gammaNodes,
+                           "justActivatedNodes":pFixed.domain.justActivatedNodes, 
+                          },
                 )
         pMoving.writepos(
-            nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
+            nodeMeshTags={ "gammaNodes":pMoving.gammaNodes,
+                           "justActivatedNodes":pMoving.domain.justActivatedNodes, 
+                          },
             )

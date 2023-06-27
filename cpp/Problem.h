@@ -26,6 +26,8 @@ class Problem {
     double dt = 0.0;
     int iter;
 
+    double Tdeposition, Tenv;
+
     bool isAdvection = false;
     bool isSteady    = false;
     bool isStabilized = false;
@@ -49,7 +51,6 @@ class Problem {
 
     // Convection BC
     mesh::MeshTag<int> convectionFacets;
-    double Tenv;
 
     // Coupling BC
     mesh::MeshTag<int> gammaNodes;

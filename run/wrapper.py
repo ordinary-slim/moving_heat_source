@@ -201,6 +201,8 @@ class Problem(mhs.Problem):
 
 
 def meshio_comparison(ref, new, tol=1e-7):
+    isSame = True
+    differentKeys = []
     # Load datasets
     refds = meshio.read( ref )
     newds = meshio.read( new )
@@ -215,19 +217,29 @@ def meshio_comparison(ref, new, tol=1e-7):
             return False
     # Compare point data
     for key in refds.point_data.keys():
+        keyIsSame = True
         refpdata = refds.point_data[key]
         newpdata = newds.point_data[key]
         pdatadiff = np.abs(refpdata - newpdata )
         if not( (pdatadiff < tol).all() ):
-            return False
+            keyIsSame = False
+        if not(keyIsSame):
+            isSame = False
+            differentKeys.append( key )
     # Compare cell data
     for key in refds.cell_data.keys():
+        keyIsSame = True
         for refcdata, newcdata in zip( refds.cell_data[key], newds.cell_data[key] ):
             cdatadiff = np.abs( refcdata - newcdata )
             if not( (cdatadiff < tol).all() ):
-                return False
+                keyIsSame = False
+            if not(keyIsSame):
+                isSame = False
+                differentKeys.append( key )
     # All comparisons passed
-    return True
+    if not(isSame):
+        print(differentKeys)
+    return isSame
 
 if __name__=="__main__":
     pass

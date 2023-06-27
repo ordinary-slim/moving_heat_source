@@ -200,7 +200,7 @@ void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector
 mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol ) {
   /*
    * Current problem asks external problem if 
-   * element is active in external
+   * node is active in external
    */
   // External activation to function on external
   Eigen::VectorXd activeNodesExt = Eigen::VectorXd( pExt.domain.mesh->nnodes );
@@ -215,7 +215,7 @@ mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol
   // Return nodal MeshTag
   mesh::MeshTag<int> activeInExternal = mesh::MeshTag<int>( domain.mesh, 0 );
   for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
-    bool isIn = (abs( 1 - extActiveNodes.values[inode] ) < tol);
+    bool isIn = ( (1 -  extActiveNodes.values[inode]) < tol);
     activeInExternal[inode] = int(isIn);
   }
   return activeInExternal;

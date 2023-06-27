@@ -36,48 +36,69 @@ void ActiveMesh::computeBoundary() {
   }
 }
 
-void ActiveMesh::updateActiveNodes() {
-  /*
-   * Update activeNodes after a change in activeElements
-   * If a node belongs to an active element, set it to active.
-   */
-  const vector<unsigned int>* incidentElements;
-  for (int inode = 0; inode < activeNodes.size(); ++inode) {
-    activeNodes.x[inode] = false;
-    incidentElements = mesh->con_PointCell.getLocalCon( inode );
-    for ( auto p_ielem = incidentElements->begin(); p_ielem != incidentElements->end(); ++p_ielem ) {
-      if (activeElements.x[*p_ielem]) {
-        activeNodes.x[inode] = true;
-        break;
+void ActiveMesh::updateActiveNodes(const MeshTag<int> *newActiveNodes) {
+  if (newActiveNodes) {
+    for (int inode = 0; inode < mesh->nnodes; ++inode ) {
+      if (not(activeNodes.x[inode]) && (newActiveNodes->x[inode]) ) {
+        activeNodes.x[inode] = 2;
+      } else {
+        this->activeNodes[inode] = newActiveNodes->x[inode];
       }
+    }
+  } else {
+    // Update activeNodes after a change in activeElements
+    // If a node belongs to an active element, set it to active.
+    const vector<unsigned int>* incidentElements;
+    for (int inode = 0; inode < activeNodes.size(); ++inode) {
+      bool isInactive = true;
+      incidentElements = mesh->con_PointCell.getLocalCon( inode );
+      for ( auto p_ielem = incidentElements->begin(); p_ielem != incidentElements->end(); ++p_ielem ) {
+        if (activeElements.x[*p_ielem]) {
+          if (not(activeNodes.x[inode])) {
+            activeNodes.x[inode] = 2;
+          } else {
+            activeNodes.x[inode] = 1;
+          }
+          isInactive = false;
+          break;
+        }
+      }
+      if (isInactive) { activeNodes[inode] = 0; };
     }
   }
 }
 
-void ActiveMesh::updateActiveElements() {
-  /*
-   * Update activeElements after a change in activeNodes
-   * If all the nodes of an element are active, activate it.
-   */
-  const vector<unsigned int>* incidentNodes;
-  bool allNodesActive;
-  for (int ielem = 0; ielem < activeElements.size(); ++ielem) {
-    incidentNodes = mesh->con_CellPoint.getLocalCon( ielem );
-    allNodesActive = true;
-    for ( auto p_inode = incidentNodes->begin(); (p_inode != incidentNodes->end())&&(*p_inode != -1); ++p_inode ) {
-
-      if (!activeNodes.x[*p_inode]) {
-        allNodesActive = false;
-        break;
+void ActiveMesh::updateActiveElements(const MeshTag<int> *newActiveEls) {
+  if (newActiveEls) {
+    for (int iel = 0; iel < mesh->nels; ++iel ) {
+      if ((activeElements.x[iel])&& not(newActiveEls->x[iel]) ) {
+        justDeactivatedElements.x[iel] = 1;
       }
     }
-    if (allNodesActive) {
-      activeElements.x[ielem] = 1;
-    } else {
-      if (activeElements.x[ielem]) {
-        justDeactivatedElements.x[ielem] = 1;
+    activeElements = *newActiveEls;
+  } else {
+    //Update activeElements after a change in activeNodes
+    //If all the nodes of an element are active, activate it.
+    const vector<unsigned int>* incidentNodes;
+    bool allNodesActive;
+    for (int ielem = 0; ielem < activeElements.size(); ++ielem) {
+      incidentNodes = mesh->con_CellPoint.getLocalCon( ielem );
+      allNodesActive = true;
+      for ( auto p_inode = incidentNodes->begin(); (p_inode != incidentNodes->end())&&(*p_inode != -1); ++p_inode ) {
+
+        if (!activeNodes.x[*p_inode]) {
+          allNodesActive = false;
+          break;
+        }
       }
-      activeElements.x[ielem] = 0;
+      if (allNodesActive) {
+        activeElements.x[ielem] = 1;
+      } else {
+        if (activeElements.x[ielem]) {
+          justDeactivatedElements.x[ielem] = 1;
+        }
+        activeElements.x[ielem] = 0;
+      }
     }
   }
 }
@@ -93,28 +114,20 @@ void ActiveMesh::updateBeforeActivation() {
 
 void ActiveMesh::updateAfterActivation() {
   hasInactive = (std::find( activeElements.x.begin(), activeElements.x.end(), false) != activeElements.x.end() );
-  if (hasInactive) {
-    computeBoundary();
-  }
+  computeBoundary();
 }
 
 void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
   updateBeforeActivation();
   if (activationCriterion.dim()==0) {
     // Activate by nodes. Is this useful?
-    activeNodes = activationCriterion;
+    updateActiveNodes(&activationCriterion);
     updateActiveElements();
   } else if (activationCriterion.dim()==_dim) {
-    for (int iel = 0; iel < mesh->nels; ++iel ) {
-      if ((activeElements.x[iel])&&(activationCriterion.x[iel]==0)) {
-        justDeactivatedElements.x[iel] = 1;
-      }
-    }
-    activeElements = activationCriterion;
+    updateActiveElements(&activationCriterion);
     updateActiveNodes();
   } else {
-    cout << "Bad call to setActivation!" << endl;
-    exit(-1);
+    throw std::invalid_argument("Activation criterion must be node or element tag.");
   }
   updateAfterActivation();
 }
@@ -125,14 +138,16 @@ void ActiveMesh::resetActivation() {
 }
 
 int ActiveMesh::findOwnerElement( const Eigen::Vector3d &point ) const {
-  int activeOwnerElement = -1;
+  /*
+   * Wrapper around mesh's findOwnerElement that returns
+   * an active element owning the point.
+   */
   vector<int> owners = mesh->findOwnerElement( point );
   for (int ielem : owners) {
     if ( activeElements[ielem] ) {
-      activeOwnerElement = ielem;
-      break;
+      return ielem;
     }
   }
-  return activeOwnerElement;
+  throw std::invalid_argument("Point is not owned by active element.");
 }
 }
