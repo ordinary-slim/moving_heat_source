@@ -35,7 +35,7 @@ class Printer {
       for (int inode : indicesJustActivated) {
         p->unknown.values[inode] = p->Tdeposition;
       }
-      for (fem::Function prevVal : p->previousValues) {
+      for (fem::Function& prevVal : p->previousValues) {
         for (int inode : indicesJustActivated) {
           prevVal.values[inode] = p->Tdeposition;
         }

@@ -39,6 +39,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def_readonly("dirichletNodes", &Problem::dirichletNodes)
         .def_readonly("gammaNodes", &Problem::gammaNodes)
+        .def_readonly("elsOwnedByOther", &Problem::elsOwnedByOther)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setAssembling2External", &Problem::setAssembling2External)
         .def("setDeltaT", &Problem::setDeltaT)
@@ -65,10 +66,12 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Find interface between two problems")
         .def("updateInterface", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::updateInterface),
             "Find interface between two problems given external activation MeshTag")
-        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool, bool)>(&Problem::substractExternal),
+        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::substractExternal),
             "Substract external domain from domain.")
-        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool, bool)>(&Problem::intersectExternal),
-            "Intersect external domain with domain.");
+        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::intersectExternal),
+            "Intersect domain with external domain.")
+        .def("uniteExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::uniteExternal),
+            "Unite domain with external domain.");
     py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
         .def(py::init<mesh::Mesh*>())
         .def("dim", &mesh::ActiveMesh::dim)
@@ -110,6 +113,7 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("getElement", &mesh::Mesh::getElement);
     m.def( "mark", &mesh::mark, "Return MeshTag of entity of dim d of 0s and 1s" );
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
+        .def(py::init<const fem::Function&>())
         .def(py::init<const mesh::ActiveMesh*>())
         .def(py::init<const mesh::ActiveMesh*, const Eigen::VectorXd&>())
         .def("evaluate", &fem::Function::evaluate)

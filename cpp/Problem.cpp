@@ -221,11 +221,8 @@ mesh::MeshTag<int> Problem::getActiveInExternal( const Problem &pExt, double tol
   return activeInExternal;
 }
 
-void Problem::substractExternal( const Problem &pExt, bool resetActivation, bool updateGamma ) {
+void Problem::substractExternal( const Problem &pExt, bool updateGamma ) {
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
-  if (resetActivation) {
-    activationCriterion.setCteValue( 1 );
-  }
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
@@ -248,11 +245,8 @@ void Problem::substractExternal( const Problem &pExt, bool resetActivation, bool
   }
 }
 
-void Problem::intersectExternal( const Problem &pExt, bool resetActivation, bool updateGamma ) {
+void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
-  if (resetActivation) {
-    activationCriterion.setCteValue( 1 );
-  }
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
@@ -270,6 +264,40 @@ void Problem::intersectExternal( const Problem &pExt, bool resetActivation, bool
   }
 
   domain.setActivation( activationCriterion );
+  if (updateGamma) {
+    updateInterface( activeInExternal );
+  }
+}
+
+void Problem::uniteExternal( const Problem &pExt, bool updateGamma ) {
+  elsOwnedByOther.setCteValue( 0 );
+  mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
+
+  mesh::MeshTag<int> activationCriterion = domain.activeElements;
+  for (int ielem = 0; ielem < domain.mesh->nels; ++ielem ) {
+    const vector<unsigned int>* incidentNodes = domain.mesh->con_CellPoint.getLocalCon(ielem);
+    bool activeInExt = true;
+    for (int inode : *incidentNodes ) {
+      if (not(activeInExternal[inode])) {
+        activeInExt = false;
+        break;
+      }
+    }
+    if ( activeInExt ) {
+      activationCriterion[ielem] = 1;
+      elsOwnedByOther[ielem] = 1;
+    }
+  }
+
+  domain.setActivation( activationCriterion );
+
+  // Set values for just activated nodes
+  vector<int> indicesJustActivated =
+    domain.activeNodes.filterIndices( [](int inode){return (inode==2);});
+  for (int inode : indicesJustActivated) {
+    Eigen::Vector3d posExt = domain.mesh->pos.row(inode) + (domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF).transpose();
+    unknown.values[inode] = pExt.unknown.evaluate( posExt );
+  }
   if (updateGamma) {
     updateInterface( activeInExternal );
   }

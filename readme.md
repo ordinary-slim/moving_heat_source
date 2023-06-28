@@ -13,6 +13,7 @@ To-do:
 - [x] Give domain to printer instead of mesh
 - [ ] Add default OBB constructor
 - [ ] Reduce number of tags in ActiveMesh
+- [ ] Remove elsOwnedByOther
 
 Ideas:
 ------

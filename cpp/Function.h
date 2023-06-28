@@ -40,6 +40,7 @@ class Function{
       }
       values = convertedVals;
     }
+    Function(const Function&) = default;
 
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );

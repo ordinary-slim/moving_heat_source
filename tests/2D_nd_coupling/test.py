@@ -100,7 +100,7 @@ def run():
     pRight  = Problem(meshRight, problemInput, caseName="right")
 
     # Activation
-    pLeft.substractExternal( pRight, False, True )
+    pLeft.substractExternal( pRight, True )
     pRight.updateInterface( pLeft )
 
     print("Setting BCs...")
