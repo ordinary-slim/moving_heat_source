@@ -48,9 +48,6 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   mhs.currentPosition    = mhs.initialPosition;
   // set type of source term
   switch (int(py::cast<int>( input["sourceTerm"] ))) {
-    case 91:
-      { mhs.powerDensity = &forcedSolutionSource91;
-        break; }
     case 86:
       { mhs.powerDensity = &cteHeat;
         break; }

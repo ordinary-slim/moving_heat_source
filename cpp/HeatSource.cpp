@@ -29,10 +29,3 @@ double cteHeat(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
   }
   return pd;
 }
-
-double forcedSolutionSource91(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double cte, double gamma, double beta) {
-  double alpha = 1;
-  double pd = cte * exp( - gamma * t ) * exp( - beta * pow( x[0] - x0[0], 2 ) );
-  pd *= ( -pow(2 * beta * (x[0] - x0[0]), 2) + 2 * beta - gamma * alpha);
-  return pd;
-}
