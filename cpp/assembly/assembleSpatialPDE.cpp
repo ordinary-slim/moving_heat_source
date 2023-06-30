@@ -37,7 +37,7 @@ void Problem::assembleSpatialPDE() {
   }
 
   // Source term
-  mhs.pulse.setZero();
+  mhs->pulse.setZero();
   SourceForm sourceForm = SourceForm( this );
   linearForms.push_back( &sourceForm );
 
@@ -55,28 +55,28 @@ void Problem::assembleSpatialPDE() {
     Eigen::VectorXd rhs_loc = Eigen::VectorXd::Zero( e.nnodes );
     Eigen::VectorXd pulse_loc = Eigen::VectorXd::Zero( e.nnodes );
 
-    for (auto lform : linearForms) {
+    for (auto& lform : linearForms) {
       lform->preGauss( &e );
     }
-    for (auto bform : bilinearForms) {
+    for (auto& bform : bilinearForms) {
       bform->preGauss( &e );
     }
 
     for (int igp = 0; igp < e.ngpoints; igp++) {
-      for (auto lform : linearForms) {
+      for (auto& lform : linearForms) {
         lform->inGauss( igp, &e );
       }
-      for (auto bform : bilinearForms) {
+      for (auto& bform : bilinearForms) {
         bform->inGauss( igp, &e );
       }
       for (int inode = 0; inode < e.nnodes; inode++) {
-        for (auto lform : linearForms) {
+        for (auto& lform : linearForms) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
         }
         pulse_loc(inode) += sourceForm.contribute( igp, inode, &e );
         for (int jnode = 0; jnode < e.nnodes; jnode++) {
           mass_loc(inode, jnode) += massForm.contribute( igp, inode, jnode, &e );
-          for (auto biForm : bilinearForms) {
+          for (auto& biForm : bilinearForms) {
             lhs_loc(inode, jnode) += biForm->contribute( igp, inode, jnode, &e );
           }
         }
@@ -112,7 +112,7 @@ void Problem::assembleSpatialPDE() {
     // Assemble mass and pulse
     for (int inode = 0; inode < e.nnodes; ++inode) {
       int inodeGlobal =  (*e.con)[inode] ;
-      mhs.pulse[inodeGlobal] += pulse_loc(inode);
+      mhs->pulse[inodeGlobal] += pulse_loc(inode);
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
         int jnodeGlobal = (*e.con)[jnode];
         domain.massCoeffs.push_back( T(

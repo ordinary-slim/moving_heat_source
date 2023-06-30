@@ -14,6 +14,7 @@ To-do:
 - [ ] Add default OBB constructor
 - [ ] Reduce number of tags in ActiveMesh
 - [ ] Remove elsOwnedByOther
+- [ ] Check for mem leaks
 
 Ideas:
 ------

@@ -2,6 +2,7 @@
 #define HEATSOURCE
 #include <vector>
 #include <Eigen/Core>
+#include <cmath>
 
 class HeatSource {
   public:
@@ -24,19 +25,46 @@ class HeatSource {
         power = otherPower;
       }
 
-      double (*powerDensity)(Eigen::Vector3d x, double t, Eigen::Vector3d x0, double power, double efficiency, double radius);
-    };
+      //double (*powerDensity)(Eigen::Vector3d x, double t);
+
+      virtual double operator()(Eigen::Vector3d x, double t) const {
+        return 0.0;
+      }
+};
 
 // Some heat sources
-double gaussianPowerDensity1D(Eigen::Vector3d x, double t,
-    Eigen::Vector3d x0, double power, double efficiency, double radius);
+class gaussianPowerDensity1D : public HeatSource {
+  double operator()(Eigen::Vector3d x, double t) const {
+    double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x[0] - currentPosition[0], 2)/pow(radius, 2));
+    return pd;
+  }
+};
 
-double gaussianPowerDensity2D(Eigen::Vector3d x, double t,
-    Eigen::Vector3d x0, double power, double efficiency, double radius);
+class gaussianPowerDensity2D : public HeatSource {
+  double operator()(Eigen::Vector3d x, double t) const {
+    double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*(pow(x[0] - currentPosition[0], 2) + pow(x[1] - currentPosition[1], 2)) /pow(radius, 2));
+    return pd;
+  }
+};
 
-double gaussianPowerDensity3D(Eigen::Vector3d x, double t,
-    Eigen::Vector3d x0, double power, double efficiency, double radius);
+class gaussianPowerDensity3D : public HeatSource {
+  double operator()(Eigen::Vector3d x, double t) const {
+    //TODO: check formula
+    double dSquared = (x - currentPosition).squaredNorm();
+    double pd = 6*sqrt(3)*(power*efficiency) / pow(M_PI, 1.5) / pow(radius, 3) * exp( -3*dSquared/pow(radius, 2));
+    return pd;
+  }
+};
 
-double cteHeat(Eigen::Vector3d x, double t, Eigen::Vector3d x0,
-    double power, double efficiency, double radius);
+class cteHeat : public HeatSource {
+  double operator()(Eigen::Vector3d x, double t) const {
+
+    double pd = 0;
+    if ( (x - currentPosition).norm() <= radius ) {
+      //pd = efficiency * power / 2 / radius;
+      pd = power;
+    }
+    return pd;
+  }
+};
 #endif

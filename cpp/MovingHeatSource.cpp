@@ -1,6 +1,6 @@
 #include "mesh/Element.h"
 #include "Problem.h"
-#include "Printer.h"
+#include "additiveManufacturing/Printer.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
@@ -171,7 +171,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("cleanup", &LinearSystem::cleanup)
         .def("ndofs", &LinearSystem::getNdofs)
         .def( py::init<Problem&, Problem&>() );
-    py::class_<Printer>(m, "Printer")
+    py::class_<HatchCollider>(m, "HatchCollider");
+    py::class_<Printer, HatchCollider>(m, "Printer")
         .def( py::init<Problem*, double, double>() )
         .def("collide", &Printer::collide)
         .def("deposit", &Printer::deposit);

@@ -33,35 +33,35 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   }
 
   // HEAT SOURCE
-  mhs.radius = py::cast<double>(input["radius"]);
-  mhs.power = py::cast<double>(input["power"]);
-  mhs.pulse.resize( domain.mesh->nnodes );
-
-  if (input.contains("efficiency")) mhs.efficiency = py::cast<double>(input["efficiency"]);
-
-  mhs.speed[0] = py::cast<double>(input["HeatSourceSpeedX"]);
-  mhs.speed[1] = py::cast<double>(input["HeatSourceSpeedY"]);
-  mhs.speed[2] = py::cast<double>(input["HeatSourceSpeedZ"]);
-  mhs.initialPosition[0] = py::cast<double>(input["initialPositionX"]);
-  mhs.initialPosition[1] = py::cast<double>(input["initialPositionY"]);
-  mhs.initialPosition[2] = py::cast<double>(input["initialPositionZ"]);
-  mhs.currentPosition    = mhs.initialPosition;
   // set type of source term
   switch (int(py::cast<int>( input["sourceTerm"] ))) {
     case 86:
-      { mhs.powerDensity = &cteHeat;
+      { mhs = new cteHeat();
         break; }
     default:
       {
         if (domain.mesh->dim == 1 ) {
-          mhs.powerDensity = &gaussianPowerDensity1D;
+          mhs = new gaussianPowerDensity1D();
         } else if (domain.mesh->dim == 2 ) {
-          mhs.powerDensity = &gaussianPowerDensity2D;
+          mhs = new gaussianPowerDensity2D();
         } else {
-          mhs.powerDensity = &gaussianPowerDensity3D;
+          mhs = new gaussianPowerDensity3D();
         }
         break; }
   }
+  mhs->radius = py::cast<double>(input["radius"]);
+  mhs->power = py::cast<double>(input["power"]);
+  mhs->pulse.resize( domain.mesh->nnodes );
+
+  if (input.contains("efficiency")) mhs->efficiency = py::cast<double>(input["efficiency"]);
+
+  mhs->speed[0] = py::cast<double>(input["HeatSourceSpeedX"]);
+  mhs->speed[1] = py::cast<double>(input["HeatSourceSpeedY"]);
+  mhs->speed[2] = py::cast<double>(input["HeatSourceSpeedZ"]);
+  mhs->initialPosition[0] = py::cast<double>(input["initialPositionX"]);
+  mhs->initialPosition[1] = py::cast<double>(input["initialPositionY"]);
+  mhs->initialPosition[2] = py::cast<double>(input["initialPositionZ"]);
+  mhs->currentPosition    = mhs->initialPosition;
 
   // TIME DEPENDENCY
   if (input.contains("steadyState")) {

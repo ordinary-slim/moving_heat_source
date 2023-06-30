@@ -16,10 +16,15 @@ namespace py = pybind11;
 class Problem {
   public:
     Problem(mesh::Mesh &mesh, py::dict &input);
+
+    ~Problem() {
+      delete mhs;
+    }
+
     mesh::ActiveMesh domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
-    HeatSource mhs;
+    HeatSource* mhs;//run time polymporphism
     bool hasPreIterated = false;
     double density = 1.0, conductivity = 1.0, specificHeat = 1.0, convectionCoeff = 0.0;
     double time = 0.0;
@@ -62,7 +67,7 @@ class Problem {
 
     void setTime(double newTime) {
       time = newTime;
-      mhs.time = newTime;
+      mhs->time = newTime;
     }
     void setDeltaT( double newDeltaT ) {
       /*

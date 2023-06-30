@@ -82,7 +82,7 @@ class SourceForm : public LinearForm {
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
       return e->gpweight[igp] * e->BaseGpVals[inode][igp] * e->vol *
-        p->mhs.powerDensity(xgp, p->time, p->mhs.currentPosition, p->mhs.power, p->mhs.efficiency, p->mhs.radius);
+        p->mhs->operator()(xgp, p->time);
     }
 };
 
@@ -146,7 +146,7 @@ class ASSSLinearForm : public LinearForm {
       xgp = e->gpos.row( igp );
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
-        double f_xgp = p->mhs.powerDensity(xgp, p->time, p->mhs.currentPosition, p->mhs.power, p->mhs.efficiency, p->mhs.radius);
+        double f_xgp = p->mhs->operator()(xgp, p->time);
         return (e->gpweight[igp] * e->vol) * tau * f_xgp *
           e->GradBaseGpVals[inode][igp].dot( advectionSpeed );;
     }

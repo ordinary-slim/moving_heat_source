@@ -1,26 +1,16 @@
-#include "Problem.h"
-#include "mesh/cgal_interface.h"
-
-class Printer {
+#ifndef PRINTER
+#define PRINTER
+#include "Hatch.h"
+#include "../Problem.h"
+class Printer : public HatchCollider {
   private:
     Problem *p;
   public:
-    double mdwidth, mdheight;
-    myOBB obb;
-
-    Printer( Problem *p, double mdwidth, double mdheight ) :
-      obb( Eigen::Vector3d(-1, 0, 0), Eigen::Vector3d(+1, 0, 0), mdwidth, mdheight )
+    Printer( Problem *p, double width, double height ) :
+      HatchCollider( p->domain.mesh, width, height )
     {
       this->p    = p;
-      this->mdwidth = mdwidth;
-      this->mdheight = mdheight;
     }
-
-    vector<int> collide( const Eigen::Vector3d &p1, const Eigen::Vector3d &p2 ) {
-      obb = myOBB( p1, p2, mdwidth, mdheight );
-      return this->p->domain.mesh->findCollidingElement( obb );
-    }
-
     void deposit( const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, mesh::MeshTag<int> *activeEls = NULL ) {
       vector<int> collidedEls = collide( p1-p->domain.mesh->shiftFRF, p2-p->domain.mesh->shiftFRF);
 
@@ -42,3 +32,4 @@ class Printer {
       }
     }
 };
+#endif

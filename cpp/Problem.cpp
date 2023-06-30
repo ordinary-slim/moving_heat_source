@@ -18,7 +18,7 @@ void Problem::preIterate( bool canPreassemble ) {
   /* Beginning of iteration operations*/
   //TODO: Move mass matrix allocs etc here
   // UPDATE to tn+1
-  mhs.updatePosition( dt );
+  mhs->updatePosition( dt );
   updateFRFpos();
   setTime( time + dt );
   ++iter;
@@ -74,7 +74,7 @@ void Problem::postIterate() {
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
   }
-  mhs.pulse = solver.solve(mhs.pulse);
+  mhs->pulse = solver.solve(mhs->pulse);
 
   hasPreIterated = false;
 }
