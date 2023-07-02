@@ -38,8 +38,14 @@ void Problem::assembleSpatialPDE() {
 
   // Source term
   mhs->pulse.setZero();
-  SourceForm sourceForm = SourceForm( this );
-  linearForms.push_back( &sourceForm );
+
+  LinearForm* sourceForm = NULL;
+  if (mhs->type == heat::lumped) {
+    sourceForm = new LumpedSourceForm( this );
+  } else {
+    sourceForm = new SourceForm( this );
+  }
+  linearForms.push_back( sourceForm );
 
   domain.massMat.setZero();
 
@@ -73,7 +79,7 @@ void Problem::assembleSpatialPDE() {
         for (auto& lform : linearForms) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
         }
-        pulse_loc(inode) += sourceForm.contribute( igp, inode, &e );
+        pulse_loc(inode) += sourceForm->contribute( igp, inode, &e );
         for (int jnode = 0; jnode < e.nnodes; jnode++) {
           mass_loc(inode, jnode) += massForm.contribute( igp, inode, jnode, &e );
           for (auto& biForm : bilinearForms) {
@@ -124,4 +130,7 @@ void Problem::assembleSpatialPDE() {
   }
 
   domain.massMat.setFromTriplets( domain.massCoeffs.begin(), domain.massCoeffs.end() );
+
+  // Post-assembly
+  delete sourceForm;
 }

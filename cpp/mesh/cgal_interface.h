@@ -113,14 +113,16 @@ struct myOBB{
     }
     explicit operator inex_K::Iso_cuboid_3() const
     {
-        return inex_K::Iso_cuboid_3(
-                     pos[0] - halfWidths[0]*xAxis[0] - halfWidths[1]*yAxis[0] - halfWidths[2]*zAxis[0],
-                     pos[1] - halfWidths[0]*xAxis[1] - halfWidths[1]*yAxis[1] - halfWidths[2]*zAxis[1],
-                     pos[2] - halfWidths[0]*xAxis[2] - halfWidths[1]*yAxis[2] - halfWidths[2]*zAxis[2],
-                     pos[0] + halfWidths[0]*xAxis[0] + halfWidths[1]*yAxis[0] + halfWidths[2]*zAxis[0],
-                     pos[1] + halfWidths[0]*xAxis[1] + halfWidths[1]*yAxis[1] + halfWidths[2]*zAxis[1],
-                     pos[2] + halfWidths[0]*xAxis[2] + halfWidths[1]*yAxis[2] + halfWidths[2]*zAxis[2]
-                     );
+        double minX = pos[0] - halfWidths[0]*xAxis[0] - halfWidths[1]*yAxis[0] - halfWidths[2]*zAxis[0];
+        double maxX = pos[0] + halfWidths[0]*xAxis[0] + halfWidths[1]*yAxis[0] + halfWidths[2]*zAxis[0];
+        if (minX > maxX) { std::swap( minX, maxX ); }
+        double minY = pos[1] - halfWidths[0]*xAxis[1] - halfWidths[1]*yAxis[1] - halfWidths[2]*zAxis[1];
+        double maxY = pos[1] + halfWidths[0]*xAxis[1] + halfWidths[1]*yAxis[1] + halfWidths[2]*zAxis[1];
+        if (minY > maxY) { std::swap( minY, maxY ); }
+        double minZ = pos[2] - halfWidths[0]*xAxis[2] - halfWidths[1]*yAxis[2] - halfWidths[2]*zAxis[2];
+        double maxZ = pos[2] + halfWidths[0]*xAxis[2] + halfWidths[1]*yAxis[2] + halfWidths[2]*zAxis[2];
+        if (minZ > maxZ) { std::swap( minZ, maxZ ); }
+        return inex_K::Iso_cuboid_3( minX, minY, minZ, maxX, maxY, maxZ );
     }
     //TODO: template this
     bool hasCollided(const mesh::Element &otherConvex) const;

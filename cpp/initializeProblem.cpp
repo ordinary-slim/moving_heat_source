@@ -9,6 +9,8 @@
 namespace py = pybind11;
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
+  domain( mesh::ActiveMesh( &mesh ) ),
+  unknown( fem::Function( &domain ) ),
   forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
@@ -17,9 +19,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   elsOwnedByOther( mesh::MeshTag<int>( &mesh, mesh.dim, 0 ) ),
   gammaNodes( mesh::MeshTag<int>( &mesh, 0 ) ),
-  gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
-  domain( mesh::ActiveMesh( &mesh ) ),
-  unknown( fem::Function( &domain ) )
+  gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) )
 {
 
   // MATERIAL
@@ -35,17 +35,22 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   // HEAT SOURCE
   // set type of source term
   switch (int(py::cast<int>( input["sourceTerm"] ))) {
-    case 86:
-      { mhs = new cteHeat();
+    case 11: { 
+        double heatSouceWidth  = py::cast<double>(input["heatSourceWidth"]);
+        double heatSouceHeight = py::cast<double>(input["heatSourceHeight"]);
+        mhs = std::make_unique<heat::LumpedHeatSource>( &domain, heatSouceWidth, heatSouceHeight);
+        break; }
+    case 86: {
+        mhs = std::make_unique<heat::cteHeat>();
         break; }
     default:
       {
         if (domain.mesh->dim == 1 ) {
-          mhs = new gaussianPowerDensity1D();
+          mhs = std::make_unique<heat::gaussianPowerDensity1D>();
         } else if (domain.mesh->dim == 2 ) {
-          mhs = new gaussianPowerDensity2D();
+          mhs = std::make_unique<heat::gaussianPowerDensity2D>();
         } else {
-          mhs = new gaussianPowerDensity3D();
+          mhs = std::make_unique<heat::gaussianPowerDensity3D>();
         }
         break; }
   }
@@ -70,7 +75,11 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   // INITIALIZE UNKNOWN
   Tenv = py::cast<double>(input["environmentTemperature"]);
-  Tdeposition = Tenv;
+  if (input.contains("depositionTemperature")) {
+    Tdeposition = py::cast<double>(input["depositionTemperature"]);
+  } else {
+    Tdeposition = Tenv;
+  }
   unknown.values = Eigen::VectorXd::Constant( domain.mesh->nnodes, Tenv );
 
   // TSTEPPING

@@ -86,6 +86,30 @@ class SourceForm : public LinearForm {
     }
 };
 
+class LumpedSourceForm : public LinearForm {
+  private:
+    bool isElementHeated = false;
+    const heat::LumpedHeatSource* lumpedHs;
+  public:
+    LumpedSourceForm( const Problem *problem )
+      : LinearForm( problem ) {
+        // Casting a unique pointer!
+        // Safe because LumpedSourceForm lifetime is short compared to problem
+        // https://stackoverflow.com/a/36120483/12948600
+        lumpedHs = static_cast<heat::LumpedHeatSource*>(problem->mhs.get());
+    }
+    void preGauss(const mesh::Element *e){
+      isElementHeated = bool( lumpedHs->heatedElements[e->ient] );
+    }
+    double contribute( int igp, int inode, const mesh::Element *e ) {
+      if (isElementHeated) {
+        return lumpedHs->pd;
+      } else {
+        return 0.0;
+      }
+    }
+};
+
 class ASSSBilinearForm : public BilinearForm {
   private:
     double h = -1, tau = -1;

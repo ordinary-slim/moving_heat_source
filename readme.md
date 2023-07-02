@@ -14,7 +14,8 @@ To-do:
 - [ ] Add default OBB constructor
 - [ ] Reduce number of tags in ActiveMesh
 - [ ] Remove elsOwnedByOther
-- [ ] Check for mem leaks
+- [x] mhs unique pointer?
+- [ ] Move cp and rho away from MassForm, do corrections in time assembly
 
 Ideas:
 ------

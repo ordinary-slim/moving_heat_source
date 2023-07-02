@@ -3,9 +3,11 @@
 #include <map>
 #include <string>
 #include <list>
+#include <memory>
 #include "mesh/ActiveMesh.h"
 #include "Function.h"
 #include "HeatSource.h"
+#include "LumpedHeatSource.h"
 #include "timeIntegrator.h"
 #include "linearAlgebra/LinearSystem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
@@ -17,14 +19,10 @@ class Problem {
   public:
     Problem(mesh::Mesh &mesh, py::dict &input);
 
-    ~Problem() {
-      delete mhs;
-    }
-
     mesh::ActiveMesh domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
-    HeatSource* mhs;//run time polymporphism
+    std::unique_ptr<heat::HeatSource> mhs;//run time polymporphism
     bool hasPreIterated = false;
     double density = 1.0, conductivity = 1.0, specificHeat = 1.0, convectionCoeff = 0.0;
     double time = 0.0;

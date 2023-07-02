@@ -10,7 +10,8 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(MovingHeatSource, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
-        .def(py::init<Problem>())//copy constructor
+        //.def(py::init<Problem>())//copy constructor
+        // doesnt work currently with HeatSource unique pointer
         .def(py::init<mesh::Mesh&, py::dict&>())
         .def("preIterate", &Problem::preIterate)
         .def("preAssemble", &Problem::preAssemble)
@@ -30,7 +31,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def_readonly("freeDofsNumbering", &Problem::freeDofsNumbering)
         .def_readonly("unknown", &Problem::unknown)
         .def_readwrite("previousValues", &Problem::previousValues)
-        .def_readonly("mhs", &Problem::mhs)
+        .def_property_readonly("mhs", [](const Problem& p){ return p.mhs.get(); },
+            py::return_value_policy::reference_internal)
         .def_readonly("domain", &Problem::domain)
         .def_readwrite("time", &Problem::time)
         .def_readwrite("hasPreIterated", &Problem::hasPreIterated)
@@ -93,6 +95,11 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .def("setValues", &mesh::MeshTag<int>::setValues)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
+    //DEBUG
+    py::class_<mesh::MeshTag<double>>(m, "MeshTagD")//TODO: do it in a loop
+        .def("dim", &mesh::MeshTag<double>::dim)
+        .def_readonly("x", &mesh::MeshTag<double>::x);
+    //EDEBUG
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         //.def(py::init<const mesh::Mesh&>()) AABB_tree doesnt allow this
         .def(py::init<const py::dict&>())
@@ -155,12 +162,16 @@ PYBIND11_MODULE(MovingHeatSource, m) {
         .value("triangle3", ElementType::triangle3)
         .value("quad4", ElementType::quad4)
         .value("hexa8", ElementType::hexa8);
-    py::class_<HeatSource>(m, "HeatSource")
+    py::class_<heat::HeatSource>(m, "HeatSource")
         .def(py::init<>())
-        .def_readwrite("currentPosition", &HeatSource::currentPosition)
-        .def_readonly("pulse", &HeatSource::pulse)
-        .def_readonly("speed", &HeatSource::speed)
-        .def("setSpeed", &HeatSource::setSpeed);
+        .def_readwrite("currentPosition", &heat::HeatSource::currentPosition)
+        .def_readonly("pulse", &heat::HeatSource::pulse)
+        .def_readonly("speed", &heat::HeatSource::speed)
+        .def("setSpeed", &heat::HeatSource::setSpeed);
+    py::class_<heat::LumpedHeatSource, heat::HeatSource>(m, "LumpedHeatSource")
+        .def_readonly("heatedElements", &heat::LumpedHeatSource::heatedElements)
+        .def_readonly("elementPulse", &heat::LumpedHeatSource::elementPulse)//DEBUG
+        .def("markHeatedElements", &heat::LumpedHeatSource::markHeatedElements);
     py::class_<LinearSystem>(m, "LinearSystem")
         .def(py::init<>())
         .def_readonly("lhs", &LinearSystem::lhs)
