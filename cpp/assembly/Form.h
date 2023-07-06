@@ -183,7 +183,7 @@ class ConvectionBilinearForm : public BilinearForm {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * e->BaseGpVals[jnode][igp] *
-        p->convectionCoeff / p->conductivity;
+        p->convectionCoeff;
     }
 };
 
@@ -194,7 +194,7 @@ class ConvectionLinearForm : public LinearForm {
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
         return  e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * p->Tenv *
-        p->convectionCoeff / p->conductivity;
+        p->convectionCoeff;
     }
 };
 
