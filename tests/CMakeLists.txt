@@ -43,3 +43,8 @@ add_test(
   COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/3D_cubeLaplace"
   )
+add_test(
+  NAME 3D_printing_5on5
+  COMMAND ${PYTHON_EXECUTABLE} -m pytest test.py
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/3D_printing_5on5"
+  )
