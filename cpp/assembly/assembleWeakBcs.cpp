@@ -17,16 +17,16 @@ void Problem::assembleWeakBcs() {
   mesh::Element e;
 
   // assemble
-  vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();
-  for ( int ifacet : indicesBoundaryFacets ) {
+  vector<int> indicesBcFacets = weakBcFacets.getIndices();
+  for ( int ifacet : indicesBcFacets ) {
 
     bilinearForms.clear();
     linearForms.clear();
     // Decide what to do with facet
-    if (convectionFacets[ifacet]) {
+    if (weakBcFacets[ifacet] == 2) {
       bilinearForms.push_back( &convectionBi );
       linearForms.push_back( &convectionLi );
-    } else if (neumannFacets[ifacet]) {
+    } else if (weakBcFacets[ifacet] == 1) {
       linearForms.push_back( &neumannLi );
     } else {
       continue;

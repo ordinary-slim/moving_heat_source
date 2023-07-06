@@ -14,9 +14,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
-  neumannFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
+  weakBcFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
-  convectionFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
   elsOwnedByOther( mesh::MeshTag<int>( &mesh, mesh.dim, 0 ) ),
   gammaNodes( mesh::MeshTag<int>( &mesh, 0 ) ),
   gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) )
@@ -103,7 +102,9 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   // CONVECTION BC
   if (isConvection) {
-    convectionFacets = domain.boundaryFacets;
+    for (int ifacet : domain.boundaryFacets.getIndices() ) {
+      weakBcFacets[ifacet] = 2;
+    }
   }
 
   // ADVECTION

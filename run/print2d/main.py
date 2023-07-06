@@ -7,20 +7,31 @@ import meshzoo
 from wrapper import Problem, readInput
 import pdb
 
-def mesh(box, meshDen=4):
-    cell_type="quad4"
-    nelsX = int((box[1] - box[0])*meshDen)
-    nelsY = int((box[3] - box[2])*meshDen)
-    points, cells = meshzoo.rectangle_quad(
-        np.linspace(box[0], box[1], nelsX+1),
-        np.linspace(box[2], box[3], nelsY+1),
-        cell_type=cell_type
-        #variant="zigzag",  # or "up", "down", "center"
-    )
-    cells = cells.astype( int )
+def mesh(box, meshDen=1, variant="zigzag", cell_type="triangle3"):
+    '''
+    Variant = "zigzag",  or "up", "down", "center"
+    '''
+    nelsX = int(meshDen*(box[1]-box[0]))
+    nelsY = int(meshDen*(box[3]-box[2]))
+    if cell_type=="triangle3":
+        points, cells = meshzoo.rectangle_tri(
+            np.linspace(box[0], box[1], nelsX+1),
+            np.linspace(box[2], box[3], nelsY+1),
+            #cell_type=cell_type,
+            variant=variant)
+    elif cell_type=="quad4":
+        points, cells = meshzoo.rectangle_quad(
+            np.linspace(box[0], box[1], nelsX+1),
+            np.linspace(box[2], box[3], nelsY+1),
+            cell_type=cell_type
+            #variant="zigzag",  # or "up", "down", "center"
+        )
+    else:
+        exit()
+    cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
-def meshAroundHS( adimR, problemInput, meshDen=4 ):
+def meshAroundHS( adimR, problemInput, meshDen=4, cell_type="triangle3" ):
     radius = problemInput["radius"]
     initialPositionX = problemInput["initialPositionX"]
     initialPositionY = problemInput["initialPositionY"]
@@ -31,7 +42,7 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
            initialPositionY - halfLengthY, initialPositionY + halfLengthY,
            ]
 
-    return mesh(box, meshDen)
+    return mesh(box, meshDen=meshDen, cell_type=cell_type)
 
 def deactivateBelowSurface(p, surfaceZ = 0):
     nels = p.domain.mesh.nels
@@ -58,8 +69,8 @@ if __name__=="__main__":
             runReference = True
     inputFile = "input.txt"
     boxDomain = [-25, 25, -5, 1]
-    adimR_tstep = 0.5
-    adimR_domain = 2
+    adimR_tstep = 2
+    adimR_domain = 4
 
     # read input
     problemInput = readInput( inputFile )
@@ -69,11 +80,11 @@ if __name__=="__main__":
     movingProblemInput = dict( problemInput )
 
     # Mesh
-    meshDen = 4
+    meshDen = 2
     meshInputFixed, meshInputMoving = {}, {}
-    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
-    #meshDen = 2
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen)
+    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen, cell_type="quad4")
+    ##meshDen = 4
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen, cell_type="quad4"))
 
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
@@ -110,8 +121,8 @@ if __name__=="__main__":
 
 
     # Set up printer
-    mdwidth = 1
-    mdheight = 2
+    mdwidth = 0.99
+    mdheight = 1.99
     printerFRF = mhs.Printer( pFRF, mdwidth, mdheight )
 
     while (pFRF.time < Tfinal - tol) :
@@ -166,6 +177,7 @@ if __name__=="__main__":
         # Print
         # Setup print
         p2 = np.array(pFixed.mhs.currentPosition)
+        p2 = p2 - 0.001*(p2 - p1)
         printerMoving.deposit( p1, p2, pMoving.domain.activeElements )
 
         #Dirichet gamma

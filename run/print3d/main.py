@@ -62,8 +62,8 @@ if __name__=="__main__":
             runReference = True
     inputFile = "input.txt"
     boxDomain = [-25, 25, -5, 5, -5, 1]
-    adimR_tstep = 0.5
-    adimR_domain = 2
+    adimR_tstep = 2
+    adimR_domain = 4
 
     # read input
     problemInput = readInput( inputFile )
@@ -118,20 +118,6 @@ if __name__=="__main__":
     mdheight = 2
     printerFRF = mhs.Printer( pFRF, mdwidth, mdheight )
 
-    '''
-    while (pFRF.time < Tfinal - tol) :
-        # Setup print
-        p1 = pFRF.mhs.currentPosition
-        p2 = p1 + pFRF.mhs.speed * dt
-        # Print
-        printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
-
-        # FRF ITERATE
-        pFRF.iterate()
-
-        pFRF.writepos(
-                )
-
     if runReference:
         printerFineFRF = mhs.Printer( pFineFRF, mdwidth, mdheight )
 
@@ -146,7 +132,6 @@ if __name__=="__main__":
             pFineFRF.iterate()
 
             pFineFRF.writepos()
-    '''
 
     printerMoving = mhs.Printer( pMoving, mdwidth, mdheight )
     activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
@@ -201,21 +186,28 @@ if __name__=="__main__":
         activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
         pMoving.unknown.interpolateInactive( pFixed.unknown, True )
 
-        #DEBUGGING
-        prevValFixed = mhs.Function(pFixed.previousValues[0])
-        prevValMoving = mhs.Function(pMoving.previousValues[0])
-        #DEBUGGING
         # Post iteration
         pFixed.postIterate()
         pMoving.postIterate()
 
         pFixed.writepos(
-            functions={"prevVal":prevValFixed},
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
             cellMeshTags={ "elsOwnedByOther":pFixed.elsOwnedByOther, },
                 )
         pMoving.writepos(
-            functions={"prevVal":prevValMoving},
             nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
             cellMeshTags={ "elsOwnedByOther":pMoving.elsOwnedByOther, },
             )
+
+    while (pFRF.time < Tfinal - tol) :
+        # Setup print
+        p1 = pFRF.mhs.currentPosition
+        p2 = p1 + pFRF.mhs.speed * dt
+        # Print
+        printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
+
+        # FRF ITERATE
+        pFRF.iterate()
+
+        pFRF.writepos(
+                )

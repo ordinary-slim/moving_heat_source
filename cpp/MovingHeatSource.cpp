@@ -57,6 +57,8 @@ PYBIND11_MODULE(MovingHeatSource, m) {
             "Set Neumann condition from plane.")
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
+        .def("setConvection", &Problem::setConvection,
+            "Set all boundary to convection boundary condition.")
         .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
         .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
         .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)

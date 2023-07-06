@@ -112,7 +112,7 @@ void Problem::setNeumann( vector<vector<unsigned int>> neumannNodes, double neum
       }
     }
     if (idxMatch >= 0) {
-      neumannFacets[ idxMatch ] = 1;
+      weakBcFacets[ idxMatch ] = 1;
       neumannFluxes[ idxMatch ] =  std::vector<double>(nfacetgpoints, neumannFlux);
     } else {
       cout << "Not a boundary facet!" << endl;
@@ -146,7 +146,7 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
     }
 
     // if all tests passed, add facet
-    neumannFacets[ iBFacet ] = 1;
+    weakBcFacets[ iBFacet ] = 1;
     neumannFluxes[ iBFacet ] =  std::vector<double>(e.ngpoints, neumannFlux);
   }
 }
@@ -162,7 +162,7 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
     // Load element
     e = domain.getBoundaryFacet( ifacet );
 
-    neumannFacets[ ifacet ] = 1;
+    weakBcFacets[ ifacet ] = 1;
     double fluxAtPoint;
     vector<double> facet_fluxes( e.ngpoints );
     for (int igpoint = 0; igpoint < e.ngpoints; ++igpoint ) {
@@ -171,6 +171,13 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
       facet_fluxes[igpoint] = fluxAtPoint;
     }
     neumannFluxes[ ifacet ] = facet_fluxes;
+  }
+}
+
+void Problem::setConvection() {
+  weakBcFacets.setCteValue( 0 );
+  for (int ifacet : domain.boundaryFacets.getIndices() ) {
+    weakBcFacets[ifacet] = 2;
   }
 }
 

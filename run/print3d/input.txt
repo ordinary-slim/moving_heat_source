@@ -1,9 +1,9 @@
-radius		1.0
-power		200.0
+radius		2.0
+power		800.0
 Tfinal		2.0
 initialPositionX	 -10.0
 initialPositionY		0.0
-initialPositionZ		0.0
+initialPositionZ		0.5
 HeatSourceSpeedX		10
 HeatSourceSpeedY		0
 HeatSourceSpeedZ		0
@@ -14,7 +14,7 @@ rho		1
 conductivity		1
 specific_heat		1
 environmentTemperature		25
-plot 1
+depositionTemperature  60
 timeIntegration 1
 sourceTerm 0
 isAdvection 0

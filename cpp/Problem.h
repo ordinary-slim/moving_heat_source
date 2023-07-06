@@ -49,11 +49,9 @@ class Problem {
     mesh::MeshTag<double> dirichletValues;
 
     // Neumann BC
-    mesh::MeshTag<int>    neumannFacets;
+    mesh::MeshTag<int>    weakBcFacets; // 1 is Neumann
+                                        // 2 is convection
     mesh::MeshTag<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
-
-    // Convection BC
-    mesh::MeshTag<int> convectionFacets;
 
     // Coupling BC
     mesh::MeshTag<int> elsOwnedByOther;//Quick-fix for POST solely
@@ -109,6 +107,7 @@ class Problem {
     void setNeumann( vector<vector<unsigned int>> otherNeumannNodes, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
+    void setConvection();
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
     void setGamma2Dirichlet();
@@ -121,9 +120,8 @@ class Problem {
     void clearBCs() {
       dirichletNodes.setCteValue( 0 );
       dirichletValues.setCteValue( 0 );
-      neumannFacets.setCteValue( 0 );
+      weakBcFacets.setCteValue( 0 );
       neumannFluxes.setCteValue( vector<double>() );
-      convectionFacets.setCteValue( 0 );
     }
     fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };

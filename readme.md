@@ -16,6 +16,9 @@ To-do:
 - [ ] Remove elsOwnedByOther
 - [x] mhs unique pointer?
 - [ ] Move cp and rho away from MassForm, do corrections in time assembly
+- [x] Refactor weak bcs into single facet marker
+- [ ] neumannFluxes ?
+- [ ] Undefined behaviour if activation && weakBcFacets not updated
 
 Ideas:
 ------

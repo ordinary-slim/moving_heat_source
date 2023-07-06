@@ -103,7 +103,7 @@ class LumpedSourceForm : public LinearForm {
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
       if (isElementHeated) {
-        return lumpedHs->pd;
+        return e->gpweight[igp] * e->BaseGpVals[inode][igp] * e->vol * lumpedHs->pd;
       } else {
         return 0.0;
       }
