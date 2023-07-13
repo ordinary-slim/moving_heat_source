@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release')
 import MovingHeatSource as mhs
-from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
 
 def mesh(leftEnd, rightEnd, elDen):
@@ -20,7 +16,7 @@ def mesh(leftEnd, rightEnd, elDen):
 def run(caseName):
     inputFile = "input.txt"
 
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
     # Mesh
     elDen = 1
     leftEnd = -20.0
@@ -38,7 +34,7 @@ def run(caseName):
     problemInput["steadyState"] = 1
 
     # Initialize problems
-    p  = Problem(m, problemInput, caseName=caseName)
+    p  = mhs.Problem(m, problemInput, caseName=caseName)
 
     # Solve
     p.iterate()#assembly + solve
@@ -50,7 +46,7 @@ def test_1d_dirichlet():
     trialDs =  "post_1d_dirichlet/1d_dirichlet_1.vtu"
 
     # COMPARISON
-    assert meshio_comparison(referenceDs, trialDs)
+    assert mhs.meshio_comparison(referenceDs, trialDs)
 
 if __name__=="__main__":
     test_1d_dirichlet()

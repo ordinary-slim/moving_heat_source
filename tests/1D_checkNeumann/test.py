@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
-from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
 
 Tfinal = 5.0
@@ -21,7 +17,7 @@ def mesh(leftEnd, rightEnd, elDen):
 def run():
     inputFile = "input.txt"
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     # MESH
     elDen = 1
@@ -32,7 +28,7 @@ def run():
     meshDict["points"], meshDict["cells"], meshDict["cell_type"] = mesh(boxDomain[0], boxDomain[1], elDen)
     myMesh = mhs.Mesh(meshDict)
 
-    p = Problem(myMesh, problemInput, caseName="neumann")
+    p = mhs.Problem(myMesh, problemInput, caseName="neumann")
 
     # Neumann condition
     neumannVal = 10
@@ -56,7 +52,7 @@ def test():
     newds = "post_neumann/neumann_1.vtu"
 
     # COMPARISON
-    assert meshio_comparison(refds, newds)
+    assert mhs.meshio_comparison(refds, newds)
 
 if __name__=="__main__":
     test()

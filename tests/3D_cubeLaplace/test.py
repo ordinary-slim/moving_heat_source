@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 
 def exactSol( x ):
     return (1 - np.power(x[0], 2) - np.power(x[1],2) - np.power(x[2],2))
@@ -37,7 +33,7 @@ def mesh(box, meshDen=4):
 
 def run():
     inputFile = "input.txt"
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     box = [-1, 1, -1, 1, -1, 1]
     meshDen = 4
@@ -46,7 +42,7 @@ def run():
     meshInput["points"], meshInput["cells"], meshInput["cell_type"] = p, c, cell_type
     myMesh = mhs.Mesh( meshInput )
 
-    p = Problem( myMesh, problemInput )
+    p = mhs.Problem( myMesh, problemInput )
 
     print("Setting BCs...")
     setDirichlet( p )
@@ -72,7 +68,7 @@ def test():
     run()
     reference = "post_case_reference/case_0.vtu"
     new = "post_case/case_0.vtu"
-    assert meshio_comparison(reference, new)
+    assert mhs.meshio_comparison(reference, new)
 
 if __name__=="__main__":
     test()

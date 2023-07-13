@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem
 import pdb
 
 maxIter = 50
@@ -26,7 +22,7 @@ if __name__=="__main__":
     inputFile = "input.txt"
     box = [-2, 2, -2, 2]
 
-    p             = Problem("case")
+    p             = mhs.Problem("case")
 
     points, cells = mesh(box)
     for p in [p,]:

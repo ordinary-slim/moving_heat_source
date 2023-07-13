@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 
 maxIter = 1
 dt = 1
@@ -37,14 +33,14 @@ def run():
     box = [-5, 5, -5, 5]
 
     # Read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
     # Mesh
     meshInput = {}
     meshInput["points"], meshInput["cells"], meshInput["cell_type"] = mesh(box, meshDen=1)
     m = mhs.Mesh( meshInput )
 
     # Initialize problems
-    p  = Problem(m, problemInput, caseName="2d_neumannWactivation")
+    p  = mhs.Problem(m, problemInput, caseName="2d_neumannWactivation")
 
     activeElements = specActivate( p )
     p.domain.setActivation( activeElements )
@@ -66,7 +62,7 @@ def test():
     refds = "post_2d_neumannWactivation_reference/2d_neumannWactivation_1.vtu"
     newds = "post_2d_neumannWactivation/2d_neumannWactivation_1.vtu"
 
-    assert meshio_comparison( refds, newds )
+    assert mhs.meshio_comparison( refds, newds )
 
 if __name__=="__main__":
     test()

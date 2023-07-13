@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem
 import math
 import pdb
 
@@ -53,8 +49,8 @@ if __name__=="__main__":
     frfBox = [-16, 16, -5, 5]
     adimR = 2
 
-    mrfProblem = Problem("mrfProblem")
-    mrfTransporter = Problem("mrfTransport")
+    mrfProblem = mhs.Problem("mrfProblem")
+    mrfTransporter = mhs.Problem("mrfTransport")
     # INITIALIZATIONS
     # Mesh BG
     points, cells, cell_type = mesh(mrfBox, meshDen=4)

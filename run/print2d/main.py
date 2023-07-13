@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput
 import pdb
 
 def mesh(box, meshDen=1, variant="zigzag", cell_type="triangle3"):
@@ -64,8 +60,6 @@ def setAdimR( adimR, input ):
 
 if __name__=="__main__":
     runReference = False
-    if (len(sys.argv)>1):
-        if sys.argv[1]=="True":
             runReference = True
     inputFile = "input.txt"
     boxDomain = [-25, 25, -5, 1]
@@ -73,7 +67,7 @@ if __name__=="__main__":
     adimR_domain = 4
 
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     fixedProblemInput = dict( problemInput )
     referenceProblemInput = dict( problemInput )
@@ -89,7 +83,7 @@ if __name__=="__main__":
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
 
-    # Problem params
+    # mhs.Problem params
     # set dt
     dt = setAdimR( adimR_tstep, fixedProblemInput )
     for input in [fixedProblemInput, movingProblemInput,]:
@@ -103,12 +97,12 @@ if __name__=="__main__":
     movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
     movingProblemInput["HeatSourceSpeedX"] = 0.0
 
-    pFixed         = Problem(meshFixed, fixedProblemInput, caseName="fixed")
-    pFRF           = Problem(meshFixed, fixedProblemInput, caseName="FRF")
+    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
+    pFRF           = mhs.Problem(meshFixed, fixedProblemInput, caseName="FRF")
     pFineFRF       = None
     if runReference:
-        pFineFRF = Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
-    pMoving        = Problem(meshMoving, movingProblemInput, caseName="moving")
+        pFineFRF = mhs.Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
+    pMoving        = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")
 
     Tfinal = pFixed.input["Tfinal"]
 
@@ -185,7 +179,6 @@ if __name__=="__main__":
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(True)
         pFixed.preAssemble(True)
-        # Allocate linear system
         ls = mhs.LinearSystem( pMoving, pFixed )
         ls.cleanup()
         # Assembly

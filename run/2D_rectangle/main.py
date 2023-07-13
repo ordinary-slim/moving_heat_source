@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput
 import pdb
 
 def mesh(box, meshDen=4):
@@ -62,7 +58,7 @@ if __name__=="__main__":
     adimR = 1
 
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     FineFRFInput = dict( problemInput )
     FRFInput = dict( problemInput )
@@ -80,7 +76,7 @@ if __name__=="__main__":
     meshTransportedMRF= mhs.Mesh(meshInputBg)
     meshMRFTransporter= mhs.Mesh(meshInputPhys)
 
-    # Problem params
+    # mhs.Problem params
     # set dt
     dt = setAdimR( adimR, FRFInput )
     for input in [FRFInput, TransportedMRFInput, NoTransportMRFInput]:
@@ -103,11 +99,11 @@ if __name__=="__main__":
     TransportedMRFInput["speedFRF_X"]      = FRFInput["HeatSourceSpeedX"]
     TransportedMRFInput["HeatSourceSpeedX"] = 0.0
 
-    pFineFRF         = Problem(meshFineFRF, FineFRFInput, caseName="fineFRF")
-    pFRF             = Problem(meshFRF, FRFInput, caseName="FRF")
-    pNoTransportMRF  = Problem(meshNoTransportMRF, NoTransportMRFInput, caseName="NoTransportMRF")
-    pTransportedMRF  = Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
-    pMRFTransporter  = Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
+    pFineFRF         = mhs.Problem(meshFineFRF, FineFRFInput, caseName="fineFRF")
+    pFRF             = mhs.Problem(meshFRF, FRFInput, caseName="FRF")
+    pNoTransportMRF  = mhs.Problem(meshNoTransportMRF, NoTransportMRFInput, caseName="NoTransportMRF")
+    pTransportedMRF  = mhs.Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
+    pMRFTransporter  = mhs.Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
 
     pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
     for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):

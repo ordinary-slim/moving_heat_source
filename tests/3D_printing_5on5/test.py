@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Debug/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 import pdb
 
 nsteps=5
@@ -62,7 +58,7 @@ def run():
     boxDomain = [-0.005, 0.005, -0.025, +0.025, 0.0, 0.02]
 
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
     mdwidth = 2.5e-3
     mdheight = 2.5e-3
     problemInput["heatSourceHeight"] = mdheight
@@ -77,12 +73,12 @@ def run():
 
     meshFixed  = mhs.Mesh(meshInputFixed)
 
-    # Problem params
+    # mhs.Problem params
     # set dt
     dt = 1
     fixedProblemInput["dt"] = dt
 
-    p           = Problem(meshFixed, fixedProblemInput, caseName="case")
+    p           = mhs.Problem(meshFixed, fixedProblemInput, caseName="case")
 
     for p in [p]:
         deactivateBelowSurface( p, surfaceZ=0.01 )
@@ -111,7 +107,7 @@ def test():
     for ifile in range(nsteps):
         newds = "post_case/case_{}.vtu".format( ifile+1 )
         refds = "post_case_reference/case_{}.vtu".format( ifile+1 )
-        if not(meshio_comparison( newds, refds )):
+        if not(mhs.meshio_comparison( newds, refds )):
                allFilesSame = False
                break
     assert allFilesSame

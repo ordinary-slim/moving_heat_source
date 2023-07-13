@@ -1,9 +1,5 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
-from wrapper import Problem, readInput, meshio_comparison
 import matplotlib.pyplot as plt
 
 def mesh(leftEnd, rightEnd, meshDen=4):
@@ -49,7 +45,7 @@ def run():
     adimR_domain = 11
 
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     fixedProblemInput = dict( problemInput )
     movingProblemInput = dict( problemInput )
@@ -63,7 +59,7 @@ def run():
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
 
-    # Problem params
+    # mhs.Problem params
     # set dt
     dt = setAdimR( adimR_tstep, fixedProblemInput )
     for input in [fixedProblemInput, movingProblemInput,]:
@@ -75,8 +71,8 @@ def run():
     movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
     movingProblemInput["HeatSourceSpeedX"] = 0.0
 
-    pFixed         = Problem(meshFixed, fixedProblemInput, caseName="fixed")
-    pMoving        = Problem(meshMoving, movingProblemInput, caseName="moving")
+    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
+    pMoving        = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")
 
     maxIter = pFixed.input["maxIter"]
     Tfinal = pFixed.input["Tfinal"]
@@ -102,7 +98,6 @@ def run():
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(True)
         pFixed.preAssemble(True)
-        # Allocate linear system
         ls = mhs.LinearSystem( pMoving, pFixed )
         ls.cleanup()
 
@@ -136,7 +131,7 @@ def test():
     newds = "post_fixed/fixed_4.vtu"
 
     # COMPARISON
-    assert meshio_comparison(refds, newds)
+    assert mhs.meshio_comparison(refds, newds)
 
 if __name__=="__main__":
     test()

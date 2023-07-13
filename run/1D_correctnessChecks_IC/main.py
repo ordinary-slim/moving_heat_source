@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
-from wrapper import Problem
 import numpy as np
 import meshzoo
 import pdb
@@ -38,13 +34,13 @@ def isInside( mesh, box ):
 if __name__=="__main__":
     inputFile = "input.txt"
 
-    pFRF = Problem("FRF")
-    pMRF_Advec = Problem("MRF_Advec")
-    pMRF_Trans = Problem("MRF_Trans")
-    pMRF_TransHelper = Problem("TransHelper")
-    pMRF_AdvecTrans = Problem("MRF_AdvecTrans")
-    pMRF_AdvecTransHelper = Problem("AdvecTransHelper")
-    pFRF_Step  = Problem("FRFStep")
+    pFRF = mhs.Problem("FRF")
+    pMRF_Advec = mhs.Problem("MRF_Advec")
+    pMRF_Trans = mhs.Problem("MRF_Trans")
+    pMRF_TransHelper = mhs.Problem("TransHelper")
+    pMRF_AdvecTrans = mhs.Problem("MRF_AdvecTrans")
+    pMRF_AdvecTransHelper = mhs.Problem("AdvecTransHelper")
+    pFRF_Step  = mhs.Problem("FRFStep")
 
     elDen = 16
     dt = 0.5
@@ -121,7 +117,7 @@ if __name__=="__main__":
         pFRF.writepos(shift=shift)
         
         # Copy FRF into MRF using the copy constructor
-        pMRF_Step = Problem(  "MRFStep", problem=pFRF_Step )
+        pMRF_Step = mhs.Problem(  "MRFStep", problem=pFRF_Step )
         # Change reference frame
         pMRF_Step.frf2mrf(speed=np.array([speed, 0.0, 0.0], dtype=np.float64))
         pMRF_Step.setStabilization(True)

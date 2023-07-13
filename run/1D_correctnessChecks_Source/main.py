@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
-from wrapper import Problem
 import numpy as np
 import meshzoo
 import pdb
@@ -38,12 +34,12 @@ def isInside( mesh, box ):
 if __name__=="__main__":
     inputFile = "input.txt"
 
-    pFRF = Problem("FRF")
-    pMRF_Advec = Problem("MRF_Advec")
-    pMRF_Trans = Problem("MRF_Trans")
-    pMRF_TransHelper = Problem("TransHelper")
-    pMRF_AdvecTrans = Problem("MRF_AdvecTrans")
-    pMRF_AdvecTransHelper = Problem("AdvecTransHelper")
+    pFRF = mhs.Problem("FRF")
+    pMRF_Advec = mhs.Problem("MRF_Advec")
+    pMRF_Trans = mhs.Problem("MRF_Trans")
+    pMRF_TransHelper = mhs.Problem("TransHelper")
+    pMRF_AdvecTrans = mhs.Problem("MRF_AdvecTrans")
+    pMRF_AdvecTransHelper = mhs.Problem("AdvecTransHelper")
 
     elDen = 10
     leftEnd = -50.0

@@ -8,7 +8,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(MovingHeatSource, m) {
+PYBIND11_MODULE(cpp, m) {
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         //.def(py::init<Problem>())//copy constructor
         // doesnt work currently with HeatSource unique pointer

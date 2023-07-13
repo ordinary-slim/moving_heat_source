@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 
 speed = 10.0
 
@@ -41,7 +37,7 @@ def run():
     boxBg = [-32, 32, -5, 5]
 
     # read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     FRFInput = dict( problemInput )
     TransportedMRFInput = dict( problemInput )
@@ -54,7 +50,7 @@ def run():
     meshTransportedMRF= mhs.Mesh(meshInputBg)
     meshMRFTransporter= mhs.Mesh(meshInputPhys)
 
-    # Problem params
+    # mhs.Problem params
     # set dt
     dt = 0.5
     TransportedMRFInput["dt"] = dt
@@ -65,8 +61,8 @@ def run():
     TransportedMRFInput["speedFRF_X"]      = speed
     TransportedMRFInput["HeatSourceSpeedX"] = 0.0
 
-    pTransportedMRF  = Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
-    pMRFTransporter  = Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
+    pTransportedMRF  = mhs.Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
+    pMRFTransporter  = mhs.Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
 
     pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
     for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
@@ -98,7 +94,7 @@ def test():
     run()
     referenceFile = "post_TransportedMRF_reference/TransportedMRF_2.vtu"
     newFile = "post_TransportedMRF/TransportedMRF_2.vtu"
-    assert meshio_comparison(referenceFile, newFile)
+    assert mhs.meshio_comparison(referenceFile, newFile)
 
 if __name__=="__main__":
     test()

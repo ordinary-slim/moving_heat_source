@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 
 def mesh(box, meshDen=1, variant="up", cell_type="triangle3"):
     '''
@@ -80,7 +76,7 @@ def run():
     box = [-1, 1, -1, 1]
 
     # Read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     # Mesh
     leftMeshInput, rightMeshInput = {}, {}
@@ -96,8 +92,8 @@ def run():
     meshRight = mhs.Mesh(rightMeshInput)
 
     # Initialize problems
-    pLeft  = Problem(meshLeft, problemInput, caseName="left")
-    pRight  = Problem(meshRight, problemInput, caseName="right")
+    pLeft  = mhs.Problem(meshLeft, problemInput, caseName="left")
+    pRight  = mhs.Problem(meshRight, problemInput, caseName="right")
 
     # Activation
     pLeft.substractExternal( pRight, True )
@@ -113,7 +109,6 @@ def run():
     # Pre-assembly, updating free dofs
     pLeft.preAssemble(True)
     pRight.preAssemble(True)
-    # Allocate linear system
     ls = mhs.LinearSystem( pLeft, pRight )
     ls.cleanup()
 
@@ -151,8 +146,8 @@ def test():
     leftReference = "post_left_reference.vtu"
     rightNew = "post_right/right_0.vtu"
     rightReference = "post_right_reference.vtu"
-    assert meshio_comparison(leftNew, leftReference) and \
-            meshio_comparison(rightNew, rightReference)
+    assert mhs.meshio_comparison(leftNew, leftReference) and \
+            mhs.meshio_comparison(rightNew, rightReference)
 
 if __name__=="__main__":
     test()

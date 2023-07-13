@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
-from wrapper import Problem, readInput, meshio_comparison
 import numpy as np
 
 def mesh(leftEnd, rightEnd, nels):
@@ -18,7 +14,7 @@ def mesh(leftEnd, rightEnd, nels):
 
 def run():
     inputFile = "input.txt"
-    stableProblemInput = readInput( inputFile )
+    stableProblemInput = mhs.readInput( inputFile )
     unstableProblemInput = dict( stableProblemInput )
 
     # MESHING
@@ -37,8 +33,8 @@ def run():
     stableProblemInput["isStabilized"] = 1
     unstableProblemInput["isStabilized"] = 0
 
-    pStable = Problem(m, stableProblemInput, caseName="stable")
-    pUnstable = Problem(m, unstableProblemInput, caseName="unstable")
+    pStable = mhs.Problem(m, stableProblemInput, caseName="stable")
+    pUnstable = mhs.Problem(m, unstableProblemInput, caseName="unstable")
 
     # Manufactured Initial Condition
     L = rightEnd - leftEnd
@@ -62,7 +58,7 @@ def test():
     refds = "post_stable_reference/stable_5.vtu"
     newds = "post_stable/stable_5.vtu"
 
-    assert meshio_comparison( refds, newds, 1e-5 )
+    assert mhs.meshio_comparison( refds, newds, 1e-5 )
 
 if __name__=="__main__":
     test()

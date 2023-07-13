@@ -19,6 +19,7 @@ To-do:
 - [x] Refactor weak bcs into single facet marker
 - [ ] neumannFluxes ?
 - [ ] Undefined behaviour if activation && weakBcFacets not updated
+- [ ] Refactor gammaFacets into weakBcFacets?
 
 Ideas:
 ------

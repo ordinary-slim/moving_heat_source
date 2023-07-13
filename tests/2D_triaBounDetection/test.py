@@ -1,11 +1,7 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
 import meshio
-from wrapper import Problem, readInput, meshio_comparison
 
 def mesh():
     #cell_type="quad4"
@@ -44,7 +40,7 @@ def specWritePos( p ):
 
 def run():
     inputFile = "input.txt"
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     points, cells, cell_type = mesh()
     meshInput = {}
@@ -65,7 +61,7 @@ def test():
     run()
     ref = "tmp_reference.vtk"
     new = "tmp.vtk"
-    assert (meshio_comparison(ref, new))
+    assert (mhs.meshio_comparison(ref, new))
 
 if __name__=="__main__":
     test()

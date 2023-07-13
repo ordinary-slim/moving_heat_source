@@ -1,16 +1,10 @@
 '''
 Python class around my MovingHeatSource pybind module.
-Might move this properly to the library in the future.
 '''
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
-import MovingHeatSource as mhs
+from MovingHeatSource.cpp import *
 import os, shutil
 import numpy as np
 import meshio
-import pdb
-import re
 
 def readInput(fileName):
     integerKeys = [
@@ -39,7 +33,7 @@ def readInput(fileName):
 
     return problemInput
 
-class Problem(mhs.Problem):
+class Problem(Problem):
     # Convenience glob vars
     cellMappingMeshio = {
             "line2" : "line",
@@ -63,12 +57,6 @@ class Problem(mhs.Problem):
         self.cleanupPrevPost()
 
     # PREPROCESSING
-    # Process params
-    def setMesh( self, points, cells, cell_type ):
-        self.input["points"] = points
-        self.input["cells"] = cells
-        self.input["cell_type"]=cell_type
-
     def forceState( self, function ):
         # TODO: Handle prevValues for BDF2+
         val = np.zeros( self.domain.mesh.nnodes )

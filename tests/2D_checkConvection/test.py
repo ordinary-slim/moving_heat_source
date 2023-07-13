@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(1, '..')
-sys.path.insert(1, '../../Release/')
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-from wrapper import Problem, readInput, meshio_comparison
 
 maxIter = 40
 dt = 1
@@ -28,7 +24,7 @@ def run():
     box = [-10, 10, -5, 5]
 
     # Read input
-    problemInput = readInput( inputFile )
+    problemInput = mhs.readInput( inputFile )
 
     # Mesh
     meshInput = {}
@@ -36,7 +32,7 @@ def run():
     m = mhs.Mesh(meshInput)
 
     # Initialize problems
-    p  = Problem(m, problemInput, caseName="2d_checkConvection")
+    p  = mhs.Problem(m, problemInput, caseName="2d_checkConvection")
 
 
     f = lambda pos : initialT
@@ -57,7 +53,7 @@ def test():
     trialDs =  "post_2d_checkConvection/2d_checkConvection_5.vtu"
 
     # COMPARISON
-    assert meshio_comparison(referenceDs, trialDs)
+    assert mhs.meshio_comparison(referenceDs, trialDs)
 
 if __name__=="__main__":
     test()

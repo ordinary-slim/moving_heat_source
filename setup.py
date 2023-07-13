@@ -124,18 +124,20 @@ class CMakeBuild(build_ext):
         )
 
 
-# The information here can also be placed in setup.cfg - better separation of
-# logic and declaration, and simpler if you include description/version in a file.
-setup(
+kwargs = dict(
     name="MovingHeatSource",
-    version="0.1",
     author="Mehdi Slimani",
     author_email="mehdi.s0kt@gmail.com",
     description="c++ FEM code for moving heat sources",
     long_description="",
-    ext_modules=[CMakeExtension("MovingHeatSource")],
+    ext_modules=[CMakeExtension("MovingHeatSource.cpp")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
+    packages=['MovingHeatSource'],
     #extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.7",
 )
+
+# The information here can also be placed in setup.cfg - better separation of
+# logic and declaration, and simpler if you include description/version in a file.
+setup( **kwargs )
