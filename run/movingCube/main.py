@@ -44,7 +44,7 @@ def setAdimR( adimR, input ):
 if __name__=="__main__":
     runReference = False
             runReference = True
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxDomain = [-25, 25, -5, 5, -5, 0]
     adimR_tstep = 2
     adimR_domain = 4

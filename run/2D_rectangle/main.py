@@ -52,7 +52,7 @@ def debugHeatSourceNPeak( p ):
     print("MaxT = {}, pos max T Xi = {}".format( *getMaxT( p ) ))
 
 if __name__=="__main__":
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxPhys = [-16, 16, -5, 5]
     boxBg = [-32, 32, -5, 5]
     adimR = 1

@@ -7,31 +7,13 @@ import numpy as np
 import meshio
 
 def readInput(fileName):
-    integerKeys = [
-            "nels",
-            "maxIter",
-            "plot",
-            "timeIntegration",
-            "sourceTerm",
-            "isAdvection",
-            ]
-    problemInput = {}
-    lines = []
-    with open( fileName, 'r') as f:
-        lines = f.readlines()
+    import importlib
+    paramsModule = importlib.import_module(fileName.rstrip(".py"))
+    params = {}
+    for setting in dir(paramsModule):
+        params[setting] = getattr(paramsModule, setting)
 
-    for idx, l in enumerate(lines):
-        lines[idx] =  l.rstrip("\n")
-
-    for l in lines:
-        pair = l.split()
-        problemInput[pair[0]] = float(pair[1])
-
-    for iK in integerKeys:
-        if iK in problemInput:
-            problemInput[iK] = int(problemInput[iK])
-
-    return problemInput
+    return params
 
 class Problem(Problem):
     # Convenience glob vars

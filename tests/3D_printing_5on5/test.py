@@ -54,7 +54,7 @@ def setAdimR( adimR, input ):
     return (adimR * r / speed)
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxDomain = [-0.005, 0.005, -0.025, +0.025, 0.0, 0.02]
 
     # read input

@@ -122,9 +122,6 @@ class CMakeBuild(build_ext):
         subprocess.run(
             ["cmake", "--build", "."] + build_args, cwd=build_temp, check=True
         )
-        subprocess.run(
-            ["ctest", "."], cwd=build_temp, check=True
-        )
 
 kwargs = dict(
     name="MovingHeatSource",

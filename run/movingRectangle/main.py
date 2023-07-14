@@ -40,7 +40,7 @@ if __name__=="__main__":
     if (len(sys.argv)>1):
         if sys.argv[1]=="True":
             runReference = True
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxDomain = [-25, 25, -5, 5]
     adimR_tstep = 10
     adimR_domain = 11

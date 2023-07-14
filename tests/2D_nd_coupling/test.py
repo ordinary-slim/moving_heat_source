@@ -71,7 +71,7 @@ def isInsideBox( mesh, box ):
     return activeElements
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxRight = [0, 1, -1, 1]
     box = [-1, 1, -1, 1]
 

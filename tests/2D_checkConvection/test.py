@@ -20,7 +20,7 @@ def mesh(box):
     return points, cells, cell_type
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     box = [-10, 10, -5, 5]
 
     # Read input

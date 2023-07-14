@@ -39,7 +39,7 @@ def specWritePos( p ):
     )
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     problemInput = mhs.readInput( inputFile )
 
     points, cells, cell_type = mesh()

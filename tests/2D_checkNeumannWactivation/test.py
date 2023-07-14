@@ -29,7 +29,7 @@ def specActivate( p ):
     return activeEls
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     box = [-5, 5, -5, 5]
 
     # Read input

@@ -13,7 +13,7 @@ def mesh(leftEnd, rightEnd, nels):
     return points, cells, cell_type, numberOfGaussPointsCells
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     stableProblemInput = mhs.readInput( inputFile )
     unstableProblemInput = dict( stableProblemInput )
 

@@ -32,7 +32,7 @@ def isInsideBox( mesh, box ):
     return activeElements
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     boxPhys = [-16, 16, -5, 5]
     boxBg = [-32, 32, -5, 5]
 

@@ -15,7 +15,7 @@ def mesh(leftEnd, rightEnd, elDen):
     return points, cells, cell_type
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     # read input
     problemInput = mhs.readInput( inputFile )
 

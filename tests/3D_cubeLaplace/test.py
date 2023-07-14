@@ -32,7 +32,7 @@ def mesh(box, meshDen=4):
     return points, cells, cell_type
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     problemInput = mhs.readInput( inputFile )
 
     box = [-1, 1, -1, 1, -1, 1]

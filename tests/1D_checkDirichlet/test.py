@@ -14,7 +14,7 @@ def mesh(leftEnd, rightEnd, elDen):
 
 
 def run(caseName):
-    inputFile = "input.txt"
+    inputFile = "input.py"
 
     problemInput = mhs.readInput( inputFile )
     # Mesh

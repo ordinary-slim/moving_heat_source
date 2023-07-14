@@ -19,7 +19,7 @@ def mesh(box):
     return points, cells
 
 if __name__=="__main__":
-    inputFile = "input.txt"
+    inputFile = "input.py"
     box = [-2, 2, -2, 2]
 
     p             = mhs.Problem("case")

@@ -39,7 +39,7 @@ def setAdimR( adimR, input ):
     return (adimR * r / speed)
 
 def run():
-    inputFile = "input.txt"
+    inputFile = "input.py"
     intervalDomain = [-25, 25]
     adimR_tstep = 10
     adimR_domain = 11
