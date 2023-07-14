@@ -2,6 +2,7 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] proper testing independent of setup build
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
 - [ ] Determine if mass matrix is computed or not
