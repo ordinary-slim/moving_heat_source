@@ -61,7 +61,7 @@ def setAdimR( adimR, input ):
 if __name__=="__main__":
     runReference = False
             runReference = True
-    inputFile = "input.py"
+    inputFile = "input.yaml"
     boxDomain = [-25, 25, -5, 1]
     adimR_tstep = 2
     adimR_domain = 4

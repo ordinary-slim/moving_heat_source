@@ -5,14 +5,13 @@ from MovingHeatSource.cpp import *
 import os, shutil
 import numpy as np
 import meshio
+import importlib
+import yaml
 
 def readInput(fileName):
-    import importlib
-    paramsModule = importlib.import_module(fileName.rstrip(".py"))
     params = {}
-    for setting in dir(paramsModule):
-        params[setting] = getattr(paramsModule, setting)
-
+    with open(fileName, 'r') as paramsFile:
+        params = yaml.safe_load(paramsFile)
     return params
 
 class Problem(Problem):

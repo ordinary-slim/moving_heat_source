@@ -44,7 +44,7 @@ def setAdimR( adimR, p ):
     return (adimR * r / speed)
 
 if __name__=="__main__":
-    inputFile = "input.py"
+    inputFile = "input.yaml"
     mrfBox = [-36, 36, -5, 5]
     frfBox = [-16, 16, -5, 5]
     adimR = 2

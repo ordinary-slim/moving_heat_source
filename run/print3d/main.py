@@ -57,7 +57,7 @@ if __name__=="__main__":
     if (len(sys.argv)>1):
         if sys.argv[1]=="True":
             runReference = True
-    inputFile = "input.py"
+    inputFile = "input.yaml"
     boxDomain = [-25, 25, -5, 5, -5, 1]
     adimR_tstep = 2
     adimR_domain = 4

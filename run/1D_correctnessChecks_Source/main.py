@@ -32,7 +32,7 @@ def isInside( mesh, box ):
     return activeElements
 
 if __name__=="__main__":
-    inputFile = "input.py"
+    inputFile = "input.yaml"
 
     pFRF = mhs.Problem("FRF")
     pMRF_Advec = mhs.Problem("MRF_Advec")
