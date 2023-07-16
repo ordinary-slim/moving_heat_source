@@ -120,17 +120,32 @@ def run():
         pFixed.postIterate()
         pMoving.postIterate()
 
-    pFixed.writepos(
-        nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
-            )
+        pMoving.writepos(
+            nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
+                )
+        pFixed.writepos(
+            nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
+                )
 
 def test():
     run()
-    refds = "post_fixed_reference/fixed_4.vtu"
-    newds = "post_fixed/fixed_4.vtu"
+    refdatasetsfixed = ["post_fixed_reference/fixed_{}.vtu".format(i+1) for i
+             in range(4)]
+    newdatasetsfixed = ["post_fixed/fixed_{}.vtu".format(i+1) for i in range(4)]
+
+    refdatasetsmoving = ["post_moving_reference/moving_{}.vtu".format(i+1) for i
+             in range(4)]
+    newdatasetsmoving = ["post_moving/moving_{}.vtu".format(i+1) for i in range(4)]
 
     # COMPARISON
-    assert mhs.meshio_comparison(refds, newds)
+    comparisonsFixed = []
+    for refds, newds in zip(refdatasetsfixed, newdatasetsfixed):
+        comparisonsFixed.append( mhs.meshio_comparison(refds, newds) )
+    comparisonsMoving = []
+    for refds, newds in zip(refdatasetsmoving, newdatasetsmoving):
+        comparisonsMoving.append( mhs.meshio_comparison(refds, newds) )
+
+    assert all(comparisonsFixed + comparisonsMoving)
 
 if __name__=="__main__":
     test()
