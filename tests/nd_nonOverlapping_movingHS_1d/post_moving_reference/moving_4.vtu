@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+<!--This file was created by meshio v5.3.4-->
+<UnstructuredGrid>
+<Piece NumberOfPoints="23" NumberOfCells="22">
+<Points>
+<DataArray type="Float64" Name="Points" NumberOfComponents="3" format="binary">
+AQAAAACAAAAoAgAARwAAAA==eJx1yMcJgAAQALCbRUREROy97T+V+NbkmYhXcsevFJ/hc3yBL/EVvsY3+Bbf4Xv8gB/xE37GL/gVv+F3/IE/8dfnH+KeClE=
+</DataArray>
+</Points>
+<Cells>
+<DataArray type="Int64" Name="connectivity" format="binary">
+AQAAAACAAABgAQAAOQAAAA==eJxdxbcBgCAAADAQe0MF/f9UB52SJSF8IjecuOWOex545IlnXnjljXfOfPDJFxeufPPz/wLmqAHl
+</DataArray>
+<DataArray type="Int64" Name="offsets" format="binary">
+AQAAAACAAACwAAAAOgAAAA==eJwtxdEGgDAAAMAkM8nMJEkmkyT9//f10N3L9d1vcHD06MnJ2cWzF6/evLv6cPPpy7cfv/4AfzAB+w==
+</DataArray>
+<DataArray type="Int64" Name="types" format="binary">
+AQAAAACAAACwAAAADwAAAA==eJxjZoAA5iFCAwAYaABD
+</DataArray>
+</Cells>
+<PointData>
+<DataArray type="Float64" Name="T" format="binary">
+AQAAAACAAAC4AAAArwAAAA==eJz7oCUcYJHk4LDxnNGuuakODipv2FdeyHdwuKy8ZKVRhYND+Tyl6evrHBxyV2yaWtTs4FAvutjqQJuDA4vSe/HPHQ4OzYn/eLO6HBwYs6VN7LsdHB5dMMu9XuLgsDXwwueGQ3YOr7KTWprKLBwMt/Os/nnBwqFec66Q7H8LB7vyA5a/gfRak5eH/gHpkn/7//8H0rzf/oHpHb//g+mP/yE0EwMIWDqwQGkACQxVYg==
+</DataArray>
+<DataArray type="Float64" Name="Pulse" format="binary">
+AQAAAACAAAC4AAAAeQAAAA==eJwz33/rpQV3rVbXnJm3Al646ulIsoQfittsmGKhI1ggfMTkXM0lj2/JFean+KYsFI67aMldUrtd5N8Za8EHUtrXYnNs580/pOPmssFOt/mZa/q9qfb/1wpMtLNWdPDx7F69+4q/A4wPk4eph+mHmcdAIgAAP7s79Q==
+</DataArray>
+<DataArray type="Int64" Name="ActiveNodes" format="binary">
+AQAAAACAAAC4AAAAEAAAAA==eJxjZIAAxgGmSQUACLAAEg==
+</DataArray>
+<DataArray type="Int64" Name="gammaNodes" format="binary">
+AQAAAACAAAC4AAAADAAAAA==eJxjZBiaAAABcAAC
+</DataArray>
+</PointData>
+<CellData>
+<DataArray type="Int64" Name="ActiveElements" format="binary">
+AQAAAACAAACwAAAAEAAAAA==eJxjZIAAxgGiSQUAB/AAEQ==
+</DataArray>
+</CellData>
+</Piece>
+</UnstructuredGrid>
+</VTKFile>
