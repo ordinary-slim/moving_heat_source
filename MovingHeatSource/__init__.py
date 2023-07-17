@@ -169,7 +169,10 @@ class Problem(Problem):
             f.write(pvdContents)
 
 
-def meshio_comparison(ref, new, tol=1e-7):
+def meshio_comparison(ref, new,
+                      psets=None,
+                      csets=None,
+                      tol=1e-7):
     isSame = True
     differentKeys = []
     # Load datasets
@@ -185,7 +188,12 @@ def meshio_comparison(ref, new, tol=1e-7):
         if not( (ref_cblock.data == new_cblock.data).all() ):
             return False
     # Compare point data
-    for key in refds.point_data.keys():
+    if not psets:
+        try:
+            len(psets)
+        except TypeError:
+            psets = refds.point_data.keys()
+    for key in psets:
         keyIsSame = True
         refpdata = refds.point_data[key]
         newpdata = newds.point_data[key]
@@ -196,7 +204,12 @@ def meshio_comparison(ref, new, tol=1e-7):
             isSame = False
             differentKeys.append( key )
     # Compare cell data
-    for key in refds.cell_data.keys():
+    if not csets:
+        try:
+            len(csets)
+        except TypeError:
+            csets = refds.cell_data.keys()
+    for key in csets:
         keyIsSame = True
         for refcdata, newcdata in zip( refds.cell_data[key], newds.cell_data[key] ):
             cdatadiff = np.abs( refcdata - newcdata )

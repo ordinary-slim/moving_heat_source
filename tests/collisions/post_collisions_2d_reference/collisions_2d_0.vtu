@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+<!--This file was created by meshio v5.3.4-->
+<UnstructuredGrid>
+<Piece NumberOfPoints="45" NumberOfCells="32">
+<Points>
+<DataArray type="Float64" Name="Points" NumberOfComponents="3" format="binary">
+AQAAAACAAAA4BAAAdQAAAA==eJx1zrENwCAMAEE2Y3RW8AiULj1ClMYSJOfyMA9jvFNr/E7CNzzgmpjowxNe8vX/TsI3POB9fu9P9OEJL/k6e92Bb3jA7//2/kQfnvCSr/Ned+AbHvD7X70/0YcnvOTrPO8OfMMDfr/f+xN9eMLr4w+mUl/N
+</DataArray>
+</Points>
+<Cells>
+<DataArray type="Int64" Name="connectivity" format="binary">
+AQAAAACAAAAABAAAqwAAAA==eJxdzjcSwgAQBEFhBfLIC+QBYf//PgL2krlkqybpc5z/rbSe9oi1nmlTrPVWe8Fav2tvcNdaH56HnsPL0Dt4LfqCP8zdaAN4PnoBL0fv4XXoD/xh7lYbwgvQS3gF+gCvR3/iD3N32gheiF7BK9FHeAP6C3+Yu9fG8CL0Gl6FPsEb0d/4w1xXm8CL0Rt4NfoMb0L/4A9zD9oTvAT9DK9Bv8Kb0b/44wcbLAsB
+</DataArray>
+<DataArray type="Int64" Name="offsets" format="binary">
+AQAAAACAAAAAAQAAUwAAAA==eJwtxRECgwAAAMAgCIIgCIIgCIJgEATBYBAEQTAYBEEwCIKgpwfdyYXBI3LsxKkz5y5cunLtxi+37tz77Y8Hj548++ufF6/e/Pfuw6cv3+0eCEE=
+</DataArray>
+<DataArray type="Int64" Name="types" format="binary">
+AQAAAACAAAAAAQAADwAAAA==eJzjZIAAzhFKAwCVgAEh
+</DataArray>
+</Cells>
+<PointData>
+<DataArray type="Float64" Name="T" format="binary">
+AQAAAACAAABoAQAAEgAAAA==eJxjYAABSweGUZqmNADA9BVG
+</DataArray>
+<DataArray type="Float64" Name="Pulse" format="binary">
+AQAAAACAAABoAQAA/gAAAA==eJwr2CvGxIAENvh43DxSz8CgsqozPXjCh3cM3hD+Bj8Ivfr7jzNVdSbnGL44gvkFXyE0u1JdyJ8n9XUOUHGDbxBaXJtnx5ZnM+UPMPpCzDnhBKZtgg7+kZt8e5lDrAtEvNUETHvI1TFWnEyKZYiBiBe0QcS5n6qaOUy8xuxQ9ucY2PxWU7B4UUrM/+8PJbMO/IaIf4CKbzOLO34hOrvGof8bRP0jiPiHoo4j6+Ozbx3ogoo/hoi/NpBxeS14qe5AK9S/SeZgOuCEYNqNkqz6A3IQvkEqhK50b5Qp3JdVdyAwAmKuoQWYDsvP+nxDgPvzgXkQ/xYwQsIVALZRmv0=
+</DataArray>
+<DataArray type="Int64" Name="ActiveNodes" format="binary">
+AQAAAACAAABoAQAAHgAAAA==eJxjZIAARhw0sQCXfnLNJdU8WplLLCBkDgAU0AAc
+</DataArray>
+</PointData>
+<CellData>
+<DataArray type="Int64" Name="ActiveElements" format="binary">
+AQAAAACAAAAAAQAAEwAAAA==eJxjZMAPGNFoUuUHuzkACDgADw==
+</DataArray>
+<DataArray type="Int64" Name="collidedEls" format="binary">
+AQAAAACAAAAAAQAAEwAAAA==eJxjZMAPGNFoUuUHuzkACDgADw==
+</DataArray>
+</CellData>
+</Piece>
+</UnstructuredGrid>
+</VTKFile>

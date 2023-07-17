@@ -3,3 +3,12 @@ Debug
 Release
 __pycache__
 nohup.out
+*.vtu
+*.pvd
+*.vtk
+.venv
+*.egg-info
+dist
+*.so
+*.asv
+*.npz

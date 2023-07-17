@@ -1,5 +1,5 @@
 radius : 2.0
-power : 300.0
+power : 0.0
 initialPositionX : -10.0
 initialPositionY : 0.0
 initialPositionZ : 0.0
@@ -10,7 +10,7 @@ dt : 0.1
 t : 0.0
 Tfinal : 20.0
 maxIter : 5
-rho : 4e-06
+rho : 4.0e-06
 conductivity : 0.01
 specific_heat : 500
 environmentTemperature : 25
