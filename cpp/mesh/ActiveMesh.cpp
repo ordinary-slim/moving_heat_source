@@ -150,4 +150,20 @@ int ActiveMesh::findOwnerElement( const Eigen::Vector3d &point ) const {
   }
   throw std::invalid_argument("Point is not owned by active element.");
 }
+
+void ActiveMesh::intersectBall( Eigen::Vector3<double> c, double R ) {
+  // L2 ball
+  mesh::MeshTag<int> activationCriterion = activeElements;
+  for (int ielem : activeElements.getIndices() ) {
+    Element e = getElement( ielem );
+    // Compute distance to center of ball
+    double distance = (e.centroid - c).norm();
+    // Compare to cutoff
+    if ( distance > R ) {
+      activationCriterion[ielem] = 0;
+    }
+  }
+  setActivation( activationCriterion );
+}
+
 }

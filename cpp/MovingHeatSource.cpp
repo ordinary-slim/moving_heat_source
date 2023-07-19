@@ -44,7 +44,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("elsOwnedByOther", &Problem::elsOwnedByOther)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setAssembling2External", &Problem::setAssembling2External)
-        .def("setDeltaT", &Problem::setDeltaT)
+        .def("setDt", &Problem::setDt)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)
         .def("setDirichlet", static_cast<void (Problem::*)(vector<int>, std::function<double(Eigen::Vector3d)>)>(&Problem::setDirichlet),
@@ -86,7 +86,8 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("mesh", &mesh::ActiveMesh::mesh)
         .def("setActivation", &mesh::ActiveMesh::setActivation)
         .def("resetActivation", &mesh::ActiveMesh::resetActivation)
-        .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement);
+        .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement)
+        .def("intersectBall", &mesh::ActiveMesh::intersectBall);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
         .def(py::init<const mesh::Mesh*>())
@@ -169,6 +170,8 @@ PYBIND11_MODULE(cpp, m) {
         .def_readwrite("currentPosition", &heat::HeatSource::currentPosition)
         .def_readonly("pulse", &heat::HeatSource::pulse)
         .def_readonly("speed", &heat::HeatSource::speed)
+        .def_readonly("radius", &heat::HeatSource::radius)
+        .def("setPower", &heat::HeatSource::setPower)
         .def("setSpeed", &heat::HeatSource::setSpeed);
     py::class_<heat::LumpedHeatSource, heat::HeatSource>(m, "LumpedHeatSource")
         .def_readonly("heatedElements", &heat::LumpedHeatSource::heatedElements)

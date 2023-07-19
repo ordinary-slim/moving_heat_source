@@ -26,17 +26,9 @@ class HeatSource {
       double time = 0.0;
       HeatSourceType type = none;
 
-      void updatePosition( double dt ) {
-        currentPosition += speed * dt;
-      }
-      void setSpeed( Eigen::Vector3d inputSpeed ) {
-        speed = inputSpeed;
-      }
-      void setPower( double otherPower ) {
-        power = otherPower;
-      }
-
-      //double (*powerDensity)(Eigen::Vector3d x, double t);
+      void updatePosition( double dt ) { currentPosition += speed * dt; }
+      void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
+      void setPower( double power ) { this->power = power; }
 
       virtual double operator()(Eigen::Vector3d x, double t) const {
         return 0.0;

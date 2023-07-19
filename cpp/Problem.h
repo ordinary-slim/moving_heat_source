@@ -65,12 +65,10 @@ class Problem {
       time = newTime;
       mhs->time = newTime;
     }
-    void setDeltaT( double newDeltaT ) {
-      /*
-       * Should only be used before first time-step
-       * Not ready yet for change of DeltaT between time iterations
-       */
-      dt = newDeltaT;
+    void setDt( double dt ) {
+      /* Should only be used before first time-step
+       * Not ready yet for change of DeltaT between time iterations */
+      this->dt = dt;
     }
     void setPointers(){
       unknown.domain = &domain;

@@ -68,7 +68,6 @@ if __name__=="__main__":
         input["dt"] = dt
     referenceProblemInput["dt"] = setAdimR( 0.2, referenceProblemInput )
 
-    #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
     movingProblemInput["advectionSpeedX"] = -fixedProblemInput["HeatSourceSpeedX"]
     movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
@@ -102,7 +101,7 @@ if __name__=="__main__":
         pFixed.preiterate(False)
         pMoving.preiterate(False)
         pMoving.intersectExternal( pFixed, False )
-        pFixed.substractExternal( pMoving, False)
+        pFixed.substractExternal( pMoving, True )
         pMoving.updateInterface( pFixed )
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()

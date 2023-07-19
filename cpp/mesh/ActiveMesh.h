@@ -62,6 +62,7 @@ class ActiveMesh {
     void updateActiveElements(const MeshTag<int> *newActiveEls = NULL);
     void updateBeforeActivation();
     void updateAfterActivation();
+    void intersectBall( Eigen::Vector3<double> c, double R );
   private:
     int _dim;
 };

@@ -42,7 +42,7 @@ class MassForm : public BilinearForm {
       : BilinearForm( problem ) {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
-      return p->density * p->specificHeat *
+      return 
         e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
         e->gpweight[igp]  * e->vol;
     }

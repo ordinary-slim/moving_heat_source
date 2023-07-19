@@ -1,6 +1,7 @@
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
+import sys
 import pdb
 
 def mesh(box, meshDen=1, variant="zigzag", cell_type="triangle3"):
@@ -60,7 +61,10 @@ def setAdimR( adimR, input ):
 
 if __name__=="__main__":
     runReference = False
-            runReference = True
+    try:
+        runReference = (sys.argv[1]=="True")
+    except IndexError:
+        pass
     inputFile = "input.yaml"
     boxDomain = [-25, 25, -5, 1]
     adimR_tstep = 2
@@ -78,7 +82,7 @@ if __name__=="__main__":
     meshInputFixed, meshInputMoving = {}, {}
     meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen, cell_type="quad4")
     ##meshDen = 4
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen, cell_type="quad4"))
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen, cell_type="quad4")
 
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
@@ -200,21 +204,15 @@ if __name__=="__main__":
         activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
         pMoving.unknown.interpolateInactive( pFixed.unknown, True )
 
-        #DEBUGGING
-        prevValFixed = mhs.Function(pFixed.previousValues[0])
-        prevValMoving = mhs.Function(pMoving.previousValues[0])
-        #DEBUGGING
         # Post iteration
         pFixed.postIterate()
         pMoving.postIterate()
 
         pFixed.writepos(
-            functions={"prevVal":prevValFixed},
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
             cellMeshTags={ "elsOwnedByOther":pFixed.elsOwnedByOther, },
                 )
         pMoving.writepos(
-            functions={"prevVal":prevValMoving},
             nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
             cellMeshTags={ "elsOwnedByOther":pMoving.elsOwnedByOther, },
             )
