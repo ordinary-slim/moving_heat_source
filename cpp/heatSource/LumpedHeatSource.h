@@ -1,8 +1,8 @@
 #ifndef LUMPEDHS
 #define LUMPEDHS
 #include "HeatSource.h"
-#include "additiveManufacturing/Hatch.h"
-#include "mesh/ActiveMesh.h"
+#include "../additiveManufacturing/Hatch.h"
+#include "../mesh/ActiveMesh.h"
 
 namespace heat {
 class LumpedHeatSource : public HeatSource {

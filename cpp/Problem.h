@@ -6,8 +6,8 @@
 #include <memory>
 #include "mesh/ActiveMesh.h"
 #include "Function.h"
-#include "HeatSource.h"
-#include "LumpedHeatSource.h"
+#include "heatSource/HeatSource.h"
+#include "heatSource/LumpedHeatSource.h"
 #include "timeIntegrator.h"
 #include "linearAlgebra/LinearSystem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
@@ -61,10 +61,6 @@ class Problem {
     // integrator
     TimeIntegratorHandler timeIntegrator;
 
-    void setTime(double newTime) {
-      time = newTime;
-      mhs->time = newTime;
-    }
     void setDt( double dt ) {
       /* Should only be used before first time-step
        * Not ready yet for change of DeltaT between time iterations */
@@ -89,7 +85,6 @@ class Problem {
     void updateInterface( mesh::MeshTag<int> &activeInExternal );
     void assemble();
     void gather();
-    void updateFRFpos();
     void assembleSpatialPDE();//mass, diffusion, advection
     void assembleWeakBcs();
     void assembleTime();

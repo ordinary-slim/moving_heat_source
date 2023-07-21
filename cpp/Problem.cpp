@@ -3,25 +3,16 @@
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include <Eigen/Core>
 
-void Problem::updateFRFpos() {
-  // Pre-iteration operations
-
-  // update positions in no advection RF
-  // done in pre iterate because activation is also done here
-  domain.mesh->shiftFRF += dt * domain.mesh->speedFRF;
-  for (int inode=0; inode < domain.mesh->nnodes; inode++){
-    domain.mesh->posFRF.row( inode ) += dt * domain.mesh->speedFRF;
-  }
-}
-
 void Problem::preIterate( bool canPreassemble ) {
   /* Beginning of iteration operations*/
   //TODO: Move mass matrix allocs etc here
+  //TODO: preIterate of mesh should have mass mat
   // UPDATE to tn+1
-  mhs->updatePosition( dt );
-  updateFRFpos();
-  setTime( time + dt );
+  time += dt;
   ++iter;
+
+  mhs->preIterate( time );
+  domain.mesh->preIterate( dt );
 
   if (canPreassemble) {
     preAssemble( assembling2external );

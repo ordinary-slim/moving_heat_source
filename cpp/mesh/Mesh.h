@@ -46,9 +46,15 @@ class Mesh {
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
     Element getElement(int ielem) const;
 
-    void setSpeedFRF(Eigen::Vector3d inputSpeedFRF){
-      speedFRF = inputSpeedFRF;
+    void preIterate(double dt) {
+      shiftFRF += dt * speedFRF;
+      for (int inode=0; inode < nnodes; inode++){
+        posFRF.row( inode ) += dt * speedFRF;
+      }
     }
+
+    void setSpeedFRF(Eigen::Vector3d speedFRF){ this->speedFRF = speedFRF; }
+
     int getNumEntities( const int inputDim ) const {
       if (inputDim == dim ) {
         return nels;
@@ -57,8 +63,7 @@ class Mesh {
       } else if ( inputDim == 0 ) {
         return nnodes;
       } else {
-        cout << "Not ready yet!" << endl;
-        exit(-1);
+        throw std::invalid_argument("Not ready yet.");
       }
     }
     void setAABBs();

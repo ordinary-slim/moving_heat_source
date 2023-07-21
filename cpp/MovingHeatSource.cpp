@@ -21,8 +21,6 @@ PYBIND11_MODULE(cpp, m) {
         .def("gather", &Problem::gather)
         .def("postIterate", &Problem::postIterate)
         .def("initializeIntegrator", &Problem::initializeIntegrator)
-        .def("updateFRFpos", &Problem::updateFRFpos)
-        .def("setTime", &Problem::setTime)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def("gather", &Problem::gather)
         .def_readonly("myls", &Problem::myls)
@@ -143,7 +141,7 @@ PYBIND11_MODULE(cpp, m) {
     m.def( "transpose", &mesh::transpose, "(d -> d') ---> (d' -> d)" );
     m.def( "intersect", &mesh::intersect, "(d -> d''), (d'' -> d') ---> (d -> d')" );
     m.def( "buildBoundaryConnectivities", &mesh::buildBoundaryConnectivities, "(D -> 0), (D -> D) ---> (D-1 -> 0), (D -> D-1)" );
-    py::class_<mesh::Element>(m, "mesh::Element", py::dynamic_attr())
+    py::class_<mesh::Element>(m, "Element", py::dynamic_attr())
         .def(py::init<>())
         .def_readonly("pos", &mesh::Element::pos)
         .def_readonly("nnodes", &mesh::Element::nnodes)

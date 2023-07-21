@@ -3,6 +3,8 @@
 #include <vector>
 #include <Eigen/Core>
 #include <cmath>
+#include <memory>
+#include "Path.h"
 
 namespace heat {
 enum HeatSourceType {
@@ -16,6 +18,7 @@ enum HeatSourceType {
 
 class HeatSource {
   public:
+      std::unique_ptr<Path> path = NULL;
       Eigen::Vector3d initialPosition;
       Eigen::Vector3d currentPosition;
       Eigen::Vector3d speed;
@@ -23,12 +26,22 @@ class HeatSource {
       double power;
       double efficiency = 1.0;
       double radius = 2.0;
-      double time = 0.0;
+      double time = 0.0;// Is this used ?
       HeatSourceType type = none;
 
       void updatePosition( double dt ) { currentPosition += speed * dt; }
       void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
       void setPower( double power ) { this->power = power; }
+      void preIterate(double time) {
+        double dt = time - this->time;
+        this->time = time;
+        if (path != NULL) {
+          path->updateCurrentTrack( this->time );
+          this->speed = path->currentTrack->getSpeed();
+          this->power = path->currentTrack->power;
+        }
+        updatePosition( dt );
+      }
 
       virtual double operator()(Eigen::Vector3d x, double t) const {
         return 0.0;
