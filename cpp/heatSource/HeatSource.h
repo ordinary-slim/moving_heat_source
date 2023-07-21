@@ -32,13 +32,22 @@ class HeatSource {
       void updatePosition( double dt ) { currentPosition += speed * dt; }
       void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
       void setPower( double power ) { this->power = power; }
+      void setPath( std::vector<Eigen::Vector3d> &coordinates,
+            std::vector<double> &speeds,
+            std::vector<double> &powers,
+            std::vector<int> &arePrinting ) {
+
+          this->path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
+      }
       void preIterate(double time) {
         double dt = time - this->time;
         this->time = time;
         if (path != NULL) {
           path->updateCurrentTrack( this->time );
-          this->speed = path->currentTrack->getSpeed();
-          this->power = path->currentTrack->power;
+          if (path->currentTrack != NULL) {
+            this->speed = path->currentTrack->getSpeed();
+            this->power = path->currentTrack->power;
+          }
         }
         updatePosition( dt );
       }

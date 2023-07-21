@@ -3,7 +3,8 @@ Moving heat sources using FEM
 To-do:
 ------
 - [ ] Cleanup lumped heat source
-- [ ] Path reader
+- [x] Path reader
+- [x] Path should not be shared! (unique pointer or object)
 - [ ] Adaptive time-stepping trial
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh

@@ -60,12 +60,14 @@ class Path {
     }
 
     void updateCurrentTrack(double t) {
-      auto isBigger = [t](double time){ return (t < time); };
-      auto it = std::find_if( times.begin(), times.end(), isBigger );
+      double tol = 1e-7;
+      auto it = std::find_if( times.begin(), times.end(),
+          [t, tol](double time){ return (t <= time+tol); } );
       if (it == times.end()) {
         currentTrack = NULL;
       } else {
-        currentTrack = &tracks[*it];
+        int idxTrack = it - times.begin() - 1;
+        currentTrack = &tracks[idxTrack];
       }
       return;
     }

@@ -132,7 +132,7 @@ kwargs = dict(
     ext_modules=[CMakeExtension("MovingHeatSource.cpp")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
-    packages=['MovingHeatSource'],
+    packages=['MovingHeatSource', 'MovingHeatSource.gcode'],
     #extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.7",
 )

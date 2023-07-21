@@ -170,7 +170,8 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)
         .def("setPower", &heat::HeatSource::setPower)
-        .def("setSpeed", &heat::HeatSource::setSpeed);
+        .def("setSpeed", &heat::HeatSource::setSpeed)
+        .def("setPath", &heat::HeatSource::setPath);
     py::class_<heat::LumpedHeatSource, heat::HeatSource>(m, "LumpedHeatSource")
         .def_readonly("heatedElements", &heat::LumpedHeatSource::heatedElements)
         .def_readonly("elementPulse", &heat::LumpedHeatSource::elementPulse)//DEBUG
