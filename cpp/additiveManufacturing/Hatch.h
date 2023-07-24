@@ -23,7 +23,7 @@ class HatchCollider {
        * Compute mesh elements that collide with hatch p1 *------*p2
        */
       obb = myOBB( p1, p2, width, height );
-      return this->m->findCollidingElement( obb );
+      return this->m->findCollidingElements( obb );
     }
 
 };

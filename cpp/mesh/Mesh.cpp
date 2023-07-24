@@ -40,7 +40,7 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
 Element Mesh::getElement(int ielem) const {
   return getEntity( ielem, con_CellPoint, &refCellEl, &refFacetEl );
 }
-vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
+vector<int> mesh::Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   vector<int> idxOwnerEl;
   vector<int> potentialOwners;
   //Broad  Phase Search
@@ -72,22 +72,22 @@ vector<int> mesh::Mesh::findOwnerElement( const Eigen::Vector3d &point ) {
   }
   return idxOwnerEl;
 }
-vector<int> mesh::Mesh::findCollidingElement( const myOBB &obb ) {
-  vector<int> idxOwnerEl;
-  vector<int> potentialOwners;
+vector<int> mesh::Mesh::findCollidingElements( const myOBB &obb ) const {
+  vector<int> indicesCollidingEls;
+  vector<int> potentialCollidingEls;
   //Broad  Phase Search
   //Convert to CGAL aabb and use bounding boxes tree
   auto cgal_aabb = static_cast<inex_K::Iso_cuboid_3>( obb );
-  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialOwners ) );
+  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
 
   //Narrow Phase
-  for ( int ielem : potentialOwners ) {
+  for ( int ielem : potentialCollidingEls ) {
     Element cellEl = getElement( ielem );
     if (obb.hasCollided( cellEl )) {
-      idxOwnerEl.push_back( ielem );
+      indicesCollidingEls.push_back( ielem );
     }
   }
-  return idxOwnerEl;
+  return indicesCollidingEls;
 }
 
 void mesh::Mesh::setAABBs() {

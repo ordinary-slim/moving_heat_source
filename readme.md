@@ -3,11 +3,13 @@ Moving heat sources using FEM
 To-do:
 ------
 - [ ] Cleanup lumped heat source
+- [ ] Move project method away from Problem class
 - [x] Path reader
 - [x] Path should not be shared! (unique pointer or object)
 - [ ] Adaptive time-stepping trial
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
+- [ ] Refactoring computation mass matrix (URGENT)
 - [ ] Determine if mass matrix is computed or not
 - [x] Move updateFRFPos to Mesh instead of Problem!
 - [ ] Sync getEnts from ActiveMesh and Mesh

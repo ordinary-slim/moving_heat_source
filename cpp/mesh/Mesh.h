@@ -67,8 +67,8 @@ class Mesh {
       }
     }
     void setAABBs();
-    vector<int> findOwnerElement( const Eigen::Vector3d &point );
-    vector<int> findCollidingElement( const myOBB &obb );
+    vector<int> findOwnerElements( const Eigen::Vector3d &point ) const;
+    vector<int> findCollidingElements( const myOBB &obb ) const;
 };
 MeshTag<int> mark( const Mesh &mesh, int dim = 0, const std::vector<int> &indices = std::vector<int>() );
 }

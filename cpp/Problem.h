@@ -109,6 +109,7 @@ class Problem {
     void substractExternal( const Problem &pExt, bool updateGamma = true);
     void intersectExternal( const Problem &pExt, bool updateGamma = true );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
+    bool checkSteadiness(double threshold = 0.05) const;
 
     void clearBCs() {
       dirichletNodes.setCteValue( 0 );

@@ -12,7 +12,7 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
     for (int igp = 0; igp < facet.ngpoints; ++igp) {
 
       Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
-      int idx_el_ext = pExt.domain.findOwnerElement( xgp_ext );
+      int idx_el_ext = pExt.domain.findOwnerElements( xgp_ext );
       mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
       Dense3ColMat gradShaFuns = e_ext.evaluateGradShaFuns( xgp_ext );
@@ -66,7 +66,7 @@ void Problem::assembleDirichletGamma(const Problem &pExt) {
   for (int inode: indicesGammaNodes) {
     Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
 
-    int idx_el_ext = pExt.domain.findOwnerElement( xnode_ext ) ;
+    int idx_el_ext = pExt.domain.findOwnerElements( xnode_ext ) ;
     mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
     Eigen::VectorXd shaFuns = e_ext.evaluateShaFuns( xnode_ext );

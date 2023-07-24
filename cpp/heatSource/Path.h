@@ -13,6 +13,7 @@ class Track {
     double speed = 10;// mm/s
     double power = 100;// W
     double length = -1;
+    double endTime = 2^100;
 
     Track(Eigen::Vector3d *p1, Eigen::Vector3d *p2,
         double speed, double power, bool hasDeposition) {
@@ -56,6 +57,7 @@ class Path {
       for (int i = 0; i < tracks.size(); ++i) {
         Track *t = &tracks[i];
         times[i+1] = times[i] + t->length / t->speed;
+        t->endTime = times[i+1];
       }
     }
 

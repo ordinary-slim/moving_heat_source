@@ -1,6 +1,5 @@
 import numpy as np
 from enum import IntEnum
-from MovingHeatSource.cpp import Path
 
 def gcode2laserPath( gcodeFile, defaultPower=100.0 ):
     class Index(IntEnum):

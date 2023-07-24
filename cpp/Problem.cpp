@@ -18,6 +18,13 @@ void Problem::preIterate( bool canPreassemble ) {
     preAssemble( assembling2external );
   }
 
+  // STORE last timestep for time-integration
+  previousValues.push_front( unknown );
+  if (previousValues.size() > timeIntegrator.nstepsRequired) {
+    previousValues.pop_back();
+  }
+  ++timeIntegrator.nstepsStored;
+
   hasPreIterated = true;
 }
 
@@ -50,13 +57,6 @@ void Problem::gather() {
 
 void Problem::postIterate() {
   /* End iteration operations */
-  // STORE last timestep for time-integration
-  previousValues.push_front( unknown );
-  if (previousValues.size() > timeIntegrator.nstepsRequired) {
-    previousValues.pop_back();
-  }
-
-  ++timeIntegrator.nstepsStored;
 
   // POST OF PULSE
   Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
@@ -356,6 +356,7 @@ void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
 fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   /*
    * L2 projection onto domain
+   * TODO: Move from method to separate function
    */
   // Initialize null function
   fem::Function fh = fem::Function( &domain );
@@ -416,4 +417,10 @@ void Problem::updateForcedDofs() {
       forcedDofs[inode] = 2;
     }
   }
+}
+
+bool Problem::checkSteadiness(double threshold) const {
+  // || f^{n+1} - f^{n} || / || f^{n+1} || < threshold
+  fem::Function delta = (unknown - *previousValues.begin());
+  return ( delta.getL2Norm() / unknown.getL2Norm()  ) < threshold ;
 }

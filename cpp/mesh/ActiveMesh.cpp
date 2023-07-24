@@ -137,12 +137,12 @@ void ActiveMesh::resetActivation() {
   setActivation( allActive );
 }
 
-int ActiveMesh::findOwnerElement( const Eigen::Vector3d &point ) const {
+int ActiveMesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   /*
-   * Wrapper around mesh's findOwnerElement that returns
+   * Wrapper around mesh's findOwnerElements that returns
    * an active element owning the point.
    */
-  vector<int> owners = mesh->findOwnerElement( point );
+  vector<int> owners = mesh->findOwnerElements( point );
   for (int ielem : owners) {
     if ( activeElements[ielem] ) {
       return ielem;

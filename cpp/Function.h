@@ -14,18 +14,23 @@ class Function{
     Eigen::VectorXd values;
     const mesh::ActiveMesh* domain;
 
-    Function(const mesh::ActiveMesh* dom, const Eigen::VectorXd &otherValues = Eigen::VectorXd())
-    {
+    Function(const mesh::ActiveMesh* dom) {
       domain = dom;
-      if (otherValues.size() == 0) {
-        values = Eigen::VectorXd::Zero( domain->mesh->nnodes );
-      } else {
-        if (otherValues.size() != domain->mesh->nnodes) {
-          cout << "Wrong vals mesh pair in Function construction!" << endl;
-          exit(-1);
-        }
-        values = otherValues;
+      values = Eigen::VectorXd::Zero( domain->mesh->nnodes );
+    }
+    Function(const mesh::ActiveMesh* dom, const Eigen::VectorXd &values) {
+      domain = dom;
+      if (values.size() != domain->mesh->nnodes) {
+        throw std::invalid_argument("Provided values size is not nnodes.");
       }
+      this->values = values;
+    }
+    Function(const mesh::ActiveMesh* dom, Eigen::VectorXd &values) {
+      domain = dom;
+      if (values.size() != domain->mesh->nnodes) {
+        throw std::invalid_argument("Provided values size is not nnodes.");
+      }
+      this->values = move(values);
     }
     template<typename T>
     Function(const mesh::ActiveMesh* dom, const mesh::MeshTag<T> &tag) {
@@ -38,7 +43,7 @@ class Function{
       for (int inode = 0; inode < domain->mesh->nnodes; ++inode) {
         convertedVals[inode] = double(tag[inode]);
       }
-      values = convertedVals;
+      values = move(convertedVals);
     }
     Function(const Function&) = default;
 
@@ -46,9 +51,9 @@ class Function{
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
     void interpolate(const Function &extFEMFunc );
     void interpolateInactive( const Function &extFEMFunc, bool ignoreOutside );
-    void setValues( const Eigen::VectorXd &otherValues ) {
-      values = otherValues;
-    }
+    void setValues( const Eigen::VectorXd &values ) { this->values = values; }
+    double getL2Norm() const;
+    friend Function operator-(const Function& f1, const Function& f2);
 };
 void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
 

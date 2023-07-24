@@ -5,6 +5,7 @@
 #include "../external/pybind11/include/pybind11/stl.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include "../external/pybind11/include/pybind11/functional.h"
+#include "../external/pybind11/include/pybind11/operators.h"
 
 namespace py = pybind11;
 
@@ -62,6 +63,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
+        .def("checkSteadiness", &Problem::checkSteadiness)
         .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
             "Find interface between two problems")
         .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
@@ -82,9 +84,10 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("justActivatedBoundary", &mesh::ActiveMesh::justActivatedBoundary)
         .def_readonly("boundaryFacets", &mesh::ActiveMesh::boundaryFacets)
         .def_readonly("mesh", &mesh::ActiveMesh::mesh)
+        .def_readonly("mass", &mesh::ActiveMesh::massMat)//DEBUGGING
         .def("setActivation", &mesh::ActiveMesh::setActivation)
         .def("resetActivation", &mesh::ActiveMesh::resetActivation)
-        .def("findOwnerElement", &mesh::ActiveMesh::findOwnerElement)
+        .def("findOwnerElements", &mesh::ActiveMesh::findOwnerElements)
         .def("intersectBall", &mesh::ActiveMesh::intersectBall);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
@@ -117,18 +120,20 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("dim", &mesh::Mesh::dim)
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
-        .def("findOwnerElement", &mesh::Mesh::findOwnerElement)
+        .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
         .def("getElement", &mesh::Mesh::getElement);
     m.def( "mark", &mesh::mark, "Return MeshTag of entity of dim d of 0s and 1s" );
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
-        .def(py::init<const fem::Function&>())
         .def(py::init<const mesh::ActiveMesh*>())
-        .def(py::init<const mesh::ActiveMesh*, const Eigen::VectorXd&>())
+        .def(py::init<const mesh::ActiveMesh*, Eigen::VectorXd&>())
+        .def(py::init<const fem::Function&>())
+        .def(py::self - py::self)
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
         .def("interpolate", static_cast<void (fem::Function::*)(const fem::Function&)>(&fem::Function::interpolate) )
         .def("interpolateInactive", &fem::Function::interpolateInactive)
         .def("setValues", &fem::Function::setValues)
+        .def("getL2Norm", &fem::Function::getL2Norm)
         .def_readonly("values", &fem::Function::values);
     //This export won't work unless list<Function> is made into
     //an opaque type or interpolate is wrapped into something else
@@ -169,6 +174,8 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("pulse", &heat::HeatSource::pulse)
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)
+        .def_property_readonly("path", [](const heat::HeatSource& h){ return h.path.get(); },
+            py::return_value_policy::reference_internal)
         .def("setPower", &heat::HeatSource::setPower)
         .def("setSpeed", &heat::HeatSource::setSpeed)
         .def("setPath", &heat::HeatSource::setPath);
@@ -191,4 +198,8 @@ PYBIND11_MODULE(cpp, m) {
         .def( py::init<Problem*, double, double>() )
         .def("collide", &Printer::collide)
         .def("deposit", &Printer::deposit);
+    py::class_<heat::Track>(m, "Track")
+        .def_readonly("endTime", &heat::Track::endTime);
+    py::class_<heat::Path>(m, "Path")
+        .def_readonly("currentTrack", &heat::Path::currentTrack);
 }
