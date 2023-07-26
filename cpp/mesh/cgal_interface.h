@@ -62,13 +62,14 @@ struct myOBB{
 
     myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
         double height){
+      double tol = 1e-7;
       // Printing dir as xAxis
       Eigen::Vector3d step = (p2 - p1);
       pos = (p2 + p1)/2.0;
       xAxis = step.normalized();
       zAxis << 0.0, 0.0, 1.0;
       zAxis = (zAxis - zAxis.dot( xAxis )*xAxis).normalized();//Gram schmidt
-      if (zAxis.norm() < 0.9) {
+      if ( zAxis.norm() < (1 - tol) ) {
         throw std::invalid_argument("Steps in Z-axis not allowed.");
       }
       yAxis = zAxis.cross( xAxis );
@@ -113,14 +114,14 @@ struct myOBB{
     }
     explicit operator inex_K::Iso_cuboid_3() const
     {
-        double minX = pos[0] - halfWidths[0]*xAxis[0] - halfWidths[1]*yAxis[0] - halfWidths[2]*zAxis[0];
-        double maxX = pos[0] + halfWidths[0]*xAxis[0] + halfWidths[1]*yAxis[0] + halfWidths[2]*zAxis[0];
+        double minX = pos[0] - halfWidths[0]*abs(xAxis[0]) - halfWidths[1]*abs(yAxis[0]) - halfWidths[2]*abs(zAxis[0]);
+        double maxX = pos[0] + halfWidths[0]*abs(xAxis[0]) + halfWidths[1]*abs(yAxis[0]) + halfWidths[2]*abs(zAxis[0]);
         if (minX > maxX) { std::swap( minX, maxX ); }
-        double minY = pos[1] - halfWidths[0]*xAxis[1] - halfWidths[1]*yAxis[1] - halfWidths[2]*zAxis[1];
-        double maxY = pos[1] + halfWidths[0]*xAxis[1] + halfWidths[1]*yAxis[1] + halfWidths[2]*zAxis[1];
+        double minY = pos[1] - halfWidths[0]*abs(xAxis[1]) - halfWidths[1]*abs(yAxis[1]) - halfWidths[2]*abs(zAxis[1]);
+        double maxY = pos[1] + halfWidths[0]*abs(xAxis[1]) + halfWidths[1]*abs(yAxis[1]) + halfWidths[2]*abs(zAxis[1]);
         if (minY > maxY) { std::swap( minY, maxY ); }
-        double minZ = pos[2] - halfWidths[0]*xAxis[2] - halfWidths[1]*yAxis[2] - halfWidths[2]*zAxis[2];
-        double maxZ = pos[2] + halfWidths[0]*xAxis[2] + halfWidths[1]*yAxis[2] + halfWidths[2]*zAxis[2];
+        double minZ = pos[2] - halfWidths[0]*abs(xAxis[2]) - halfWidths[1]*abs(yAxis[2]) - halfWidths[2]*abs(zAxis[2]);
+        double maxZ = pos[2] + halfWidths[0]*abs(xAxis[2]) + halfWidths[1]*abs(yAxis[2]) + halfWidths[2]*abs(zAxis[2]);
         if (minZ > maxZ) { std::swap( minZ, maxZ ); }
         return inex_K::Iso_cuboid_3( minX, minY, minZ, maxX, maxY, maxZ );
     }

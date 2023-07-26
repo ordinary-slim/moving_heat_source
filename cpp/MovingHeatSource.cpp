@@ -87,7 +87,9 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("mass", &mesh::ActiveMesh::massMat)//DEBUGGING
         .def("setActivation", &mesh::ActiveMesh::setActivation)
         .def("resetActivation", &mesh::ActiveMesh::resetActivation)
+        .def("deactivate", &mesh::ActiveMesh::deactivate)
         .def("findOwnerElements", &mesh::ActiveMesh::findOwnerElements)
+        .def("intersectObb", &mesh::ActiveMesh::intersectObb)
         .def("intersectBall", &mesh::ActiveMesh::intersectBall);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
@@ -168,6 +170,8 @@ PYBIND11_MODULE(cpp, m) {
         .value("triangle3", ElementType::triangle3)
         .value("quad4", ElementType::quad4)
         .value("hexa8", ElementType::hexa8);
+    py::class_<myOBB>(m, "myOBB")
+        .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
     py::class_<heat::HeatSource>(m, "HeatSource")
         .def(py::init<>())
         .def_readwrite("currentPosition", &heat::HeatSource::currentPosition)
@@ -199,7 +203,11 @@ PYBIND11_MODULE(cpp, m) {
         .def("collide", &Printer::collide)
         .def("deposit", &Printer::deposit);
     py::class_<heat::Track>(m, "Track")
+        .def_readonly("speed", &heat::Track::speed)
+        .def_readonly("startTime", &heat::Track::startTime)
         .def_readonly("endTime", &heat::Track::endTime);
     py::class_<heat::Path>(m, "Path")
+        .def("interpolateTrack", &heat::Path::interpolateTrack)
+        .def("interpolatePosition", &heat::Path::interpolatePosition)
         .def_readonly("currentTrack", &heat::Path::currentTrack);
 }

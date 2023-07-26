@@ -58,11 +58,13 @@ class ActiveMesh {
     int findOwnerElements( const Eigen::Vector3d &point ) const;
     void setActivation(const MeshTag<int> &activation);
     void resetActivation();
+    void deactivate();
     void updateActiveNodes(const MeshTag<int> *newActiveNodes = NULL);
     void updateActiveElements(const MeshTag<int> *newActiveEls = NULL);
     void updateBeforeActivation();
     void updateAfterActivation();
     void intersectBall( Eigen::Vector3<double> c, double R );
+    void intersectObb( myOBB& obb );
   private:
     int _dim;
 };

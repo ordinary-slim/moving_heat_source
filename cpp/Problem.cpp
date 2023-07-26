@@ -7,6 +7,15 @@ void Problem::preIterate( bool canPreassemble ) {
   /* Beginning of iteration operations*/
   //TODO: Move mass matrix allocs etc here
   //TODO: preIterate of mesh should have mass mat
+  // STORE last timestep for time-integration
+  previousValues.push_front( unknown );
+  if (previousValues.size() > timeIntegrator.nstepsRequired) {
+    previousValues.pop_back();
+  }
+  ++timeIntegrator.nstepsStored;
+
+  //TODO: Decide on timestep here
+
   // UPDATE to tn+1
   time += dt;
   ++iter;
@@ -17,13 +26,6 @@ void Problem::preIterate( bool canPreassemble ) {
   if (canPreassemble) {
     preAssemble( assembling2external );
   }
-
-  // STORE last timestep for time-integration
-  previousValues.push_front( unknown );
-  if (previousValues.size() > timeIntegrator.nstepsRequired) {
-    previousValues.pop_back();
-  }
-  ++timeIntegrator.nstepsStored;
 
   hasPreIterated = true;
 }

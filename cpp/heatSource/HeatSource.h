@@ -39,11 +39,11 @@ class HeatSource {
 
           this->path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
       }
-      void preIterate(double time) {
-        double dt = time - this->time;
-        this->time = time;
+      void preIterate(double newTime) {
+        double dt = newTime - this->time;
+        this->time = newTime;
         if (path != NULL) {
-          path->updateCurrentTrack( this->time );
+          path->currentTrack = path->interpolateTrack( this->time );
           if (path->currentTrack != NULL) {
             this->speed = path->currentTrack->getSpeed();
             this->power = path->currentTrack->power;

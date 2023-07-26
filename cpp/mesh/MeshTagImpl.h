@@ -74,13 +74,7 @@ std::vector<int> MeshTag<T>::getIndices() const {
   /*
    * Get indices of MeshTag that evaluate to true.
    */
-  std::vector<int> indices;
-  for (int index = 0; index < size(); ++index) {
-    if ( bool( x[index] ) ) {
-      indices.push_back( index );
-    }
-  }
-  return indices;
+  return filterIndices( [](T tag){ return bool(tag);} );
 }
 
 template<typename T>

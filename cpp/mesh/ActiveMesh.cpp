@@ -137,6 +137,11 @@ void ActiveMesh::resetActivation() {
   setActivation( allActive );
 }
 
+void ActiveMesh::deactivate() {
+  MeshTag<int> allInactive = MeshTag<int>( mesh, mesh->dim, 0);
+  setActivation( allInactive );
+}
+
 int ActiveMesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   /*
    * Wrapper around mesh's findOwnerElements that returns
@@ -160,6 +165,19 @@ void ActiveMesh::intersectBall( Eigen::Vector3<double> c, double R ) {
     double distance = (e.centroid - c).norm();
     // Compare to cutoff
     if ( distance > R ) {
+      activationCriterion[ielem] = 0;
+    }
+  }
+  setActivation( activationCriterion );
+}
+
+void ActiveMesh::intersectObb( myOBB &obb) {
+  // Oriented Bounding Box
+  mesh::MeshTag<int> activationCriterion = activeElements;
+  vector<int> collidingElsIndices = mesh->findCollidingElements( obb );
+  mesh::MeshTag<int> collidingElsTag = mesh::mark( *mesh, 0, collidingElsIndices );
+  for (int ielem : activeElements.getIndices() ){
+    if (not(collidingElsTag[ielem]) ) {
       activationCriterion[ielem] = 0;
     }
   }

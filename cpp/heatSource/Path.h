@@ -7,26 +7,27 @@
 namespace heat {
 class Track {
   public:
-    Eigen::Vector3d *p1;//origin
-    Eigen::Vector3d *p2;//destination
+    Eigen::Vector3d *p0;//origin
+    Eigen::Vector3d *p1;//destination
     bool hasDeposition = false;
     double speed = 10;// mm/s
     double power = 100;// W
     double length = -1;
-    double endTime = 2^100;
+    double startTime;
+    double endTime;
 
-    Track(Eigen::Vector3d *p1, Eigen::Vector3d *p2,
+    Track(Eigen::Vector3d *p0, Eigen::Vector3d *p1,
         double speed, double power, bool hasDeposition) {
+      this->p0 = p0;
       this->p1 = p1;
-      this->p2 = p2;
       this->speed = speed;
       this->power = power;
       this->hasDeposition = hasDeposition;
-      length = (*p2-*p1).norm();
+      length = (*p1-*p0).norm();
     }
 
     Eigen::Vector3d getSpeed() {
-      return (*p2 - *p1).normalized()*speed;
+      return (*p1 - *p0).normalized()*speed;
     }
 };
 
@@ -57,21 +58,31 @@ class Path {
       for (int i = 0; i < tracks.size(); ++i) {
         Track *t = &tracks[i];
         times[i+1] = times[i] + t->length / t->speed;
+        t->startTime = times[i];
         t->endTime = times[i+1];
       }
     }
 
-    void updateCurrentTrack(double t) {
+    Track* interpolateTrack(double t) {
       double tol = 1e-7;
+      Track* track = NULL;
       auto it = std::find_if( times.begin(), times.end(),
           [t, tol](double time){ return (t <= time+tol); } );
-      if (it == times.end()) {
-        currentTrack = NULL;
-      } else {
+      if (it != times.end()) {
         int idxTrack = it - times.begin() - 1;
-        currentTrack = &tracks[idxTrack];
+        track = &tracks[idxTrack];
       }
-      return;
+      return track;
+    }
+
+    Eigen::Vector3d interpolatePosition(double t) {
+      Track* track = interpolateTrack( t );
+      if (track == NULL) {
+        throw std::invalid_argument("Invalid time does not belong to path.");
+      } else {
+        double trackFraction = (t - track->startTime)/(track->endTime - track->startTime);
+        return (*track->p0 + trackFraction*(*track->p1 - *track->p0));
+      }
     }
 };
 }
