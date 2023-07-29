@@ -3,10 +3,13 @@
 #include <string>
 #include <algorithm>
 #include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
 #include "../external/pybind11/include/pybind11/eigen.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
 namespace py = pybind11;
+
+Eigen::VectorXd CreateEigenVector(py::array_t<double> n);
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   domain( mesh::ActiveMesh( &mesh ) ),
@@ -59,12 +62,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   if (input.contains("efficiency")) mhs->efficiency = py::cast<double>(input["efficiency"]);
 
-  mhs->speed[0] = py::cast<double>(input["HeatSourceSpeedX"]);
-  mhs->speed[1] = py::cast<double>(input["HeatSourceSpeedY"]);
-  mhs->speed[2] = py::cast<double>(input["HeatSourceSpeedZ"]);
-  mhs->initialPosition[0] = py::cast<double>(input["initialPositionX"]);
-  mhs->initialPosition[1] = py::cast<double>(input["initialPositionY"]);
-  mhs->initialPosition[2] = py::cast<double>(input["initialPositionZ"]);
+  mhs->speed = CreateEigenVector(py::array_t<double>(input["HeatSourceSpeed"]));
+  mhs->initialPosition = CreateEigenVector(py::array_t<double>(input["initialPosition"]));
   mhs->currentPosition    = mhs->initialPosition;
 
   // TIME DEPENDENCY
@@ -108,23 +107,30 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   }
 
   // ADVECTION
-  if (input.contains("advectionSpeedX")) {
-    advectionSpeed[0] = py::cast<double>(input["advectionSpeedX"]);
-    advectionSpeed[1] = py::cast<double>(input["advectionSpeedY"]);
-    advectionSpeed[2] = py::cast<double>(input["advectionSpeedZ"]);
+  if (input.contains("advectionSpeed")) {
+    advectionSpeed = CreateEigenVector(py::array_t<double>(input["advectionSpeed"]));
     if (advectionSpeed.norm() > 1e-10) isAdvection = true;
   }
 
   // DOMAIN MOTION
   // TODO: Move this down to mesh level!
-  if (input.contains("speedFRF_X")) {
-    domain.mesh->speedFRF[0] = py::cast<double>(input["speedFRF_X"]);
-    domain.mesh->speedFRF[1] = py::cast<double>(input["speedFRF_Y"]);
-    domain.mesh->speedFRF[2] = py::cast<double>(input["speedFRF_Z"]);
+  if (input.contains("speedFRF")) {
+    domain.mesh->speedFRF = CreateEigenVector(py::array_t<double>(input["speedFRF"]));
   }
 
   // ASSS STABILIZATION
   if (input.contains("isStabilized")) {
     isStabilized = py::cast<bool>(input["isStabilized"]);
   }
+}
+
+Eigen::VectorXd CreateEigenVector(py::array_t<double> n) {
+  // Convert 1d numpy vector to 1d eigen vector
+  py::buffer_info buf = n.request();
+  double* ptr = (double*)buf.ptr;
+  Eigen::VectorXd e(buf.size);
+  for (size_t idx = 0; idx < buf.size; ++idx) {
+    e(idx) = ptr[idx];
+  }
+  return e;
 }

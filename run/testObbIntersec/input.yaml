@@ -6,7 +6,7 @@ dt : 0.1
 t : 0.0
 Tfinal : 20.0
 maxIter : 5
-rho : 4.0e-06
+rho : 4.0E-06
 conductivity : 0.01
 specific_heat : 500
 environmentTemperature : 25

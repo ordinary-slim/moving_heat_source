@@ -1,12 +1,8 @@
 radius : 1.0
 power : 1000
 Tfinal : 5.0
-initialPositionX : 0.0
-initialPositionY : -30.0e-3
-initialPositionZ : 15.0e-3
-HeatSourceSpeedX : 0
-HeatSourceSpeedY : 10.0e-3
-HeatSourceSpeedZ : 0
+initialPosition : [0.0, -30.0e-3, 15.0e-3]
+HeatSourceSpeed : [0, 10.0e-3, 0]
 dt : 1
 t : 0.0
 maxIter : 20
@@ -18,12 +14,8 @@ depositionTemperature : 800
 plot : 1
 timeIntegration : 1
 isAdvection : 0
-advectionSpeedX : 0.0
-advectionSpeedY : 0.0
-advectionSpeedZ : 0.0
-speedFRF_X : 0.0
-speedFRF_Y : 0.0
-speedFRF_Z : 0.0
+advectionSpeed : [0.0, 0.0, 0.0]
+speedFRF : [0.0, 0.0, 0.0]
 isStabilized : 0
 sourceTerm : 11
 convectionCoeff : 10

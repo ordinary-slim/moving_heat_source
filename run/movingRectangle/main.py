@@ -18,21 +18,17 @@ def mesh(box, meshDen=4):
 
 def meshAroundHS( adimR, problemInput, meshDen=4 ):
     radius = problemInput["radius"]
-    initialPositionX = problemInput["initialPositionX"]
-    initialPositionY = problemInput["initialPositionY"]
+    initialPosition = problemInput["initialPosition"]
     trailLength = adimR * radius
     capotLength = min( trailLength, 3*radius )
     halfLengthY = min( trailLength, capotLength )
-    box = [initialPositionX - trailLength, initialPositionX + capotLength,
-           initialPositionY - halfLengthY, initialPositionY + halfLengthY]
+    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
+           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY]
     return mesh(box, meshDen)
 
 def setAdimR( adimR, input ):
     r = input["radius"]
-    HeatSourceSpeedX = max( abs(input["HeatSourceSpeedX"]), abs(input["advectionSpeedX"]))
-    HeatSourceSpeedY = max( abs(input["HeatSourceSpeedY"]), abs(input["advectionSpeedY"]))
-    HeatSourceSpeedZ = max( abs(input["HeatSourceSpeedZ"]), abs(input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
+    speed = max( np.linalg.norm( input["HeatSourceSpeed"] ), np.linalg.norm( input["advectionSpeed"] ) )
     return (adimR * r / speed)
 
 if __name__=="__main__":
@@ -69,9 +65,9 @@ if __name__=="__main__":
     referenceProblemInput["dt"] = setAdimR( 0.2, referenceProblemInput )
 
     movingProblemInput["isAdvection"] = 1
-    movingProblemInput["advectionSpeedX"] = -fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["HeatSourceSpeedX"] = 0.0
+    movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["speedFRF"]      = fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pFRF           = mhs.Problem(meshFixed, fixedProblemInput, caseName="FRF")

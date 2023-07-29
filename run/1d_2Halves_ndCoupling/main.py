@@ -70,7 +70,7 @@ if __name__=="__main__":
 
     # Initialize problems
     pLeft  = mhs.Problem(meshLeft, problemInput, caseName="left")
-    problemInput["advectionSpeedX"] = -10
+    problemInput["advectionSpeed"] = np.array([-10, 0.0, 0.0])
     pRight  = mhs.Problem(meshRight, problemInput, caseName="right")
 
     #f = lambda pos : max( 0.0, 10.0 - abs( pos[0] ) )

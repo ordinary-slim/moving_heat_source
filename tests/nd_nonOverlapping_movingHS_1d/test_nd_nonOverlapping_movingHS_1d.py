@@ -14,11 +14,10 @@ def mesh(leftEnd, rightEnd, meshDen=4):
 
 def meshAroundHS( adimR, problemInput, meshDen=4 ):
     radius = problemInput["radius"]
-    initialPositionX = problemInput["initialPositionX"]
-    initialPositionY = problemInput["initialPositionY"]
+    initialPosition = problemInput["initialPosition"]
     halfLength = adimR * radius
-    box = [initialPositionX - halfLength, initialPositionX + halfLength,
-           initialPositionY - halfLength, initialPositionY + halfLength]
+    box = [initialPosition[0] - halfLength, initialPosition[0] + halfLength,
+           initialPosition[1] - halfLength, initialPosition[1] + halfLength]
     return mesh(box[0], box[1], meshDen=meshDen)
 
 def plotProblem( p ):
@@ -31,10 +30,7 @@ def plotProblem( p ):
 
 def setAdimR( adimR, input ):
     r = input["radius"]
-    HeatSourceSpeedX = max( abs(input["HeatSourceSpeedX"]), abs(input["advectionSpeedX"]))
-    HeatSourceSpeedY = max( abs(input["HeatSourceSpeedY"]), abs(input["advectionSpeedY"]))
-    HeatSourceSpeedZ = max( abs(input["HeatSourceSpeedZ"]), abs(input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
+    speed = max( np.linalg.norm(input["HeatSourceSpeed"]), np.linalg.norm(input["advectionSpeed"]) )
     return (adimR * r / speed)
 
 def run():
@@ -66,9 +62,9 @@ def run():
 
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
-    movingProblemInput["advectionSpeedX"] = -fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["HeatSourceSpeedX"] = 0.0
+    movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["speedFRF"]      = fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pMoving        = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")

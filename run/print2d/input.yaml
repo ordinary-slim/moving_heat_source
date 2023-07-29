@@ -1,12 +1,8 @@
 radius : 1.0
 power : 400.0
 Tfinal : 2.0
-initialPositionX : -10.0
-initialPositionY : 0.0
-initialPositionZ : 0.0
-HeatSourceSpeedX : 10
-HeatSourceSpeedY : 0
-HeatSourceSpeedZ : 0
+initialPosition : [-10.0, 0.0, 0.0]
+HeatSourceSpeed : [10, 0, 0]
 dt : 0.1
 t : 0.0
 maxIter : 20
@@ -19,10 +15,6 @@ plot : 1
 timeIntegration : 1
 sourceTerm : 0
 isAdvection : 0
-advectionSpeedX : 0.0
-advectionSpeedY : 0.0
-advectionSpeedZ : 0.0
-speedFRF_X : 0.0
-speedFRF_Y : 0.0
-speedFRF_Z : 0.0
+advectionSpeed : [0.0, 0.0, 0.0]
+speedFRF : [0.0, 0.0, 0.0]
 isStabilized : 1

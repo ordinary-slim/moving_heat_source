@@ -203,11 +203,16 @@ PYBIND11_MODULE(cpp, m) {
         .def("collide", &Printer::collide)
         .def("deposit", &Printer::deposit);
     py::class_<heat::Track>(m, "Track")
+        .def_readonly("p0", &heat::Track::p0)
+        .def_readonly("p1", &heat::Track::p1)
+        .def("getSpeed", &heat::Track::getSpeed)
         .def_readonly("speed", &heat::Track::speed)
         .def_readonly("startTime", &heat::Track::startTime)
         .def_readonly("endTime", &heat::Track::endTime);
     py::class_<heat::Path>(m, "Path")
-        .def("interpolateTrack", &heat::Path::interpolateTrack)
+        .def("interpolateTrack", &heat::Path::interpolateTrack, pybind11::return_value_policy::reference)
         .def("interpolatePosition", &heat::Path::interpolatePosition)
+        .def_readonly("endTime", &heat::Path::endTime)
+        .def("isOver", &heat::Path::isOver)
         .def_readonly("currentTrack", &heat::Path::currentTrack);
 }

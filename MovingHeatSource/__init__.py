@@ -12,6 +12,9 @@ def readInput(fileName):
     params = {}
     with open(fileName, 'r') as paramsFile:
         params = yaml.safe_load(paramsFile)
+    for k, v in params.items():
+        if isinstance( v, list ):
+            params[k] = np.array( v )
     return params
 
 class Problem(Problem):

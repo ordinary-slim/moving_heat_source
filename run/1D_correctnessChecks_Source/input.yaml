@@ -1,8 +1,6 @@
 radius : 25.1
 power : 200.0
-initialPositionX : 0.0
-initialPositionY : 0.0
-initialPositionZ : 0.0
+initialPosition : [0.0, 0.0, 0.0]
 dt : 0.05
 t : 0.0
 Tfinal : 25
@@ -14,13 +12,7 @@ environmentTemperature : 25
 plot : 1
 timeIntegration : 1
 sourceTerm : 86
-HeatSourceSpeedX : 0
-HeatSourceSpeedY : 0
-HeatSourceSpeedZ : 0
-advectionSpeedX : 0.0
-advectionSpeedY : 0.0
-advectionSpeedZ : 0.0
-speedFRF_X : 0.0
-speedFRF_Y : 0.0
-speedFRF_Z : 0.0
+HeatSourceSpeed : [0, 0, 0]
+advectionSpeed : [0.0, 0.0, 0.0]
+speedFRF : [0.0, 0.0, 0.0]
 isStabilized : 0

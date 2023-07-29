@@ -47,6 +47,8 @@ class HeatSource {
           if (path->currentTrack != NULL) {
             this->speed = path->currentTrack->getSpeed();
             this->power = path->currentTrack->power;
+          } else {
+            throw std::invalid_argument("Time is out of bounds.");
           }
         }
         updatePosition( dt );

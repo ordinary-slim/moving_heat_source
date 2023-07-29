@@ -2,6 +2,7 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] X Y Z to lists in input.yaml files
 - [ ] Cleanup lumped heat source
 - [ ] Move project method away from Problem class
 - [x] Path reader

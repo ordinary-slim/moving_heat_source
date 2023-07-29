@@ -57,9 +57,9 @@ def run():
 
     #set MRF business NO TRANSPORT
     TransportedMRFInput["isAdvection"] = 1
-    TransportedMRFInput["advectionSpeedX"] = -speed
-    TransportedMRFInput["speedFRF_X"]      = speed
-    TransportedMRFInput["HeatSourceSpeedX"] = 0.0
+    TransportedMRFInput["advectionSpeed"] = np.array([-speed, 0.0, 0.0])
+    TransportedMRFInput["speedFRF"]      = np.array([speed, 0.0, 0.0])
+    TransportedMRFInput["HeatSourceSpeed"] = np.zeros( 3 )
 
     pTransportedMRF  = mhs.Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
     pMRFTransporter  = mhs.Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
