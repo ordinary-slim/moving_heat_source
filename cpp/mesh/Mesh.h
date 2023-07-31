@@ -66,10 +66,10 @@ class Mesh {
         throw std::invalid_argument("Not ready yet.");
       }
     }
-    void setAABBs();
+    void buildAABBTree();
     vector<int> findOwnerElements( const Eigen::Vector3d &point ) const;
     vector<int> findCollidingElements( const myOBB &obb ) const;
+    vector<int> findCollidingElements( const Eigen::Vector3d &center, const double R) const;
 };
-MeshTag<int> mark( const Mesh &mesh, int dim = 0, const std::vector<int> &indices = std::vector<int>() );
 }
 #endif

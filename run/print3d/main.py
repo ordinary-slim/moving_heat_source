@@ -41,7 +41,7 @@ def deactivateBelowSurface(p, surfaceZ = 0):
         e = p.domain.mesh.getElement( ielem )
         if (e.getCentroid()[2] < surfaceZ):
             activeEls.append( ielem )
-    substrateEls = mhs.mark( p.domain.mesh, p.domain.mesh.dim, activeEls )
+    substrateEls = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
     p.domain.setActivation( substrateEls )
 
 def setAdimR( adimR, input ):

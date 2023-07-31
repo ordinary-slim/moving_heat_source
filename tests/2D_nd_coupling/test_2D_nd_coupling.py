@@ -65,7 +65,8 @@ def isInsideBox( mesh, box ):
         ymax = max(pos[:, 1])
 
         isInside = 1*(xmin>=box[0] and xmax <= box[1] and ymin >= box[2] and ymax <= box[3])
-        activeElements.append(isInside)
+        if isInside:
+            activeElements.append(ielem)
 
     activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
     return activeElements

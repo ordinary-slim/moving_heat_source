@@ -14,9 +14,9 @@ class MeshTag {
     std::vector<T> x;//values
     int size() const { return x.size(); }
 
-    MeshTag(const mesh::Mesh *mesh, int dim, const T &cte);
+    MeshTag(const mesh::Mesh *mesh, int dim = 0, const T &cte = 0);
 
-    MeshTag(const mesh::Mesh *mesh, int dim=0, std::vector<T> values= std::vector<T>());
+    MeshTag(const mesh::Mesh *mesh, int dim, const std::vector<int> &indices);
 
     MeshTag(const mesh::Mesh *mesh, std::vector<std::pair<int, T>> idxNvals, int dim=0);
 
@@ -35,7 +35,18 @@ class MeshTag {
     std::vector<int> getIndices() const;
     std::vector<int> filterIndices( std::function<bool(T)> filter ) const;
 
+    MeshTag<int>& operator&=( const MeshTag<T>& rhs ) {
+      if ( (_mesh != rhs._mesh) || (_dim != rhs._dim ) ) {
+        throw std::invalid_argument("Incompatible MeshTags");
+      }
+      for (int ient = 0; ient < size(); ++ient) {
+        x[ient] = int( x[ient] & rhs[ient] );
+      }
+      return *this;
+    }
+
     int dim() const { return _dim; }
+
   private:
     int _dim;
     const Mesh* _mesh;

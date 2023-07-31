@@ -18,7 +18,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
   dirichletValues( mesh::MeshTag<double>( &mesh ) ),
   weakBcFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) ),
-  neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1 ) ),
+  neumannFluxes( mesh::MeshTag<vector<double>>( &mesh, mesh.dim-1, vector<double>() ) ),
   elsOwnedByOther( mesh::MeshTag<int>( &mesh, mesh.dim, 0 ) ),
   gammaNodes( mesh::MeshTag<int>( &mesh, 0 ) ),
   gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) )

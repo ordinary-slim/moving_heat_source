@@ -90,6 +90,6 @@ mesh::Mesh::Mesh(const py::dict &input) {
   con_FacetCell = mesh::transpose(con_CellFacet);
 
   // Build AABBs
-  setAABBs();
+  buildAABBTree();
 
 }

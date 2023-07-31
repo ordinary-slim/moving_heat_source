@@ -11,17 +11,16 @@ template<typename T>
 MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, const T &cte) {
   _mesh = mesh;
   _dim  = dim;
-  x.resize( mesh->getNumEntities( dim ) );
-  fill(x.begin(), x.end(), cte);
+  x = vector<T>(  mesh->getNumEntities( dim ) , cte );
 }
 
 template<typename T>
-MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, std::vector<T> values){
+MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, const std::vector<int> &indices){
   _mesh = mesh;
   _dim  = dim;
-  x.resize( mesh->getNumEntities( dim ) );
-  if (values.size()==size()) {
-    x = values;
+  x = vector<T>(  mesh->getNumEntities( dim ) , T(0) );
+  for (int index : indices) {
+    x[ index ] = T( 1 );
   }
 }
 
@@ -29,7 +28,7 @@ template<typename T>
 MeshTag<T>::MeshTag(const mesh::Mesh *mesh, std::vector<std::pair<int, T>> idxNvals, int dim){
   _mesh = mesh;
   _dim  = dim;
-  x.resize( mesh->getNumEntities( dim ) );
+  x = vector<T>(  mesh->getNumEntities( dim ) , T(0) );
   for (std::pair<int, T> pair : idxNvals) {
     x[ pair.first ] = pair.second;
   }
@@ -39,7 +38,7 @@ template<typename T>
 MeshTag<T>::MeshTag(const mesh::Mesh *mesh, const std::vector<int> &indices, const std::vector<T> &values, const int dim) {
   _mesh = mesh;
   _dim  = dim;
-  x.resize( mesh->getNumEntities( dim ) );
+  x = vector<T>(  mesh->getNumEntities( dim ) , T(0) );
   for (int subidx = 0; subidx < indices.size(); ++subidx) {
     x[ indices[subidx] ] = values[subidx];
   }

@@ -90,7 +90,31 @@ vector<int> mesh::Mesh::findCollidingElements( const myOBB &obb ) const {
   return indicesCollidingEls;
 }
 
-void mesh::Mesh::setAABBs() {
+vector<int> mesh::Mesh::findCollidingElements( const Eigen::Vector3d &center, const double R) const {
+  vector<int> indicesCollidingEls;
+  vector<int> potentialCollidingEls;
+  //Broad  Phase Search
+  //Convert to CGAL aabb and use bounding boxes tree
+  double minX = center[0] - R, maxX = center[0] + R,
+         minY = center[1] - R, maxY = center[1] + R,
+         minZ = center[2] - R, maxZ = center[2] + R;
+  auto cgal_aabb = inex_K::Iso_cuboid_3( minX, minY, minZ, maxX, maxY, maxZ );
+  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
+
+  // Narrow phase
+  for ( int ielem : potentialCollidingEls ) {
+    Element cellEl = getElement( ielem );
+    // Compute distance to center of ball
+    double distance = (cellEl.centroid - center).norm();
+    // Compare to cutoff
+    if ( distance <= R ) {
+      indicesCollidingEls.push_back( ielem );
+    }
+  }
+  return indicesCollidingEls;
+}
+
+void mesh::Mesh::buildAABBTree() {
   // CGAL AABB tree
   auto begin = std::chrono::steady_clock::now();
 
@@ -105,13 +129,5 @@ void mesh::Mesh::setAABBs() {
 
   auto end = std::chrono::steady_clock::now();
   std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-}
-
-MeshTag<int> mark( const Mesh &mesh, int dim, const vector<int> &indices ) {
-  vector<int> values = vector<int>( mesh.getNumEntities( dim ), 0 );
-  for (int index : indices) {
-    values[index] = 1;
-  }
-  return MeshTag<int>( &mesh, dim, values );
 }
 }

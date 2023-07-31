@@ -17,13 +17,13 @@ def mesh(box, meshDen=1):
     return points, cells, cell_type
 
 def specActivate( p ):
-    activeEls = np.ones( p.domain.mesh.nels, dtype=int )
+    activeEls = []
     for iel in range( p.domain.mesh.nels ):
         e = p.domain.mesh.getElement( iel )
         centroid = e.getCentroid()
 
-        if (centroid[0] < 0.0):
-            activeEls[iel] = 0
+        if (centroid[0] >= 0.0):
+            activeEls.append( iel )
 
     activeEls = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
     return activeEls

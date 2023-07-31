@@ -2,17 +2,16 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] X Y Z to lists in input.yaml files
+- [ ] Mesh rotation
+- [ ] Practice meshing gmsh
+- [ ] 10 layer example 2d printing
+- [ ] MeshTag && ?
 - [ ] Cleanup lumped heat source
 - [ ] Move project method away from Problem class
-- [x] Path reader
-- [x] Path should not be shared! (unique pointer or object)
-- [ ] Adaptive time-stepping trial
 - [ ] Interface with gmsh
 - [ ] Interface with PyMesh
 - [ ] Refactoring computation mass matrix (URGENT)
 - [ ] Determine if mass matrix is computed or not
-- [x] Move updateFRFPos to Mesh instead of Problem!
 - [ ] Sync getEnts from ActiveMesh and Mesh
 - [ ] Sync the getFacetVertexSets implementations
 - [ ] Cleanup CMAKE so that I dont have to link with Qt5
@@ -22,6 +21,12 @@ To-do:
 - [ ] neumannFluxes ?
 - [ ] Undefined behaviour if activation && weakBcFacets not updated
 - [ ] Refactor gammaFacets into weakBcFacets?
+- [x] Remove mark
+- [x] X Y Z to lists in input.yaml files
+- [x] Path reader
+- [x] Path should not be shared! (unique pointer or object)
+- [x] Adaptive time-stepping trial
+- [x] Move updateFRFPos to Mesh instead of Problem!
 
 Ideas:
 ------

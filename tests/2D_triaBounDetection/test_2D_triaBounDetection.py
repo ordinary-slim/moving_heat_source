@@ -12,13 +12,13 @@ def mesh():
     return points, cells, "triangle3"
 
 def specActive( p, center, d ):
-    activeEls = np.zeros( p.domain.mesh.nels, dtype=int )
+    activeEls = []
     for iel in range( p.domain.mesh.nels ) :
         e = p.domain.mesh.getElement( iel )
         centroid = e.getCentroid()
 
         if (np.linalg.norm( centroid  - center ) < d):
-            activeEls[iel] = 1
+            activeEls.append( iel )
 
     activeElements = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
     p.domain.setActivation( activeElements )

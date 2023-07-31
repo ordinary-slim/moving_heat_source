@@ -193,7 +193,7 @@ void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<doub
 }
 
 void Problem::setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues) {
-  dirichletNodes = mesh::mark( *domain.mesh, 0, otherDirichletNodes );
+  dirichletNodes = mesh::MeshTag<int>( domain.mesh, 0, otherDirichletNodes );
   dirichletValues = mesh::MeshTag<double>( domain.mesh, otherDirichletNodes, otherDirichletValues, 0 );
 }
 

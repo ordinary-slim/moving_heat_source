@@ -88,15 +88,13 @@ PYBIND11_MODULE(cpp, m) {
         .def("setActivation", &mesh::ActiveMesh::setActivation)
         .def("resetActivation", &mesh::ActiveMesh::resetActivation)
         .def("deactivate", &mesh::ActiveMesh::deactivate)
-        .def("findOwnerElements", &mesh::ActiveMesh::findOwnerElements)
-        .def("intersectObb", &mesh::ActiveMesh::intersectObb)
-        .def("intersectBall", &mesh::ActiveMesh::intersectBall);
+        .def("intersect", &mesh::ActiveMesh::intersect)
+        .def("findOwnerElements", &mesh::ActiveMesh::findOwnerElements);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
         .def(py::init<const mesh::Mesh*>())
         .def(py::init<const mesh::Mesh*, int>())
         .def(py::init<const mesh::Mesh*, int, vector<int>>())
-        .def(py::init<const mesh::Mesh*, const std::vector<int>&, const std::vector<int> &, const int>())
         .def("dim", &mesh::MeshTag<int>::dim)
         .def("setValues", &mesh::MeshTag<int>::setValues)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
@@ -123,8 +121,9 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
         .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
+        .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const myOBB&) const>(&mesh::Mesh::findCollidingElements))
+        .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
         .def("getElement", &mesh::Mesh::getElement);
-    m.def( "mark", &mesh::mark, "Return MeshTag of entity of dim d of 0s and 1s" );
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
         .def(py::init<const mesh::ActiveMesh*>())
         .def(py::init<const mesh::ActiveMesh*, Eigen::VectorXd&>())
