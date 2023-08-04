@@ -49,7 +49,7 @@ void Function::interpolate( const Function &extFEMFunc ) {
 
   for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
     // Move to reference frame of external
-    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->translationLab - extFEMFunc.domain->translationLab).transpose();
     try {
       values[inode] = extFEMFunc.evaluate( posExt );
     } catch ( const std::invalid_argument &e ) {
@@ -70,7 +70,7 @@ void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutsi
   vector<int> indicesInactive = domain->activeNodes.filterIndices( [](int v){return (v==0);});
   for (int inactiveNode : indicesInactive) {
     // Move to reference frame of external
-    posExt = domain->mesh->pos.row(inactiveNode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    posExt = domain->mesh->pos.row(inactiveNode) + (domain->translationLab - extFEMFunc.domain->translationLab).transpose();
     try {
       values[inactiveNode] = extFEMFunc.evaluate( posExt );
     } catch (const std::invalid_argument &e) {
@@ -103,13 +103,13 @@ void interpolate( list<Function> &targetFunctions, const list<Function> &sourceF
   // Extract adress to target domain->mesh and source domain->mesh
   std::list<Function>::iterator targetFunsIterator = targetFunctions.begin();
   std::list<Function>::const_iterator sourceFunsIterator = sourceFunctions.begin();
-  mesh::Mesh *targetMesh = targetFunsIterator->domain->mesh;
-  mesh::Mesh *sourceMesh = sourceFunsIterator->domain->mesh;
+  const mesh::Domain *targetDomain = targetFunsIterator->domain;
+  const mesh::Domain *sourceDomain = sourceFunsIterator->domain;
 
   Eigen::Vector3d posExt;
-  for (int inode = 0; inode < targetMesh->nnodes; inode++) {
+  for (int inode = 0; inode < targetDomain->mesh->nnodes; inode++) {
     // Move to reference frame of external
-    posExt = targetMesh->pos.row(inode) + (targetMesh->shiftFRF - sourceMesh->shiftFRF).transpose();
+    posExt = targetDomain->posLab.row(inode) - sourceDomain->translationLab.transpose();
     while (targetFunsIterator != targetFunctions.end() ) {
       targetFunsIterator->values[inode] = sourceFunsIterator->evaluate( posExt );
       ++sourceFunsIterator;
@@ -122,13 +122,13 @@ void interpolate( list<Function> &targetFunctions, const list<Function> &sourceF
 }
 
 fem::Function interpolate( const fem::Function &extFEMFunc,
-                           const mesh::ActiveMesh *domain,
+                           const mesh::Domain *domain,
                            bool ignoreOutside ) {
   Eigen::VectorXd vals = Eigen::VectorXd::Zero( domain->mesh->nnodes );
 
   for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
     // Move to reference frame of external
-    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->mesh->shiftFRF - extFEMFunc.domain->mesh->shiftFRF).transpose();
+    Eigen::Vector3d posExt = domain->posLab.row(inode) - extFEMFunc.domain->translationLab.transpose();
     try {
       vals[inode] = extFEMFunc.evaluate( posExt );
     } catch ( const std::invalid_argument &e ) {

@@ -54,23 +54,6 @@ def debugSetDirichlet( p ):
             dirichletValues.append( exactSol(pos) )
     p.setDirichlet( dirichletNodes, dirichletValues )
 
-def isInsideBox( mesh, box ):
-    activeElements = []
-    for ielem in range( mesh.nels ):
-        el = mesh.getElement( ielem )
-        pos = mesh.posFRF[el.con]
-        xmin = min(pos[:, 0])
-        xmax = max(pos[:, 0])
-        ymin = min(pos[:, 1])
-        ymax = max(pos[:, 1])
-
-        isInside = 1*(xmin>=box[0] and xmax <= box[1] and ymin >= box[2] and ymax <= box[3])
-        if isInside:
-            activeElements.append(ielem)
-
-    activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
-    return activeElements
-
 def run():
     inputFile = "input.yaml"
     boxRight = [0, 1, -1, 1]

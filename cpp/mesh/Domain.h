@@ -7,14 +7,27 @@
 #include "Element.h"
 #include <Eigen/Sparse>
 
+class Problem;
+
 namespace mesh {
 /*
  * Wrapper around Mesh object
  * Defines a subset of the Mesh
+ * and keeps track of mesh motion
+ * to communicate with problem in Fixed /Laboratory Reference Frame
  */
-class ActiveMesh {
+class Domain {
+  private:
+    const Problem *problem;//observer
   public:
     mesh::Mesh *mesh;//this should be private
+                     //
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
+      posLab; // node positions in fixed / lab reference frame
+              // position of point with idx i = row(i)
+    Eigen::Vector3d translationLab = Eigen::Vector3d::Zero();//pos + translation = posFRF
+    Eigen::Vector3d speedDomain = Eigen::Vector3d::Zero();//domain speed with
+                                      //respect to Fixed / Lab reference frame
 
     // Mass matrix
     Eigen::SparseMatrix<double> massMat;
@@ -25,18 +38,11 @@ class ActiveMesh {
     mesh::MeshTag<int> justDeactivatedElements, justActivatedBoundary;//Are these useful?
     MeshTag<int> boundaryFacets, boundaryFacetsParentEls;
 
-    ActiveMesh(Mesh *m) :
-      activeNodes(mesh::MeshTag<int>(m, 0, 1)),
-      activeElements(mesh::MeshTag<int>(m, m->dim, 1)),
-      justDeactivatedElements(mesh::MeshTag<int>(m, m->dim, 0)),
-      justActivatedBoundary(mesh::MeshTag<int>(m, m->dim-1, 0)),
-      boundaryFacets(mesh::MeshTag<int>(m, m->dim-1)),
-      boundaryFacetsParentEls(mesh::MeshTag<int>(m, m->dim-1))
-    {
-      mesh = m;
-      _dim = mesh->dim;
-      computeBoundary();
-    }
+    Domain(Mesh *m, Problem *p);
+
+    void preIterate();
+    void setSpeed(Eigen::Vector3d speedDomain);
+
 
     Element getEntity(int ient, Connectivity &connectivity, ReferenceElement &refEl ) {
       return mesh->getEntity(ient, connectivity, &refEl);

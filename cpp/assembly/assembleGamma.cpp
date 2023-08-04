@@ -11,7 +11,7 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 
     for (int igp = 0; igp < facet.ngpoints; ++igp) {
 
-      Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
+      Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.translationLab - pExt.domain.translationLab;
       int idx_el_ext = pExt.domain.findOwnerElements( xgp_ext );
       mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );
 
@@ -64,7 +64,7 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 void Problem::assembleDirichletGamma(const Problem &pExt) {
   vector<int> indicesGammaNodes = gammaNodes.getIndices();
   for (int inode: indicesGammaNodes) {
-    Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF;
+    Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.translationLab - pExt.domain.translationLab;
 
     int idx_el_ext = pExt.domain.findOwnerElements( xnode_ext ) ;
     mesh::Element e_ext = pExt.domain.getElement( idx_el_ext );

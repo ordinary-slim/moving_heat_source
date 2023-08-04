@@ -26,10 +26,7 @@ class Mesh {
     int dim;
     int nels, nnodes, nnodes_per_el;
     Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>
-      pos, posFRF;// node positions in xi and x
-                  // position of point with idx i = row(i)
-    Eigen::Vector3d shiftFRF = Eigen::Vector3d::Zero();//pos + shift = posFRF
-    Eigen::Vector3d speedFRF = Eigen::Vector3d::Zero();//domain speed with respect to FRF
+      pos; // nodal positions of point with idx i = row(i)
     Connectivity  con_CellPoint;
     Connectivity  con_PointCell;
     Connectivity  con_CellCell;
@@ -45,15 +42,6 @@ class Mesh {
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
     Element getElement(int ielem) const;
-
-    void preIterate(double dt) {
-      shiftFRF += dt * speedFRF;
-      for (int inode=0; inode < nnodes; inode++){
-        posFRF.row( inode ) += dt * speedFRF;
-      }
-    }
-
-    void setSpeedFRF(Eigen::Vector3d speedFRF){ this->speedFRF = speedFRF; }
 
     int getNumEntities( const int inputDim ) const {
       if (inputDim == dim ) {

@@ -1,6 +1,6 @@
 #ifndef FEMFUNC
 #define FEMFUNC
-#include "mesh/ActiveMesh.h"
+#include "mesh/Domain.h"
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
@@ -12,20 +12,20 @@ namespace fem
 class Function{
   public:
     Eigen::VectorXd values;
-    const mesh::ActiveMesh* domain;
+    const mesh::Domain* domain;
 
-    Function(const mesh::ActiveMesh* dom) {
+    Function(const mesh::Domain* dom) {
       domain = dom;
       values = Eigen::VectorXd::Zero( domain->mesh->nnodes );
     }
-    Function(const mesh::ActiveMesh* dom, const Eigen::VectorXd &values) {
+    Function(const mesh::Domain* dom, const Eigen::VectorXd &values) {
       domain = dom;
       if (values.size() != domain->mesh->nnodes) {
         throw std::invalid_argument("Provided values size is not nnodes.");
       }
       this->values = values;
     }
-    Function(const mesh::ActiveMesh* dom, Eigen::VectorXd &values) {
+    Function(const mesh::Domain* dom, Eigen::VectorXd &values) {
       domain = dom;
       if (values.size() != domain->mesh->nnodes) {
         throw std::invalid_argument("Provided values size is not nnodes.");
@@ -33,7 +33,7 @@ class Function{
       this->values = move(values);
     }
     template<typename T>
-    Function(const mesh::ActiveMesh* dom, const mesh::MeshTag<T> &tag) {
+    Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) {
       if (tag.dim()!=0) {
         throw std::invalid_argument("Expected nodal MeshTag in Function constructor.");
       }
@@ -58,7 +58,7 @@ class Function{
 void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
 
 fem::Function interpolate( const fem::Function &extFEMFunc,
-                           const mesh::ActiveMesh *domain,
+                           const mesh::Domain *domain,
                            bool ignoreOutside = false );
 }
 #endif

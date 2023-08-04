@@ -14,5 +14,5 @@ timeIntegration : 1
 sourceTerm : 0
 HeatSourceSpeed : [10, 0, 0]
 advectionSpeed : [5.0, 0.0, 0.0]
-speedFRF : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
 isStabilized : 1

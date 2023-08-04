@@ -24,7 +24,7 @@ enum HeatSourceType {
 
 class HeatSource {
   protected:
-      Problem *problem;
+      const Problem *problem;//observer
   public:
       std::unique_ptr<Path> path = NULL;
       Eigen::Vector3d position;

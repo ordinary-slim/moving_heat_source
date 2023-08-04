@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include <memory>
-#include "mesh/ActiveMesh.h"
+#include "mesh/Domain.h"
 #include "Function.h"
 #include "heatSource/HeatSource.h"
 #include "heatSource/LumpedHeatSource.h"
@@ -21,7 +21,7 @@ class Problem {
   public:
     Problem(mesh::Mesh &mesh, py::dict &input);
 
-    mesh::ActiveMesh domain;
+    mesh::Domain domain;
     fem::Function unknown;
     list<fem::Function> previousValues;
     std::unique_ptr<heat::HeatSource> mhs;//run time polymporphism

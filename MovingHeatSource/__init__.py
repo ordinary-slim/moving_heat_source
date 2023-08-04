@@ -48,7 +48,7 @@ class Problem(Problem):
             if not(self.domain.activeNodes.x[inode]):
                 val[inode] = 0
                 continue
-            pos = self.domain.mesh.posFRF[inode, :]
+            pos = self.domain.posLab[inode, :]
             val[inode] = function( pos )
         self.initializeIntegrator( val )
 
@@ -93,20 +93,20 @@ class Problem(Problem):
 
     #POSTPROCESSING
     def writepos( self,
-                 rf = "FRF",
+                 rf = "Lab",
                  shift=None,
                  functions={},
                  nodeMeshTags={},
                  cellMeshTags={},
                  ):
         '''
-        rf : reference frame, either FRF or MRF
+        rf : reference frame, either HeatSource or Lab
         '''
         os.makedirs(self.postFolder, exist_ok=True)
 
-        if   rf=="FRF":
-            pos = self.domain.mesh.posFRF
-        elif rf=="MRF":
+        if   rf=="Lab":
+            pos = self.domain.posLab
+        elif rf=="HeatSource":
             pos = self.domain.mesh.pos
         else:
             print("Wrong value of rf")
@@ -223,7 +223,7 @@ def meshio_comparison(ref, new,
                 differentKeys.append( key )
     # All comparisons passed
     if not(isSame):
-        print(differentKeys)
+        print("These keys are not matching:", differentKeys)
     return isSame
 
 if __name__=="__main__":

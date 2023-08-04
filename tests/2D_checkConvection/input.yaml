@@ -12,7 +12,7 @@ timeIntegration : 1
 sourceTerm : 1
 isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
-speedFRF : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
 isStabilized : 0
 convectionCoeff : 1
 environmentTemperature : 0

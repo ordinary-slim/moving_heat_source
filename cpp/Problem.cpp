@@ -21,7 +21,7 @@ void Problem::preIterate( bool canPreassemble ) {
   ++iter;
 
   mhs->preIterate();
-  domain.mesh->preIterate( dt );
+  domain.preIterate();
 
   if (canPreassemble) {
     preAssemble( assembling2external );
@@ -295,7 +295,7 @@ void Problem::uniteExternal( const Problem &pExt, bool updateGamma ) {
   vector<int> indicesJustActivated =
     domain.activeNodes.filterIndices( [](int inode){return (inode==2);});
   for (int inode : indicesJustActivated) {
-    Eigen::Vector3d posExt = domain.mesh->pos.row(inode) + (domain.mesh->shiftFRF - pExt.domain.mesh->shiftFRF).transpose();
+    Eigen::Vector3d posExt = domain.mesh->pos.row(inode) + (domain.translationLab - pExt.domain.translationLab).transpose();
     unknown.values[inode] = pExt.unknown.evaluate( posExt );
   }
   if (updateGamma) {

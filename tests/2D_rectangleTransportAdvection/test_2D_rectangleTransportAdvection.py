@@ -15,11 +15,11 @@ def mesh(box, meshDen=1):
     cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
-def isInsideBox( mesh, box ):
+def isInsideBox( domain, box ):
     activeElements = []
-    for ielem in range( mesh.nels ):
-        el = mesh.getElement( ielem )
-        pos = mesh.posFRF[el.con]
+    for ielem in range( domain.mesh.nels ):
+        el = domain.mesh.getElement( ielem )
+        pos = domain.posLab[el.con]
         xmin = min(pos[:, 0])
         xmax = max(pos[:, 0])
         ymin = min(pos[:, 1])
@@ -29,7 +29,7 @@ def isInsideBox( mesh, box ):
         if (isInside):
             activeElements.append(ielem)
 
-    activeElements = mhs.MeshTag( mesh, mesh.dim, activeElements )
+    activeElements = mhs.MeshTag( domain.mesh, domain.mesh.dim, activeElements )
     return activeElements
 
 def run():
@@ -59,7 +59,7 @@ def run():
     #set MRF business NO TRANSPORT
     TransportedMRFInput["isAdvection"] = 1
     TransportedMRFInput["advectionSpeed"] = np.array([-speed, 0.0, 0.0])
-    TransportedMRFInput["speedFRF"]      = np.array([speed, 0.0, 0.0])
+    TransportedMRFInput["speedDomain"]      = np.array([speed, 0.0, 0.0])
     TransportedMRFInput["HeatSourceSpeed"] = np.zeros( 3 )
 
     pTransportedMRF  = mhs.Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
@@ -75,7 +75,7 @@ def run():
         pTransportedMRF.preiterate(False)#motion
         pMRFTransporter.fakeIter()
 
-        activeElements = isInsideBox( pTransportedMRF.domain.mesh, boxPhys )
+        activeElements = isInsideBox( pTransportedMRF.domain, boxPhys )
         pTransportedMRF.domain.setActivation( activeElements )
 
 

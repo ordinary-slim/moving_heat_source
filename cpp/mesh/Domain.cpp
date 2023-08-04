@@ -1,7 +1,23 @@
-#include "ActiveMesh.h"
+#include "Domain.h"
+#include "../Problem.h"
 
 namespace mesh {
-void ActiveMesh::computeBoundary() {
+Domain::Domain(Mesh *m, Problem *p) :
+  activeNodes(mesh::MeshTag<int>(m, 0, 1)),
+  activeElements(mesh::MeshTag<int>(m, m->dim, 1)),
+  justDeactivatedElements(mesh::MeshTag<int>(m, m->dim, 0)),
+  justActivatedBoundary(mesh::MeshTag<int>(m, m->dim-1, 0)),
+  boundaryFacets(mesh::MeshTag<int>(m, m->dim-1)),
+  boundaryFacetsParentEls(mesh::MeshTag<int>(m, m->dim-1))
+{
+  mesh = m;
+  _dim = mesh->dim;
+  posLab = mesh->pos;
+  problem = p;
+  computeBoundary();
+}
+
+void Domain::computeBoundary() {
   /*
    * Build array of indices of boundary facets
   */
@@ -36,7 +52,7 @@ void ActiveMesh::computeBoundary() {
   }
 }
 
-void ActiveMesh::updateActiveNodes(const MeshTag<int> *newActiveNodes) {
+void Domain::updateActiveNodes(const MeshTag<int> *newActiveNodes) {
   if (newActiveNodes) {
     for (int inode = 0; inode < mesh->nnodes; ++inode ) {
       if (not(activeNodes.x[inode]) && (newActiveNodes->x[inode]) ) {
@@ -68,7 +84,7 @@ void ActiveMesh::updateActiveNodes(const MeshTag<int> *newActiveNodes) {
   }
 }
 
-void ActiveMesh::updateActiveElements(const MeshTag<int> *newActiveEls) {
+void Domain::updateActiveElements(const MeshTag<int> *newActiveEls) {
   if (newActiveEls) {
     for (int iel = 0; iel < mesh->nels; ++iel ) {
       if ((activeElements.x[iel])&& not(newActiveEls->x[iel]) ) {
@@ -107,17 +123,17 @@ bool checkHasInactive( const vector<int> &activeElements ) {
   return (std::find( activeElements.begin(), activeElements.end(), 0) != activeElements.end() );
 }
 
-void ActiveMesh::updateBeforeActivation() {
+void Domain::updateBeforeActivation() {
   fill(justActivatedBoundary.x.begin(), justActivatedBoundary.x.end(), 0);
   fill(justDeactivatedElements.x.begin(), justDeactivatedElements.x.end(), 0);
 }
 
-void ActiveMesh::updateAfterActivation() {
+void Domain::updateAfterActivation() {
   hasInactive = (std::find( activeElements.x.begin(), activeElements.x.end(), false) != activeElements.x.end() );
   computeBoundary();
 }
 
-void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
+void Domain::setActivation(const MeshTag<int> &activationCriterion) {
   updateBeforeActivation();
   if (activationCriterion.dim()==0) {
     // Activate by nodes. Is this useful?
@@ -132,17 +148,17 @@ void ActiveMesh::setActivation(const MeshTag<int> &activationCriterion) {
   updateAfterActivation();
 }
 
-void ActiveMesh::resetActivation() {
+void Domain::resetActivation() {
   MeshTag<int> allActive = MeshTag<int>( mesh, mesh->dim, 1);
   setActivation( allActive );
 }
 
-void ActiveMesh::deactivate() {
+void Domain::deactivate() {
   MeshTag<int> allInactive = MeshTag<int>( mesh, mesh->dim, 0);
   setActivation( allInactive );
 }
 
-int ActiveMesh::findOwnerElements( const Eigen::Vector3d &point ) const {
+int Domain::findOwnerElements( const Eigen::Vector3d &point ) const {
   /*
    * Wrapper around mesh's findOwnerElements that returns
    * an active element owning the point.
@@ -157,9 +173,18 @@ int ActiveMesh::findOwnerElements( const Eigen::Vector3d &point ) const {
 }
 
 
-void ActiveMesh::intersect( const MeshTag<int> activeElements) {
+void Domain::intersect( const MeshTag<int> activeElements) {
   this->activeElements &= activeElements;
   setActivation( activeElements );
 }
+
+void Domain::preIterate() {
+  translationLab += problem->dt * speedDomain;
+  for (int inode=0; inode < mesh->nnodes; inode++){
+    posLab.row( inode ) += problem->dt * speedDomain;
+  }
+}
+
+void Domain::setSpeed(Eigen::Vector3d speedDomain){ this->speedDomain = speedDomain; }
 
 }

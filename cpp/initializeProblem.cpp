@@ -10,7 +10,7 @@
 namespace py = pybind11;
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
-  domain( mesh::ActiveMesh( &mesh ) ),
+  domain( mesh::Domain( &mesh , this ) ),
   unknown( fem::Function( &domain ) ),
   forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
@@ -106,8 +106,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 
   // DOMAIN MOTION
   // TODO: Move this down to mesh level!
-  if (input.contains("speedFRF")) {
-    domain.mesh->speedFRF = CreateEigenVector(py::array_t<double>(input["speedFRF"]));
+  if (input.contains("speedDomain")) {
+    domain.setSpeed( CreateEigenVector(py::array_t<double>(input["speedDomain"])) );
   }
 
   // ASSS STABILIZATION

@@ -12,7 +12,7 @@ class Printer : public HatchCollider {
       this->p    = p;
     }
     void deposit( const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, mesh::MeshTag<int> *activeEls = NULL ) {
-      vector<int> collidedEls = collide( p1-p->domain.mesh->shiftFRF, p2-p->domain.mesh->shiftFRF);
+      vector<int> collidedEls = collide( p1-p->domain.translationLab, p2-p->domain.translationLab);
 
       if (not(activeEls)) { activeEls = &p->domain.activeElements; };
       for (int ielem : collidedEls) {

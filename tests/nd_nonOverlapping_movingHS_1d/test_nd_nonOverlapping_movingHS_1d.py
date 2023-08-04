@@ -21,11 +21,11 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
     return mesh(box[0], box[1], meshDen=meshDen)
 
 def plotProblem( p ):
-    plt.plot( p.domain.mesh.posFRF[:, 0],
+    plt.plot( p.domain.posLab[:, 0],
              p.unknown.values)
     gammaNodesIndices = p.gammaNodes.getIndices()
     for idx in gammaNodesIndices:
-        x = p.domain.mesh.posFRF[idx, 0]
+        x = p.domain.posLab[idx, 0]
         plt.axvline(x=x)
 
 def setAdimR( adimR, input ):
@@ -63,7 +63,7 @@ def run():
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
     movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
-    movingProblemInput["speedFRF"]      = fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["speedDomain"]      = fixedProblemInput["HeatSourceSpeed"]
     movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")

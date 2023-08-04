@@ -2,7 +2,7 @@
 #define LUMPEDHS
 #include "HeatSource.h"
 #include "../additiveManufacturing/Hatch.h"
-#include "../mesh/ActiveMesh.h"
+#include "../mesh/Domain.h"
 
 namespace heat {
 class LumpedHeatSource : public HeatSource {

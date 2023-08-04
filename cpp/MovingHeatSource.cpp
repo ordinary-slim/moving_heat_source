@@ -76,20 +76,23 @@ PYBIND11_MODULE(cpp, m) {
             "Intersect domain with external domain.")
         .def("uniteExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::uniteExternal),
             "Unite domain with external domain.");
-    py::class_<mesh::ActiveMesh>(m, "ActiveMesh")
-        .def(py::init<mesh::Mesh*>())
-        .def("dim", &mesh::ActiveMesh::dim)
-        .def_readonly("activeNodes", &mesh::ActiveMesh::activeNodes)
-        .def_readonly("activeElements", &mesh::ActiveMesh::activeElements)
-        .def_readonly("justActivatedBoundary", &mesh::ActiveMesh::justActivatedBoundary)
-        .def_readonly("boundaryFacets", &mesh::ActiveMesh::boundaryFacets)
-        .def_readonly("mesh", &mesh::ActiveMesh::mesh)
-        .def_readonly("mass", &mesh::ActiveMesh::massMat)//DEBUGGING
-        .def("setActivation", &mesh::ActiveMesh::setActivation)
-        .def("resetActivation", &mesh::ActiveMesh::resetActivation)
-        .def("deactivate", &mesh::ActiveMesh::deactivate)
-        .def("intersect", &mesh::ActiveMesh::intersect)
-        .def("findOwnerElements", &mesh::ActiveMesh::findOwnerElements);
+    py::class_<mesh::Domain>(m, "Domain")
+        .def_readonly("posLab", &mesh::Domain::posLab)
+        .def_readonly("translationLab", &mesh::Domain::translationLab)
+        .def_readonly("speedDomain", &mesh::Domain::speedDomain)
+        .def("setSpeed", &mesh::Domain::setSpeed)
+        .def("dim", &mesh::Domain::dim)
+        .def_readonly("activeNodes", &mesh::Domain::activeNodes)
+        .def_readonly("activeElements", &mesh::Domain::activeElements)
+        .def_readonly("justActivatedBoundary", &mesh::Domain::justActivatedBoundary)
+        .def_readonly("boundaryFacets", &mesh::Domain::boundaryFacets)
+        .def_readonly("mesh", &mesh::Domain::mesh)
+        .def_readonly("mass", &mesh::Domain::massMat)//DEBUGGING
+        .def("setActivation", &mesh::Domain::setActivation)
+        .def("resetActivation", &mesh::Domain::resetActivation)
+        .def("deactivate", &mesh::Domain::deactivate)
+        .def("intersect", &mesh::Domain::intersect)
+        .def("findOwnerElements", &mesh::Domain::findOwnerElements);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
         .def(py::init<const mesh::Mesh*>())
@@ -108,25 +111,21 @@ PYBIND11_MODULE(cpp, m) {
         //.def(py::init<const mesh::Mesh&>()) AABB_tree doesnt allow this
         .def(py::init<const py::dict&>())
         .def_readonly("pos", &mesh::Mesh::pos)
-        .def_readonly("posFRF", &mesh::Mesh::posFRF)
         .def_readonly("con_CellPoint", &mesh::Mesh::con_CellPoint)
         .def_readonly("con_CellCell", &mesh::Mesh::con_CellCell)
         .def_readonly("con_FacetPoint", &mesh::Mesh::con_FacetPoint)//Debugging
         .def_readonly("con_FacetCell", &mesh::Mesh::con_FacetCell)//Debugging
         .def_readonly("nels", &mesh::Mesh::nels)
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
-        .def_readonly("speedFRF", &mesh::Mesh::speedFRF)
-        .def_readonly("shiftFRF", &mesh::Mesh::shiftFRF)
         .def_readonly("dim", &mesh::Mesh::dim)
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
-        .def("setSpeedFRF", &mesh::Mesh::setSpeedFRF)
         .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const myOBB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<fem::Function>(m, "Function", py::dynamic_attr())
-        .def(py::init<const mesh::ActiveMesh*>())
-        .def(py::init<const mesh::ActiveMesh*, Eigen::VectorXd&>())
+        .def(py::init<const mesh::Domain*>())
+        .def(py::init<const mesh::Domain*, Eigen::VectorXd&>())
         .def(py::init<const fem::Function&>())
         .def(py::self - py::self)
         .def("evaluate", &fem::Function::evaluate)
