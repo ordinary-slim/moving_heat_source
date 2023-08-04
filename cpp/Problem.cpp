@@ -20,7 +20,7 @@ void Problem::preIterate( bool canPreassemble ) {
   time += dt;
   ++iter;
 
-  mhs->preIterate( time );
+  mhs->preIterate();
   domain.mesh->preIterate( dt );
 
   if (canPreassemble) {

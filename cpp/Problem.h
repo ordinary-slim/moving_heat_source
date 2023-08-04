@@ -11,6 +11,8 @@
 #include "timeIntegrator.h"
 #include "linearAlgebra/LinearSystem.h"
 #include "../external/pybind11/include/pybind11/pybind11.h"
+#include "../external/pybind11/include/pybind11/numpy.h"
+#include "../external/pybind11/include/pybind11/eigen.h"
 #include "../external/pybind11/include/pybind11/stl.h"
 
 namespace py = pybind11;
@@ -119,4 +121,6 @@ class Problem {
     }
     fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };
+
+Eigen::VectorXd CreateEigenVector(py::array_t<double> n); // Helper function initialization. Where should I put this?
 #endif

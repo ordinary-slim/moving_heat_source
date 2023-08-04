@@ -87,7 +87,7 @@ def run():
 
     for _ in range(nsteps):
         # Setup print
-        p1 = p.mhs.currentPosition
+        p1 = p.mhs.position
         p2 = p1 + p.mhs.speed * dt
         # Print
         printerFRF.deposit( p1, p2, p.domain.activeElements )

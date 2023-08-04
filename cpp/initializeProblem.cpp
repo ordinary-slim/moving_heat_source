@@ -9,8 +9,6 @@
 
 namespace py = pybind11;
 
-Eigen::VectorXd CreateEigenVector(py::array_t<double> n);
-
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   domain( mesh::ActiveMesh( &mesh ) ),
   unknown( fem::Function( &domain ) ),
@@ -40,31 +38,25 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
     case 11: { 
         double heatSouceWidth  = py::cast<double>(input["heatSourceWidth"]);
         double heatSouceHeight = py::cast<double>(input["heatSourceHeight"]);
-        mhs = std::make_unique<heat::LumpedHeatSource>( &domain, heatSouceWidth, heatSouceHeight);
+        //( double radius, double power, Problem *problem,
+        //                            Eigen::Vector3d initialPosition, Eigen::Vector3d speed,
+        //                                                        double efficiency = 1.0 )
+        mhs = std::make_unique<heat::LumpedHeatSource>( heatSouceWidth, heatSouceHeight, input, this);
         break; }
     case 86: {
-        mhs = std::make_unique<heat::cteHeat>();
+        mhs = std::make_unique<heat::cteHeat>(input, this);
         break; }
     default:
       {
         if (domain.mesh->dim == 1 ) {
-          mhs = std::make_unique<heat::gaussianPowerDensity1D>();
+          mhs = std::make_unique<heat::gaussianPowerDensity1D>(input, this);
         } else if (domain.mesh->dim == 2 ) {
-          mhs = std::make_unique<heat::gaussianPowerDensity2D>();
+          mhs = std::make_unique<heat::gaussianPowerDensity2D>(input, this);
         } else {
-          mhs = std::make_unique<heat::gaussianPowerDensity3D>();
+          mhs = std::make_unique<heat::gaussianPowerDensity3D>(input, this);
         }
         break; }
   }
-  mhs->radius = py::cast<double>(input["radius"]);
-  mhs->power = py::cast<double>(input["power"]);
-  mhs->pulse.resize( domain.mesh->nnodes );
-
-  if (input.contains("efficiency")) mhs->efficiency = py::cast<double>(input["efficiency"]);
-
-  mhs->speed = CreateEigenVector(py::array_t<double>(input["HeatSourceSpeed"]));
-  mhs->initialPosition = CreateEigenVector(py::array_t<double>(input["initialPosition"]));
-  mhs->currentPosition    = mhs->initialPosition;
 
   // TIME DEPENDENCY
   if (input.contains("steadyState")) {
@@ -125,7 +117,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 }
 
 Eigen::VectorXd CreateEigenVector(py::array_t<double> n) {
-  // Convert 1d numpy vector to 1d eigen vector
+  // Where should I put this?
   py::buffer_info buf = n.request();
   double* ptr = (double*)buf.ptr;
   Eigen::VectorXd e(buf.size);

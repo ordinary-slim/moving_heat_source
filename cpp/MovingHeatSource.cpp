@@ -172,8 +172,7 @@ PYBIND11_MODULE(cpp, m) {
     py::class_<myOBB>(m, "myOBB")
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
     py::class_<heat::HeatSource>(m, "HeatSource")
-        .def(py::init<>())
-        .def_readwrite("currentPosition", &heat::HeatSource::currentPosition)
+        .def_readwrite("position", &heat::HeatSource::position)
         .def_readonly("pulse", &heat::HeatSource::pulse)
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)

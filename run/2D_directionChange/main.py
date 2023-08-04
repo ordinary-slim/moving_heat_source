@@ -56,7 +56,7 @@ if __name__=="__main__":
     meshInputPhys, meshInputMoving = {}, {}
     meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = meshBox(boxPhys)
     #meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshSquare(movingProblemInput["initialPosition"], 2*adimR_domain)
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshSquare(movingProblemInput["initialPosition"], 2*adimR_domain, meshDen=8)
 
     meshFixed           = mhs.Mesh(meshInputPhys)
     meshMoving           = mhs.Mesh(meshInputMoving)

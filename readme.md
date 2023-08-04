@@ -2,8 +2,10 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Include path
 - [ ] Mesh rotation
 - [ ] Practice meshing gmsh
+- [ ] What's happening in back of subdomain ?
 - [ ] 10 layer example 2d printing
 - [ ] MeshTag && ?
 - [ ] Cleanup lumped heat source

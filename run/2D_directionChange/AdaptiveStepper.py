@@ -14,7 +14,7 @@ class AdaptiveStepper:
         self.pMoving = pMoving
         # TODO: better initialization
         self.adimFineDt = 0.25
-        self.adimFineSubdomainSize = 1
+        self.adimFineSubdomainSize = 0.75 
         self.adimMaxSubdomainSize = adimMaxSubdomainSize
         self.adimMaxDt = adimMaxSubdomainSize / factor
         self.threshold = threshold
@@ -25,13 +25,18 @@ class AdaptiveStepper:
         tscale = self.pFixed.mhs.radius / self.pFixed.mhs.path.currentTrack.speed
         self.adimDt = pFixed.dt / tscale
         self.adimSubdomainSize = self.adimFineSubdomainSize
-        self.updateDt()
+        self.update()
 
-    def updateDt(self):
+    def update(self):
+        '''
+        Called at end of iteration
+        Computes size of subdomain and dt
+        '''
         # TODO: fix this for when track changes from t to tnp1
         
         time = self.pFixed.time
 
+        # If path is over
         if (self.pFixed.mhs.path.isOver(time)):
             return
         tUnit = self.pFixed.mhs.radius / self.pFixed.mhs.path.currentTrack.speed
@@ -81,10 +86,12 @@ class AdaptiveStepper:
         print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
+        '''
         if (self.adimDt <= 0.25+1e-7):
             self.isCoupled = False
         else:
             self.isCoupled = True
+        '''
 
     def iterate( self ):
         self.setDt()
@@ -142,7 +149,7 @@ class AdaptiveStepper:
         self.pMoving.postIterate()
 
         # Compute next dt && domain size
-        self.updateDt()
+        self.update()
 
         self.pFixed.writepos(
             nodeMeshTags={ "gammaNodes":self.pFixed.gammaNodes, },)

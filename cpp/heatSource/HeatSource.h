@@ -5,6 +5,12 @@
 #include <cmath>
 #include <memory>
 #include "Path.h"
+#include "../../external/pybind11/include/pybind11/pybind11.h"
+#include "../../external/pybind11/include/pybind11/numpy.h"
+#include "../../external/pybind11/include/pybind11/eigen.h"
+#include "../../external/pybind11/include/pybind11/stl.h"
+
+class Problem;
 
 namespace heat {
 enum HeatSourceType {
@@ -17,19 +23,21 @@ enum HeatSourceType {
 };
 
 class HeatSource {
+  protected:
+      Problem *problem;
   public:
       std::unique_ptr<Path> path = NULL;
-      Eigen::Vector3d initialPosition;
-      Eigen::Vector3d currentPosition;
+      Eigen::Vector3d position;
       Eigen::Vector3d speed;
       Eigen::VectorXd pulse; // source term
       double power;
       double efficiency = 1.0;
       double radius = 2.0;
-      double time = 0.0;// Is this used ?
       HeatSourceType type = none;
 
-      void updatePosition( double dt ) { currentPosition += speed * dt; }
+      HeatSource( pybind11::dict &input, Problem *problem );
+
+      void step( double dt ) { position += speed * dt; }
       void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
       void setPower( double power ) { this->power = power; }
       void setPath( std::vector<Eigen::Vector3d> &coordinates,
@@ -39,21 +47,8 @@ class HeatSource {
 
           this->path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
       }
-      void preIterate(double newTime) {
-        double dt = newTime - this->time;
-        this->time = newTime;
-        if (path != NULL) {
-          path->currentTrack = path->interpolateTrack( this->time );
-          if (path->currentTrack != NULL) {
-            this->speed = path->currentTrack->getSpeed();
-            this->power = path->currentTrack->power;
-          } else {
-            throw std::invalid_argument("Time is out of bounds.");
-          }
-        }
-        updatePosition( dt );
-      }
 
+      void preIterate();
       virtual double operator()(Eigen::Vector3d x, double t) const {
         return 0.0;
       }
@@ -62,34 +57,40 @@ class HeatSource {
 // Some heat sources
 class gaussianPowerDensity1D : public HeatSource {
   public:
-    gaussianPowerDensity1D() {
+    gaussianPowerDensity1D( pybind11::dict &input, Problem *problem )
+      : HeatSource(input, problem)
+    {
       type = gaussian1d;
     }
     double operator()(Eigen::Vector3d x, double t) const {
-      double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x[0] - currentPosition[0], 2)/pow(radius, 2));
+      double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*pow(x[0] - position[0], 2)/pow(radius, 2));
       return pd;
     }
 };
 
 class gaussianPowerDensity2D : public HeatSource {
   public:
-    gaussianPowerDensity2D() {
+    gaussianPowerDensity2D( pybind11::dict &input, Problem *problem )
+      : HeatSource(input, problem)
+    {
       type = gaussian2d;
     }
     double operator()(Eigen::Vector3d x, double t) const {
-      double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*(pow(x[0] - currentPosition[0], 2) + pow(x[1] - currentPosition[1], 2)) /pow(radius, 2));
+      double pd = 2*(power*efficiency) / M_PI / pow(radius, 2) * exp( - 2*(pow(x[0] - position[0], 2) + pow(x[1] - position[1], 2)) /pow(radius, 2));
       return pd;
     }
 };
 
 class gaussianPowerDensity3D : public HeatSource {
   public:
-    gaussianPowerDensity3D() {
+    gaussianPowerDensity3D( pybind11::dict &input, Problem *problem )
+      : HeatSource(input, problem)
+    {
       type = gaussian3d;
     }
     double operator()(Eigen::Vector3d x, double t) const {
       //TODO: check formula
-      double dSquared = (x - currentPosition).squaredNorm();
+      double dSquared = (x - position).squaredNorm();
       double pd = 6*sqrt(3)*(power*efficiency) / pow(M_PI, 1.5) / pow(radius, 3) * exp( -3*dSquared/pow(radius, 2));
       return pd;
     }
@@ -97,13 +98,15 @@ class gaussianPowerDensity3D : public HeatSource {
 
 class cteHeat : public HeatSource {
   public:
-    cteHeat() {
+    cteHeat( pybind11::dict &input, Problem *problem )
+      : HeatSource(input, problem)
+    {
       type = constant;
     }
     double operator()(Eigen::Vector3d x, double t) const {
 
       double pd = 0;
-      if ( (x - currentPosition).norm() <= radius ) {
+      if ( (x - position).norm() <= radius ) {
         //pd = efficiency * power / 2 / radius;
         pd = power;
       }
