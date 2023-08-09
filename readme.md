@@ -2,12 +2,14 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Scale subdomain size with timestep size
+- [ ] Reduce code duplication in Function class (inteprolate methods)
 - [ ] Include path
-- [ ] Mesh rotation
-- [ ] Practice meshing gmsh
+- [x] Mesh rotation
+- [x] Practice meshing gmsh
+- [x] MeshTag && ?
 - [ ] What's happening in back of subdomain ?
 - [ ] 10 layer example 2d printing
-- [ ] MeshTag && ?
 - [ ] Cleanup lumped heat source
 - [ ] Move project method away from Problem class
 - [ ] Interface with gmsh

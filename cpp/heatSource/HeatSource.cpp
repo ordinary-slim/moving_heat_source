@@ -17,10 +17,10 @@ heat::HeatSource::HeatSource( pybind11::dict &input, Problem *problem ) {
 
 void heat::HeatSource::preIterate() {
   if (path != NULL) {
-    path->currentTrack = path->interpolateTrack( problem->time );
-    if (path->currentTrack != NULL) {
-      this->speed = path->currentTrack->getSpeed();
-      this->power = path->currentTrack->power;
+    currentTrack = path->interpolateTrack( problem->time );
+    if (currentTrack != NULL) {
+      this->speed = currentTrack->getSpeed();
+      this->power = currentTrack->power;
     } else {
       throw std::invalid_argument("Time is out of bounds.");
     }

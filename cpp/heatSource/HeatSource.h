@@ -34,6 +34,7 @@ class HeatSource {
       double efficiency = 1.0;
       double radius = 2.0;
       HeatSourceType type = none;
+      const Track *currentTrack = NULL;
 
       HeatSource( pybind11::dict &input, Problem *problem );
 
@@ -45,7 +46,8 @@ class HeatSource {
             std::vector<double> &powers,
             std::vector<int> &arePrinting ) {
 
-          this->path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
+          path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
+          currentTrack = &path->tracks[0];
       }
 
       void preIterate();

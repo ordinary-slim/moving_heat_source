@@ -1,4 +1,5 @@
 #include "Domain.h"
+#include "Mesh.h"
 #include "../Problem.h"
 
 namespace mesh {
@@ -185,6 +186,14 @@ void Domain::preIterate() {
   }
 }
 
-void Domain::setSpeed(Eigen::Vector3d speedDomain){ this->speedDomain = speedDomain; }
+void Domain::setSpeed(Eigen::Vector3d speedDomain){
+  this->speedDomain = speedDomain;
+}
+
+void Domain::inPlaneRotate( Eigen::Vector3d &center, double angle ) {
+  mesh::inPlaneRotate( this->mesh->pos, center, angle );
+  mesh::inPlaneRotate( this->posLab, center+translationLab, angle );
+  mesh->updateAABBTree();
+}
 
 }

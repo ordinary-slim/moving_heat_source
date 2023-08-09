@@ -3,8 +3,11 @@
 
 myAABB::myAABB( mesh::Element e ) {
   for (int idim = 0; idim < 3; ++idim) {
-    bounds[idim][0] = e.pos.col(idim).minCoeff();
-    bounds[idim][1] = e.pos.col(idim).maxCoeff();
+    double min = e.pos.col(idim).minCoeff();
+    double max = e.pos.col(idim).maxCoeff();
+    double L   = max - min;
+    bounds[idim][0] = min - (stretch/2)*L - pad;
+    bounds[idim][1] = max + (stretch/2)*L + pad;
   }
   this->ielem = e.ient;
 }

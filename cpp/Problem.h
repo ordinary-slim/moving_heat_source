@@ -106,7 +106,7 @@ class Problem {
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
     void setGamma2Dirichlet();
-    mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-7 );
+    mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-5 );
     void uniteExternal( const Problem &pExt, bool updateGamma = true);
     void substractExternal( const Problem &pExt, bool updateGamma = true);
     void intersectExternal( const Problem &pExt, bool updateGamma = true );

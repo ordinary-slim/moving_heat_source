@@ -2,6 +2,7 @@
 #include "MeshTag.h"
 #include "Element.h"
 #include <Eigen/Core>
+#include <cmath>
 #include <chrono>
 
 namespace mesh
@@ -40,7 +41,7 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
 Element Mesh::getElement(int ielem) const {
   return getEntity( ielem, con_CellPoint, &refCellEl, &refFacetEl );
 }
-vector<int> mesh::Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
+vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   vector<int> idxOwnerEl;
   vector<int> potentialOwners;
   //Broad  Phase Search
@@ -52,6 +53,7 @@ vector<int> mesh::Mesh::findOwnerElements( const Eigen::Vector3d &point ) const 
   Element cellEl;
   Element facetEl;
 
+  double narrowPhaseTol = 1e-10;//numerical tol
   for ( int ielem : potentialOwners ) {
     bool isInside = true;
     cellEl = getElement( ielem );
@@ -61,7 +63,8 @@ vector<int> mesh::Mesh::findOwnerElements( const Eigen::Vector3d &point ) const 
     for ( std::vector<unsigned int> facetLocalCon : setsFacetLocalCons ) {
       facetEl = cellEl.getFacetElement( &facetLocalCon );
 
-      if ( facetEl.normal.dot( point - facetEl.centroid )  > 0 ) {
+      double projection =  facetEl.normal.dot( point - facetEl.centroid );
+      if ( projection > +narrowPhaseTol ) {
         isInside = false;
         break;
       }
@@ -72,7 +75,7 @@ vector<int> mesh::Mesh::findOwnerElements( const Eigen::Vector3d &point ) const 
   }
   return idxOwnerEl;
 }
-vector<int> mesh::Mesh::findCollidingElements( const myOBB &obb ) const {
+vector<int> Mesh::findCollidingElements( const myOBB &obb ) const {
   vector<int> indicesCollidingEls;
   vector<int> potentialCollidingEls;
   //Broad  Phase Search
@@ -90,7 +93,7 @@ vector<int> mesh::Mesh::findCollidingElements( const myOBB &obb ) const {
   return indicesCollidingEls;
 }
 
-vector<int> mesh::Mesh::findCollidingElements( const Eigen::Vector3d &center, const double R) const {
+vector<int> Mesh::findCollidingElements( const Eigen::Vector3d &center, const double R) const {
   vector<int> indicesCollidingEls;
   vector<int> potentialCollidingEls;
   //Broad  Phase Search
@@ -114,20 +117,47 @@ vector<int> mesh::Mesh::findCollidingElements( const Eigen::Vector3d &center, co
   return indicesCollidingEls;
 }
 
-void mesh::Mesh::buildAABBTree() {
+void Mesh::buildAABBTree() {
   // CGAL AABB tree
-  auto begin = std::chrono::steady_clock::now();
+  elementAABBs.resize( nels );
+  updateAABBTree();
+}
 
-  elementAABBs.reserve( nels );
-
+void Mesh::updateAABBTree() {
   for (int ielem = 0; ielem < nels; ++ielem) {
     Element e = getElement(ielem);
-    elementAABBs.push_back( myAABB( e ) );
+    elementAABBs[ielem] = myAABB( e );
   }
-
   tree.rebuild(elementAABBs.begin(), elementAABBs.end());
-
-  auto end = std::chrono::steady_clock::now();
-  std::cout << "Building AABBs took " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 }
+
+
+void inPlaneRotate( Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> &points, 
+    const Eigen::Vector3d &center, double angle ) {
+  /*
+   * points: Array of points to be rotated, row by row
+   * Center: Point along axis of rotation
+   * angle: In radians
+   */
+
+  // Build rotation matrix
+  double c = std::cos(angle);
+  double s = std::sin(angle);
+
+  Eigen::Matrix3d R {
+    {+c, -s,  0},
+    {+s, +c,  0},
+    { 0,  0,  1}
+  };
+  // Loop over points
+  for (int ipoin = 0; ipoin < points.rows(); ++ipoin) {
+    // Rotate each point
+    points.row( ipoin ) = center + R * ( points.row( ipoin ).transpose() - center );
+  }
+  // Round to N decimal places
+  int decimal_places = 7;
+  const double multiplier = std::pow(10.0, decimal_places);
+  points.unaryExpr( [multiplier]( double d ) { return std::round( d * multiplier ) / multiplier; } );
+}
+
 }

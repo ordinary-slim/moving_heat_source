@@ -65,9 +65,9 @@ def run():
     pTransportedMRF  = mhs.Problem(meshTransportedMRF, TransportedMRFInput, caseName="TransportedMRF")
     pMRFTransporter  = mhs.Problem(meshMRFTransporter, FRFInput, caseName="MRFTransporter")
 
-    pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown )
+    pMRFTransporter.unknown.interpolate(  pTransportedMRF.unknown, False )
     for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
-        tF.interpolate( sF )
+        tF.interpolate( sF, False )
 
     maxIter = 2
     # FORWARD
@@ -79,9 +79,9 @@ def run():
         pTransportedMRF.domain.setActivation( activeElements )
 
 
-        pTransportedMRF.unknown.interpolate( pMRFTransporter.unknown )
+        pTransportedMRF.unknown.interpolate( pMRFTransporter.unknown, False )
         for tF, sF in zip(pTransportedMRF.previousValues, pMRFTransporter.previousValues):
-            tF.interpolate( sF )
+            tF.interpolate( sF, False )
 
 
         pTransportedMRF.preAssemble(False)#update forced dofs, reallocate
@@ -89,9 +89,9 @@ def run():
         # iterate
         pTransportedMRF.iterate()
 
-        pMRFTransporter.unknown.interpolate( pTransportedMRF.unknown )
+        pMRFTransporter.unknown.interpolate( pTransportedMRF.unknown, False )
         for tF, sF in zip(pMRFTransporter.previousValues, pTransportedMRF.previousValues):
-            tF.interpolate( sF )
+            tF.interpolate( sF, False )
         pTransportedMRF.writepos()
 
 def test():

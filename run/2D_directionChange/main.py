@@ -37,7 +37,7 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
     radius = problemInput["radius"]
     initialPosition = problemInput["initialPosition"]
     trailLength = adimR * radius
-    capotLength = min( trailLength, 3*radius )
+    capotLength = min( trailLength, 2*radius )
     halfLengthY = min( trailLength, capotLength )
     box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
            initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY]
@@ -55,8 +55,8 @@ if __name__=="__main__":
     # Mesh
     meshInputPhys, meshInputMoving = {}, {}
     meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = meshBox(boxPhys)
-    #meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshSquare(movingProblemInput["initialPosition"], 2*adimR_domain, meshDen=8)
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
+    #meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshSquare(movingProblemInput["initialPosition"], 2*adimR_domain, meshDen=8)
 
     meshFixed           = mhs.Mesh(meshInputPhys)
     meshMoving           = mhs.Mesh(meshInputMoving)
@@ -81,7 +81,8 @@ if __name__=="__main__":
     for p in [pFRF, pFixed]:
         p.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
 
-    myDriver = AdaptiveStepper( pFixed, pMoving, adimMaxSubdomainSize=adimR_domain )
+    myDriver = AdaptiveStepper( pFixed, pMoving,
+                               adimMaxSubdomainSize=adimR_domain, rotateSubdomain=True )
 
     ## RIGHT
     '''

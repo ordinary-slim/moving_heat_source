@@ -8,7 +8,7 @@ class AdaptiveStepper:
 
     tol = 1e-7
 
-    def __init__(self, pFixed, pMoving, factor=2, adimMaxSubdomainSize=10, threshold= 0.01, isCoupled=True ):
+    def __init__(self, pFixed, pMoving, factor=2, adimMaxSubdomainSize=10, threshold= 0.01, isCoupled=True, rotateSubdomain=False ):
         self.isCoupled = isCoupled
         self.pFixed = pFixed
         self.pMoving = pMoving
@@ -22,10 +22,11 @@ class AdaptiveStepper:
         self.adimMinRadius = 1.5
 
         self.dt = pFixed.dt
-        tscale = self.pFixed.mhs.radius / self.pFixed.mhs.path.currentTrack.speed
+        tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
         self.adimDt = pFixed.dt / tscale
         self.adimSubdomainSize = self.adimFineSubdomainSize
         self.update()
+        self.rotateSubdomain = rotateSubdomain
 
     def update(self):
         '''
@@ -35,21 +36,27 @@ class AdaptiveStepper:
         # TODO: fix this for when track changes from t to tnp1
         
         time = self.pFixed.time
+        self.onNewTrack = False
 
         # If path is over
         if (self.pFixed.mhs.path.isOver(time)):
             return
-        tUnit = self.pFixed.mhs.radius / self.pFixed.mhs.path.currentTrack.speed
+        tUnit = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
 
-        dt2trackEnd = self.pFixed.mhs.path.currentTrack.endTime - time
+        dt2trackEnd = self.pFixed.mhs.currentTrack.endTime - time
         adimMaxDt = self.adimMaxDt
-        if ( dt2trackEnd < 1e-5) or ( time == 0.0 ):#end of track
+        if ( dt2trackEnd < 1e-7) or ( time == 0.0 ):#new track
             self.adimDt = self.adimFineDt
             self.adimSubdomainSize = self.adimFineSubdomainSize
+            self.onNewTrack = True
         else:
             adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
             delta = self.pMoving.unknown - self.pMoving.previousValues[0]
-            metric = delta.getL2Norm() / self.pMoving.unknown.getL2Norm()
+            metric = 9999
+            try:
+                metric = delta.getL2Norm() / self.pMoving.unknown.getL2Norm()
+            except:
+                pdb.set_trace()
             print( " || fn+1 - fn || / || fn+1 || = {} ".format( metric ) )
             if (metric < self.threshold):
                 self.adimDt = self.factor * self.adimDt
@@ -60,6 +67,18 @@ class AdaptiveStepper:
         self.dt = tUnit * self.adimDt
 
     def shapeSubdomain( self ):
+        '''
+        At t^n, do things
+        '''
+        nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
+        #TODO: Maybe move this to setDt ?
+        if (self.onNewTrack and self.rotateSubdomain):
+            currentTrack = self.pFixed.mhs.currentTrack
+            center = self.pMoving.mhs.position
+            angle = np.arccos( np.dot( nextTrack.getSpeed(), currentTrack.getSpeed() ) / nextTrack.speed / currentTrack.speed )
+            if (angle > 1e-5):
+                self.pMoving.domain.inPlaneRotate( center, angle )
+                self.pMoving.unknown.interpolate( self.pFixed.unknown, True )
         # OBB
         radius = self.pFixed.mhs.radius
 
@@ -68,14 +87,14 @@ class AdaptiveStepper:
         adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
         backRadius = max( adimBackRadius, self.adimMinRadius ) * radius
         zRadius    = 1
-        xAxis      = self.pFixed.mhs.path.currentTrack.getSpeed() / self.pFixed.mhs.path.currentTrack.speed
+        xAxis      = nextTrack.getSpeed() / nextTrack.speed
 
         backRadiusObb = max(backRadius - radius, 0.0)
-        p0 = self.pMoving.mhs.currentPosition - backRadiusObb*xAxis
-        obb = mhs.myOBB( p0, self.pMoving.mhs.currentPosition, 2*sideRadius, 2*zRadius )
+        p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
+        obb = mhs.myOBB( p0, self.pMoving.mhs.position, 2*sideRadius, 2*zRadius )
         subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
         collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
-        collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.currentPosition, self.adimMinRadius*radius )
+        collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
         subdomainEls += collidingElsBackSphere
         subdomainEls += collidingElsFrontSphere
         subdomain = mhs.MeshTag( self.pMoving.domain.mesh, self.pMoving.domain.mesh.dim, subdomainEls )
@@ -102,17 +121,17 @@ class AdaptiveStepper:
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
         self.pFixed.domain.resetActivation()
+        self.shapeSubdomain()
 
         self.pMoving.intersectExternal( self.pFixed, False )
         self.pFixed.preiterate(False)
 
         # Update speeds moving domain
         self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
-        self.pMoving.domain.mesh.setSpeedFRF( self.pFixed.mhs.speed )
+        self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
         self.pMoving.preiterate(False)
 
         self.pMoving.intersectExternal( self.pFixed, False )
-        self.shapeSubdomain()
 
         if self.isCoupled:
             self.pFixed.substractExternal( self.pMoving, False )
@@ -142,17 +161,22 @@ class AdaptiveStepper:
         if self.isCoupled:
             self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, True )
         else:
-            self.pMoving.unknown.interpolate( self.pFixed.unknown )
+            self.pMoving.unknown.interpolate( self.pFixed.unknown, True )
 
         # Post iteration
         self.pFixed.postIterate()
         self.pMoving.postIterate()
 
+        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
+
         # Compute next dt && domain size
         self.update()
 
         self.pFixed.writepos(
-            nodeMeshTags={ "gammaNodes":self.pFixed.gammaNodes, },)
+            nodeMeshTags={
+                "gammaNodes":self.pFixed.gammaNodes,
+                "activeInExternal":activeInExternal,
+                          },)
         self.pMoving.writepos(
             nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
             )

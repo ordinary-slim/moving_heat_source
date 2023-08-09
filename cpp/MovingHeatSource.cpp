@@ -92,6 +92,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("resetActivation", &mesh::Domain::resetActivation)
         .def("deactivate", &mesh::Domain::deactivate)
         .def("intersect", &mesh::Domain::intersect)
+        .def("inPlaneRotate", &mesh::Domain::inPlaneRotate)
         .def("findOwnerElements", &mesh::Domain::findOwnerElements);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
@@ -130,14 +131,12 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::self - py::self)
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
-        .def("interpolate", static_cast<void (fem::Function::*)(const fem::Function&)>(&fem::Function::interpolate) )
+        .def("interpolate", static_cast<void (fem::Function::*)(const fem::Function&, bool)>(&fem::Function::interpolate) )
         .def("interpolateInactive", &fem::Function::interpolateInactive)
         .def("setValues", &fem::Function::setValues)
         .def("getL2Norm", &fem::Function::getL2Norm)
         .def_readonly("values", &fem::Function::values);
-    //This export won't work unless list<Function> is made into
-    //an opaque type or interpolate is wrapped into something else
-    //m.def( "interpolate", &fem::interpolate, "interpolate list of sourceFunctions to targetFunctions" );
+    m.def( "interpolate", &fem::interpolate);
     py::class_<mesh::Connectivity>(m, "Connectivity", py::dynamic_attr())
         .def("getLocalCon", &mesh::Connectivity::getLocalCon)
         .def_readonly("con", &mesh::Connectivity::con)
@@ -175,6 +174,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("pulse", &heat::HeatSource::pulse)
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)
+        .def_readonly("currentTrack", &heat::HeatSource::currentTrack)
         .def_property_readonly("path", [](const heat::HeatSource& h){ return h.path.get(); },
             py::return_value_policy::reference_internal)
         .def("setPower", &heat::HeatSource::setPower)
@@ -210,6 +210,5 @@ PYBIND11_MODULE(cpp, m) {
         .def("interpolateTrack", &heat::Path::interpolateTrack, pybind11::return_value_policy::reference)
         .def("interpolatePosition", &heat::Path::interpolatePosition)
         .def_readonly("endTime", &heat::Path::endTime)
-        .def("isOver", &heat::Path::isOver)
-        .def_readonly("currentTrack", &heat::Path::currentTrack);
+        .def("isOver", &heat::Path::isOver);
 }

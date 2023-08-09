@@ -70,6 +70,7 @@ class Domain {
     void updateBeforeActivation();
     void updateAfterActivation();
     void intersect( const MeshTag<int> subdomain);
+    void inPlaneRotate( Eigen::Vector3d &center, double angle );
   private:
     int _dim;
 };

@@ -49,16 +49,14 @@ class Function{
 
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
-    void interpolate(const Function &extFEMFunc );
+    void interpolate(const Function &extFEMFunc, bool ignoreOutside=false );
     void interpolateInactive( const Function &extFEMFunc, bool ignoreOutside );
     void setValues( const Eigen::VectorXd &values ) { this->values = values; }
     double getL2Norm() const;
     friend Function operator-(const Function& f1, const Function& f2);
 };
-void interpolate( list<Function> &targetFunctions, const list<Function> &sourceFunctions );
 
-fem::Function interpolate( const fem::Function &extFEMFunc,
-                           const mesh::Domain *domain,
+Function interpolate( const Function &extFEMFunc, const mesh::Domain *domain,
                            bool ignoreOutside = false );
 }
 #endif

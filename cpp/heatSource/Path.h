@@ -14,8 +14,7 @@ class Track {
     double speed = 10;// mm/s
     double power = 100;// W
     double length = -1;
-    double startTime;
-    double endTime;
+    double startTime, endTime;
 
     Track(Eigen::Vector3d *p0, Eigen::Vector3d *p1,
         double startTime, double speed, double power, bool hasDeposition) {
@@ -35,7 +34,6 @@ class Track {
 class Path {
   public:
     std::vector<Track> tracks;
-    const Track *currentTrack = NULL;
     std::vector<Eigen::Vector3d> coordinates;
     std::vector<double> times;
     double endTime;
@@ -53,7 +51,6 @@ class Path {
               speeds[ itrack + 1], powers[ itrack + 1], bool(arePrinting[ itrack+1 ]) ) );
         times[itrack+1] = tracks[itrack].endTime;
       }
-      currentTrack = &tracks[0];
       endTime = times.back();
     }
 

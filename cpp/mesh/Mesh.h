@@ -55,9 +55,13 @@ class Mesh {
       }
     }
     void buildAABBTree();
+    void updateAABBTree();
     vector<int> findOwnerElements( const Eigen::Vector3d &point ) const;
     vector<int> findCollidingElements( const myOBB &obb ) const;
     vector<int> findCollidingElements( const Eigen::Vector3d &center, const double R) const;
 };
+void inPlaneRotate( Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> &points, 
+    const Eigen::Vector3d &center, double angle );
+
 }
 #endif

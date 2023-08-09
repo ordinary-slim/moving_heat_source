@@ -12,9 +12,16 @@ using ex_inex_K   = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Plane3_CGAL = ex_inex_K::Plane_3;
 
 struct myAABB {
-  int ielem;
-  double bounds[3][2];
+  int ielem = -1;
+  double bounds[3][2] = {
+    {1, -1},
+    {1, -1},
+    {1, -1}
+  };
+  constexpr static double stretch = 0.05;
+  constexpr static double pad = 1e-7;
 
+  myAABB() = default;
   myAABB( mesh::Element e );
 
 };
