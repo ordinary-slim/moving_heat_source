@@ -49,3 +49,4 @@ Dependencies:
 - meshzoo==0.11.0
 - pytest
 - CGAL
+- yaml

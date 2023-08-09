@@ -13,20 +13,20 @@ class AdaptiveStepper:
         self.pFixed = pFixed
         self.pMoving = pMoving
         # TODO: better initialization
-        self.adimFineDt = 0.25
-        self.adimFineSubdomainSize = 0.75 
+        self.adimFineDt = 0.5
+        self.adimFineSubdomainSize = 1
         self.adimMaxSubdomainSize = adimMaxSubdomainSize
         self.adimMaxDt = adimMaxSubdomainSize / factor
         self.threshold = threshold
         self.factor = factor
-        self.adimMinRadius = 1.5
+        self.adimMinRadius = 2
 
         self.dt = pFixed.dt
         tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
         self.adimDt = pFixed.dt / tscale
         self.adimSubdomainSize = self.adimFineSubdomainSize
         self.update()
-        self.rotateSubdomain = rotateSubdomain
+        self.onNewTrack = True
 
     def update(self):
         '''
@@ -52,33 +52,33 @@ class AdaptiveStepper:
         else:
             adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
             delta = self.pMoving.unknown - self.pMoving.previousValues[0]
-            metric = 9999
-            try:
-                metric = delta.getL2Norm() / self.pMoving.unknown.getL2Norm()
-            except:
-                pdb.set_trace()
+            metric = delta.getL2Norm() / self.pMoving.unknown.getL2Norm()
             print( " || fn+1 - fn || / || fn+1 || = {} ".format( metric ) )
             if (metric < self.threshold):
-                self.adimDt = self.factor * self.adimDt
-                self.adimSubdomainSize = self.factor * self.adimSubdomainSize
+                self.adimDt = min( self.factor * self.adimDt, self.adimDt + 1 )
 
         # Cap dt
         self.adimDt = min( adimMaxDt, self.adimDt )
+        self.adimSubdomainSize = self.adimDt + 1.0
         self.dt = tUnit * self.adimDt
+
+    def rotateSubdomain( self ):
+        '''
+        Align mesh of moving subproblem with track
+        '''
+        nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
+        currentTrack = self.pFixed.mhs.currentTrack
+        center = self.pMoving.mhs.position
+        angle = np.arccos( np.dot( nextTrack.getSpeed(), currentTrack.getSpeed() ) / nextTrack.speed / currentTrack.speed )
+        if (angle > 1e-5):
+            self.pMoving.domain.inPlaneRotate( center, angle )
+            self.pMoving.unknown.interpolate( self.pFixed.unknown, True )
 
     def shapeSubdomain( self ):
         '''
         At t^n, do things
         '''
         nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
-        #TODO: Maybe move this to setDt ?
-        if (self.onNewTrack and self.rotateSubdomain):
-            currentTrack = self.pFixed.mhs.currentTrack
-            center = self.pMoving.mhs.position
-            angle = np.arccos( np.dot( nextTrack.getSpeed(), currentTrack.getSpeed() ) / nextTrack.speed / currentTrack.speed )
-            if (angle > 1e-5):
-                self.pMoving.domain.inPlaneRotate( center, angle )
-                self.pMoving.unknown.interpolate( self.pFixed.unknown, True )
         # OBB
         radius = self.pFixed.mhs.radius
 
@@ -105,22 +105,26 @@ class AdaptiveStepper:
         print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
-        '''
-        if (self.adimDt <= 0.25+1e-7):
+        # New track operations
+        if (self.onNewTrack):
+            self.rotateSubdomain()
+            self.isCoupled = False
+
+        # Set coupling
+        if (self.adimDt <= 0.5+1e-7) and not(self.isCoupled):
             self.isCoupled = False
         else:
             self.isCoupled = True
-        '''
 
     def iterate( self ):
-        self.setDt()
-
         # MY SCHEME ITERATE
         self.pFixed.setAssembling2External( True )
         self.pMoving.setAssembling2External( True )
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
         self.pFixed.domain.resetActivation()
+
+        self.setDt()
         self.shapeSubdomain()
 
         self.pMoving.intersectExternal( self.pFixed, False )

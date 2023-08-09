@@ -1,4 +1,4 @@
-radius : 2.0
+radius : 1.0
 power : 100.0
 initialPosition : [-5, -5, 0.0]
 HeatSourceSpeed : [10, 0, 0]

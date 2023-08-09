@@ -5,7 +5,6 @@ import meshzoo
 from AdaptiveStepper import AdaptiveStepper
 import pdb
 
-Tfinal = 2
 inputFile = "input.yaml"
 tol = 1e-7
 adimR_domain = 10 
@@ -73,9 +72,6 @@ if __name__=="__main__":
 
     maxIter = pFRF.input["maxIter"]
 
-    pFRF.setDt( 1*adimR )
-    pFixed.setDt( 1*adimR )
-    pMoving.setDt( 1*adimR )
 
     # Set path
     for p in [pFRF, pFixed]:
@@ -84,12 +80,10 @@ if __name__=="__main__":
     myDriver = AdaptiveStepper( pFixed, pMoving,
                                adimMaxSubdomainSize=adimR_domain, rotateSubdomain=True )
 
-    ## RIGHT
-    '''
-    while not(pFRF.mhs.path.isOver):
+    pFRF.setDt( 0.5*adimR )
+    while not(pFRF.mhs.path.isOver(pFRF.time)):
         pFRF.iterate()
         pFRF.writepos()
-    '''
 
     while not(pFixed.mhs.path.isOver(pFixed.time)):
         myDriver.iterate()
