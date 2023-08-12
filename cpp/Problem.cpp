@@ -24,13 +24,13 @@ void Problem::preIterate( bool canPreassemble ) {
   domain.preIterate();
 
   if (canPreassemble) {
-    preAssemble( assembling2external );
+    preAssemble();
   }
 
   hasPreIterated = true;
 }
 
-void Problem::preAssemble(bool isLsExternal) {
+void Problem::preAssemble(bool allocateLs) {
   /*
    * BEFORE assembly operations
    * AFTER setting Dirichlet and activation
@@ -41,10 +41,10 @@ void Problem::preAssemble(bool isLsExternal) {
 
   updateForcedDofs();
 
-  if (not(assembling2external)) {
-    myls = LinearSystem( *this );
-    ls = &myls;
+  if (allocateLs) {
+    this->ls = std::make_shared<LinearSystem>(*this);
   }
+
 }
 
 void Problem::gather() {

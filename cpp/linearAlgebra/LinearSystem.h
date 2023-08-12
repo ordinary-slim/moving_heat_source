@@ -4,10 +4,13 @@
 #include <Eigen/Sparse>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 class Problem;// Forward declaration of problem class
-              //
-class LinearSystem {
+
+class LinearSystem 
+  : public std::enable_shared_from_this<LinearSystem>
+{
   public:
     Eigen::SparseMatrix<double> lhs;
     Eigen::VectorXd rhs;
@@ -18,6 +21,8 @@ class LinearSystem {
     LinearSystem() = default;
     LinearSystem(Problem &p);
     LinearSystem(Problem &p1, Problem &p2);
+
+    static std::shared_ptr<LinearSystem> Create(Problem &p1, Problem &p2);
 
     void cleanup() {
       lhs.setZero();

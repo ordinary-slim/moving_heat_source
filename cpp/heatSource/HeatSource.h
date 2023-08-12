@@ -39,16 +39,14 @@ class HeatSource {
       HeatSource( pybind11::dict &input, Problem *problem );
 
       void step( double dt ) { position += speed * dt; }
+
+      void setPosition( Eigen::Vector3d position ) { this->position = position; }
       void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
       void setPower( double power ) { this->power = power; }
       void setPath( std::vector<Eigen::Vector3d> &coordinates,
             std::vector<double> &speeds,
             std::vector<double> &powers,
-            std::vector<int> &arePrinting ) {
-
-          path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
-          currentTrack = &path->tracks[0];
-      }
+            std::vector<int> &arePrinting );
 
       void preIterate();
       virtual double operator()(Eigen::Vector3d x, double t) const {

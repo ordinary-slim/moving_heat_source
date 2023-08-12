@@ -39,8 +39,7 @@ class Problem {
     bool isConvection = false;
     Eigen::Vector3d advectionSpeed;
 
-    LinearSystem myls;
-    LinearSystem* ls = NULL;
+    std::shared_ptr<LinearSystem> ls = NULL;
     bool assembling2external = false;
     vector<int> dofNumbering;
     vector<int> freeDofsNumbering;// Necessary to assemble Gamma Dirichlet nodes
@@ -93,7 +92,7 @@ class Problem {
     void assembleDirichletGamma( const Problem &pExt ); 
     void assembleNeumannGamma( const Problem &pExt ); 
     void updateForcedDofs();
-    void preAssemble(bool isLsExternal=true);
+    void preAssemble(bool allocateLs=true);
     void preIterate(bool canPreassemble=true);
     void postIterate();
     void setStabilization(bool stabilize) {

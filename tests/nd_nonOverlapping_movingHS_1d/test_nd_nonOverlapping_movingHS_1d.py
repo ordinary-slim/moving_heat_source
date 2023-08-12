@@ -20,6 +20,8 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
            initialPosition[1] - halfLength, initialPosition[1] + halfLength]
     return mesh(box[0], box[1], meshDen=meshDen)
 
+'''
+import matplotlib.pyplot as plt
 def plotProblem( p ):
     plt.plot( p.domain.posLab[:, 0],
              p.unknown.values)
@@ -27,6 +29,7 @@ def plotProblem( p ):
     for idx in gammaNodesIndices:
         x = p.domain.posLab[idx, 0]
         plt.axvline(x=x)
+'''
 
 def setAdimR( adimR, input ):
     r = input["radius"]
@@ -91,9 +94,9 @@ def run():
         pFixed.setGamma2Dirichlet()
 
         # Pre-assembly, updating free dofs
-        pMoving.preAssemble(True)
-        pFixed.preAssemble(True)
-        ls = mhs.LinearSystem( pMoving, pFixed )
+        pMoving.preAssemble(False)
+        pFixed.preAssemble(False)
+        ls = mhs.LinearSystem.Create( pMoving, pFixed )
         ls.cleanup()
 
         pMoving.assemble()

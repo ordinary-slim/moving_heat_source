@@ -61,6 +61,7 @@ class Path {
           [t, tol](double time){ return (t <= time+tol); } );
       if (it != times.end()) {
         int idxTrack = it - times.begin() - 1;
+        if (idxTrack == - 1) { idxTrack = 0; }
         track = &tracks[idxTrack];
       }
       return track;

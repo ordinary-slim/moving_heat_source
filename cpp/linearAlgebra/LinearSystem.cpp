@@ -43,15 +43,21 @@ LinearSystem::LinearSystem(Problem &p1, Problem &p2) {
   _ndofs = 0 ;
 
   concatenateProblem( p1 );
-  p1.ls = this;
-  p1.assembling2external = true;
-
   concatenateProblem( p2 );
-  p2.ls = this;
-  p2.assembling2external = true;
+
+  p1.assembling2external = true;//this could be removed
+  p2.assembling2external = true;//this could be removed
 
   allocate();
   cleanup();
+}
+
+std::shared_ptr<LinearSystem> LinearSystem::Create(Problem &p1, Problem &p2) {
+  // Wrapping constructor. Is this good idea?
+  p1.ls = std::make_shared<LinearSystem>(p1, p2);
+  p2.ls = p1.ls->shared_from_this();
+
+  return p1.ls;
 }
 
 void LinearSystem::solve() {

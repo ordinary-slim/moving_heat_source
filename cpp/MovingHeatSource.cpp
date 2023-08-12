@@ -10,6 +10,18 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(cpp, m) {
+    py::class_<LinearSystem, std::shared_ptr<LinearSystem>>(m, "LinearSystem")
+        .def( py::init<>() )
+        .def( py::init<Problem&>() )
+        .def( py::init<Problem&, Problem&>() )
+        .def_static("Create", &LinearSystem::Create, py::return_value_policy::reference)
+        .def_readonly("lhs", &LinearSystem::lhs)
+        .def_readonly("rhs", &LinearSystem::rhs)
+        .def_readonly("sol", &LinearSystem::sol)
+        .def("assemble", &LinearSystem::assemble)
+        .def("solve", &LinearSystem::solve)
+        .def("cleanup", &LinearSystem::cleanup)
+        .def("ndofs", &LinearSystem::getNdofs);
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         //.def(py::init<Problem>())//copy constructor
         // doesnt work currently with HeatSource unique pointer
@@ -24,7 +36,6 @@ PYBIND11_MODULE(cpp, m) {
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def("gather", &Problem::gather)
-        .def_readonly("myls", &Problem::myls)
         .def_readonly("ls", &Problem::ls)
         .def_readonly("dofNumbering", &Problem::dofNumbering)
         .def_readonly("freeDofsNumbering", &Problem::freeDofsNumbering)
@@ -170,30 +181,22 @@ PYBIND11_MODULE(cpp, m) {
     py::class_<myOBB>(m, "myOBB")
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
     py::class_<heat::HeatSource>(m, "HeatSource")
-        .def_readwrite("position", &heat::HeatSource::position)
+        .def_readonly("position", &heat::HeatSource::position)
         .def_readonly("pulse", &heat::HeatSource::pulse)
+        .def_readonly("power", &heat::HeatSource::power)
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)
         .def_readonly("currentTrack", &heat::HeatSource::currentTrack)
         .def_property_readonly("path", [](const heat::HeatSource& h){ return h.path.get(); },
             py::return_value_policy::reference_internal)
         .def("setPower", &heat::HeatSource::setPower)
+        .def("setPosition", &heat::HeatSource::setPosition)
         .def("setSpeed", &heat::HeatSource::setSpeed)
         .def("setPath", &heat::HeatSource::setPath);
     py::class_<heat::LumpedHeatSource, heat::HeatSource>(m, "LumpedHeatSource")
         .def_readonly("heatedElements", &heat::LumpedHeatSource::heatedElements)
         .def_readonly("elementPulse", &heat::LumpedHeatSource::elementPulse)//DEBUG
         .def("markHeatedElements", &heat::LumpedHeatSource::markHeatedElements);
-    py::class_<LinearSystem>(m, "LinearSystem")
-        .def(py::init<>())
-        .def_readonly("lhs", &LinearSystem::lhs)
-        .def_readonly("rhs", &LinearSystem::rhs)
-        .def_readonly("sol", &LinearSystem::sol)
-        .def("assemble", &LinearSystem::assemble)
-        .def("solve", &LinearSystem::solve)
-        .def("cleanup", &LinearSystem::cleanup)
-        .def("ndofs", &LinearSystem::getNdofs)
-        .def( py::init<Problem&, Problem&>() );
     py::class_<HatchCollider>(m, "HatchCollider");
     py::class_<Printer, HatchCollider>(m, "Printer")
         .def( py::init<Problem*, double, double>() )

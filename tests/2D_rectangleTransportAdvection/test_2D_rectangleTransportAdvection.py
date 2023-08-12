@@ -84,7 +84,7 @@ def run():
             tF.interpolate( sF, False )
 
 
-        pTransportedMRF.preAssemble(False)#update forced dofs, reallocate
+        pTransportedMRF.preAssemble(True)#update forced dofs, reallocate
 
         # iterate
         pTransportedMRF.iterate()

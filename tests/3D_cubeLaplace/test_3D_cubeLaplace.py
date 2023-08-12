@@ -48,7 +48,7 @@ def run():
     setDirichlet( p )
 
     # Pre-assembly, updating free dofs
-    p.preAssemble(False)
+    p.preAssemble(True)
 
     p.assemble()
 
