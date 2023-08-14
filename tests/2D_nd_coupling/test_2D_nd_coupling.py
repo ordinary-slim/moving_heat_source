@@ -91,10 +91,9 @@ def run():
     pRight.setGamma2Dirichlet()
 
     # Pre-assembly, updating free dofs
-    pLeft.preAssemble(False)
-    pRight.preAssemble(False)
+    pLeft.preAssemble(allocateLs=False)
+    pRight.preAssemble(allocateLs=False)
     ls = mhs.LinearSystem.Create( pLeft, pRight )
-    ls.cleanup()
 
     pLeft.assemble()
     pRight.assemble()

@@ -144,10 +144,9 @@ class AdaptiveStepper:
         #Dirichet gamma
         self.pFixed.setGamma2Dirichlet()
         # Pre-assembly, updating free dofs
-        self.pMoving.preAssemble(True)
-        self.pFixed.preAssemble(True)
-        ls = mhs.LinearSystem( self.pMoving, self.pFixed )
-        ls.cleanup()
+        self.pMoving.preAssemble(allocateLs=False)
+        self.pFixed.preAssemble(allocateLs=False)
+        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
         # Assembly
         self.pMoving.assemble()
         self.pFixed.assemble()

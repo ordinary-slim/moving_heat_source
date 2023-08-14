@@ -108,10 +108,9 @@ if __name__=="__main__":
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
         # Pre-assembly, updating free dofs
-        pMoving.preAssemble(True)
-        pFixed.preAssemble(True)
-        ls = mhs.LinearSystem( pMoving, pFixed )
-        ls.cleanup()
+        pMoving.preAssemble(allocateLs=True)
+        pFixed.preAssemble(allocateLs=True)
+        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
         # Assembly
         pMoving.assemble()
         pFixed.assemble()

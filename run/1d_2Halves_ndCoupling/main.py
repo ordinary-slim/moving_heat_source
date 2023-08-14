@@ -97,10 +97,9 @@ if __name__=="__main__":
         pRight.setGamma2Dirichlet()
 
         # Pre-assembly, updating free dofs
-        pLeft.preAssemble(True)
-        pRight.preAssemble(True)
-        ls = mhs.LinearSystem( pLeft, pRight )
-        ls.cleanup()
+        pLeft.preAssemble(allocateLs=True)
+        pRight.preAssemble(allocateLs=True)
+        ls = mhs.LinearSystem.Create( pLeft, pRight )
 
         pLeft.assemble()
         pRight.assemble()

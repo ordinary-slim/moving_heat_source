@@ -94,8 +94,8 @@ def run():
         pFixed.setGamma2Dirichlet()
 
         # Pre-assembly, updating free dofs
-        pMoving.preAssemble(False)
-        pFixed.preAssemble(False)
+        pMoving.preAssemble(allocateLs=False)
+        pFixed.preAssemble(allocateLs=False)
         ls = mhs.LinearSystem.Create( pMoving, pFixed )
         ls.cleanup()
 

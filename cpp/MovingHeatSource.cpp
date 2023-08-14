@@ -27,7 +27,8 @@ PYBIND11_MODULE(cpp, m) {
         // doesnt work currently with HeatSource unique pointer
         .def(py::init<mesh::Mesh&, py::dict&>())
         .def("preIterate", &Problem::preIterate)
-        .def("preAssemble", &Problem::preAssemble)
+        .def("preAssemble", &Problem::preAssemble, "Before assembly operations",
+            py::arg("allocateLs") = true )
         .def("updateForcedDofs", &Problem::updateForcedDofs)
         .def("assemble", &Problem::assemble)
         .def("iterate", &Problem::iterate)
