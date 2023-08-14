@@ -34,13 +34,14 @@ void Problem::preAssemble(bool allocateLs) {
   /*
    * BEFORE assembly operations
    * AFTER setting Dirichlet and activation
+   * Here all free / forced DOFs are locked. Matrices of
+   * the right sizes are allocated
   */
-  domain.massMat.resize(domain.mesh->nnodes, domain.mesh->nnodes); // mass mat
-  domain.massCoeffs.clear();
-  domain.massCoeffs.reserve( 3*domain.mesh->nnodes );
-
   updateForcedDofs();
 
+  domain.computeMassMatrix();
+
+  // If problem is not coupled, get its own Linear System
   if (allocateLs) {
     this->ls = std::make_shared<LinearSystem>(*this);
   }
@@ -408,8 +409,6 @@ void Problem::updateForcedDofs() {
     if (not(domain.activeNodes[inode])){
       // Add node to dirichlet nodes
       forcedDofs[inode] = 1;
-      // Fill mass matrix
-      domain.massCoeffs.push_back( Eigen::Triplet<double>(inode, inode, 1) );
     } else if (dirichletNodes[inode] == 1) {
       forcedDofs[inode] = 1;
       unknown.values[inode] = dirichletValues[inode];

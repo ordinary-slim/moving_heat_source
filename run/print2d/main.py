@@ -125,7 +125,7 @@ if __name__=="__main__":
 
     while (pFRF.time < Tfinal - tol) :
         # Setup print
-        p1 = pFRF.mhs.currentPosition
+        p1 = pFRF.mhs.position
         p2 = p1 + pFRF.mhs.speed * dt
         # Print
         printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
@@ -141,7 +141,7 @@ if __name__=="__main__":
 
         while (pFineFRF.time < Tfinal - tol) :
             # Setup print
-            p1 = pFineFRF.mhs.currentPosition
+            p1 = pFineFRF.mhs.position
             p2 = p1 + pFineFRF.mhs.speed * finedt
             # Print
             printerFineFRF.deposit( p1, p2, pFineFRF.domain.activeElements )
@@ -155,7 +155,7 @@ if __name__=="__main__":
     activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
 
     while (pFixed.time < Tfinal - tol) :
-        p1 = np.array(pFixed.mhs.currentPosition)
+        p1 = np.array(pFixed.mhs.position)
         # Put this in a loop
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
@@ -172,7 +172,7 @@ if __name__=="__main__":
         pMoving.updateInterface( pFixed )
         # Print
         # Setup print
-        p2 = np.array(pFixed.mhs.currentPosition)
+        p2 = np.array(pFixed.mhs.position)
         p2 = p2 - 0.001*(p2 - p1)
         printerMoving.deposit( p1, p2, pMoving.domain.activeElements )
 

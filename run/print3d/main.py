@@ -20,16 +20,14 @@ def mesh(box, meshDen=4):
 
 def meshAroundHS( adimR, problemInput, meshDen=4 ):
     radius = problemInput["radius"]
-    initialPositionX = problemInput["initialPositionX"]
-    initialPositionY = problemInput["initialPositionY"]
-    initialPositionZ = problemInput["initialPositionY"]
+    initialPosition = problemInput["initialPosition"]
     trailLength = adimR * radius
-    capotLength = min( trailLength, 3*radius )
+    capotLength = min( trailLength, 2*radius )
     halfLengthY = min( trailLength, capotLength )
     halfLengthZ = halfLengthY
-    box = [initialPositionX - trailLength, initialPositionX + capotLength,
-           initialPositionY - halfLengthY, initialPositionY + halfLengthY,
-           initialPositionZ - halfLengthZ, initialPositionZ + halfLengthZ,
+    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
+           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY,
+           initialPosition[2] - halfLengthZ, initialPosition[2] + halfLengthZ,
            ]
 
     return mesh(box, meshDen)
@@ -46,10 +44,7 @@ def deactivateBelowSurface(p, surfaceZ = 0):
 
 def setAdimR( adimR, input ):
     r = input["radius"]
-    HeatSourceSpeedX = max( abs(input["HeatSourceSpeedX"]), abs(input["advectionSpeedX"]))
-    HeatSourceSpeedY = max( abs(input["HeatSourceSpeedY"]), abs(input["advectionSpeedY"]))
-    HeatSourceSpeedZ = max( abs(input["HeatSourceSpeedZ"]), abs(input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
+    speed  = np.linalg.norm( input["HeatSourceSpeed"] )
     return (adimR * r / speed)
 
 if __name__=="__main__":
@@ -89,9 +84,9 @@ if __name__=="__main__":
 
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
-    movingProblemInput["advectionSpeedX"] = -fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["HeatSourceSpeedX"] = 0.0
+    movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["speedDomain"]      = fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pFRF           = mhs.Problem(meshFixed, fixedProblemInput, caseName="FRF")
@@ -120,7 +115,7 @@ if __name__=="__main__":
 
         while (pFineFRF.time < Tfinal - tol) :
             # Setup print
-            p1 = pFineFRF.mhs.currentPosition
+            p1 = pFineFRF.mhs.position
             p2 = p1 + pFineFRF.mhs.speed * finedt
             # Print
             printerFineFRF.deposit( p1, p2, pFineFRF.domain.activeElements )
@@ -134,7 +129,7 @@ if __name__=="__main__":
     activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
 
     while (pFixed.time < Tfinal - tol) :
-        p1 = np.array(pFixed.mhs.currentPosition)
+        p1 = np.array(pFixed.mhs.position)
         # Put this in a loop
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
@@ -151,7 +146,7 @@ if __name__=="__main__":
         pMoving.updateInterface( pFixed )
         # Print
         # Setup print
-        p2 = np.array(pFixed.mhs.currentPosition)
+        p2 = np.array(pFixed.mhs.position)
         printerMoving.deposit( p1, p2, pMoving.domain.activeElements )
 
         #Dirichet gamma
@@ -159,7 +154,7 @@ if __name__=="__main__":
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=True)
         pFixed.preAssemble(allocateLs=True)
-        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+        ls = mhs.LinearSystem.Create( pMoving, pFixed )
         # Assembly
         pMoving.assemble()
         pFixed.assemble()
@@ -194,7 +189,7 @@ if __name__=="__main__":
 
     while (pFRF.time < Tfinal - tol) :
         # Setup print
-        p1 = pFRF.mhs.currentPosition
+        p1 = pFRF.mhs.position
         p2 = p1 + pFRF.mhs.speed * dt
         # Print
         printerFRF.deposit( p1, p2, pFRF.domain.activeElements )

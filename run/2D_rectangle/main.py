@@ -48,7 +48,7 @@ def getMaxT( p ):
     return maxT, posMaxT
 
 def debugHeatSourceNPeak( p ):
-    print("Position on heat source in Xi:", p.mhs.currentPosition)
+    print("Position on heat source in Xi:", p.mhs.position)
     print("MaxT = {}, pos max T Xi = {}".format( *getMaxT( p ) ))
 
 if __name__=="__main__":

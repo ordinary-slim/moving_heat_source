@@ -6,19 +6,12 @@
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
-double massContrib( int igp, int inode, int jnode, const mesh::Element *e, const Problem *p ) {
-  return p->density * p->specificHeat *
-    e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
-    e->gpweight[igp]  * e->vol;
-}
-
 void Problem::assembleSpatialPDE() {
   // numerical params
 
   std::vector<BilinearForm*> bilinearForms;
   std::vector<LinearForm*> linearForms;
 
-  MassForm massForm = MassForm( this );
   DiffusionForm diffusionForm = DiffusionForm( this );
   AdvectionForm advectionForm = AdvectionForm( this );
   ASSSBilinearForm asssLhs = ASSSBilinearForm( this );
@@ -37,7 +30,7 @@ void Problem::assembleSpatialPDE() {
   }
 
   // Source term
-  mhs->pulse.setZero();
+  mhs->pulse.setZero();//TODO: Is this necessary?
 
   LinearForm* sourceForm = NULL;
   if (mhs->type == heat::lumped) {
@@ -47,8 +40,6 @@ void Problem::assembleSpatialPDE() {
   }
   linearForms.push_back( sourceForm );
 
-  domain.massMat.setZero();
-
   mesh::Element e;
 
   vector<int> activeElementsIndices = domain.activeElements.getIndices();
@@ -56,7 +47,6 @@ void Problem::assembleSpatialPDE() {
 
     e = domain.getElement( ielem );
 
-    Eigen::MatrixXd mass_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
     Eigen::MatrixXd lhs_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
     Eigen::VectorXd rhs_loc = Eigen::VectorXd::Zero( e.nnodes );
     Eigen::VectorXd pulse_loc = Eigen::VectorXd::Zero( e.nnodes );
@@ -81,7 +71,6 @@ void Problem::assembleSpatialPDE() {
         }
         pulse_loc(inode) += sourceForm->contribute( igp, inode, &e );
         for (int jnode = 0; jnode < e.nnodes; jnode++) {
-          mass_loc(inode, jnode) += massForm.contribute( igp, inode, jnode, &e );
           for (auto& biForm : bilinearForms) {
             lhs_loc(inode, jnode) += biForm->contribute( igp, inode, jnode, &e );
           }
@@ -105,7 +94,7 @@ void Problem::assembleSpatialPDE() {
           // Assemble into RHS
           ls->rhs[inodeDof] += -lhs_loc( inode, jnode ) * unknown.values[ jnodeGlobal ];
         } else {
-          // Assemble into RHS
+          // Assemble into LHS
           ls->lhsCoeffs.push_back( T(
                 inodeDof,
                 jnodeDof,
@@ -114,22 +103,13 @@ void Problem::assembleSpatialPDE() {
       }
     }
 
-    // TODO: Move this somewhere else
-    // Assemble mass and pulse
+    // TODO: Move / Remove this somewhere else
+    // Assemble pulse
     for (int inode = 0; inode < e.nnodes; ++inode) {
       int inodeGlobal =  (*e.con)[inode] ;
       mhs->pulse[inodeGlobal] += pulse_loc(inode);
-      for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        int jnodeGlobal = (*e.con)[jnode];
-        domain.massCoeffs.push_back( T(
-              inodeGlobal,
-              jnodeGlobal,
-              mass_loc(inode, jnode) ) );
-      }
     }
   }
-
-  domain.massMat.setFromTriplets( domain.massCoeffs.begin(), domain.massCoeffs.end() );
 
   // Post-assembly
   delete sourceForm;

@@ -2,12 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Scale subdomain size with timestep size
 - [ ] Reduce code duplication in Function class (inteprolate methods)
 - [ ] Include path
-- [x] Mesh rotation
-- [x] Practice meshing gmsh
-- [x] MeshTag && ?
 - [ ] What's happening in back of subdomain ?
 - [ ] 10 layer example 2d printing
 - [ ] Cleanup lumped heat source
@@ -25,12 +21,6 @@ To-do:
 - [ ] neumannFluxes ?
 - [ ] Undefined behaviour if activation && weakBcFacets not updated
 - [ ] Refactor gammaFacets into weakBcFacets?
-- [x] Remove mark
-- [x] X Y Z to lists in input.yaml files
-- [x] Path reader
-- [x] Path should not be shared! (unique pointer or object)
-- [x] Adaptive time-stepping trial
-- [x] Move updateFRFPos to Mesh instead of Problem!
 
 Ideas:
 ------

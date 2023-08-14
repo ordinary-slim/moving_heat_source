@@ -41,6 +41,7 @@ class Domain {
     Domain(Mesh *m, Problem *p);
 
     void preIterate();
+    void computeMassMatrix();
     void setSpeed(Eigen::Vector3d speedDomain);
 
 

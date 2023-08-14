@@ -36,11 +36,10 @@ class BilinearForm : public Form {
     }
 };
 
-class MassForm : public BilinearForm {
+class MassForm {
+  // Not inheriting from BilinearForm since
+  // material properties are not used here.
   public:
-    MassForm( const Problem *problem )
-      : BilinearForm( problem ) {
-    }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return 
         e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
