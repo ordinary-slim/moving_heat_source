@@ -27,6 +27,8 @@ class AdaptiveStepper:
         self.adimSubdomainSize = self.adimFineSubdomainSize
         self.update()
         self.onNewTrack = True
+        # Initialize physical domain
+        self.physicalDomain = mhs.MeshTag( self.pFixed.domain.activeElements )
 
     def update(self):
         '''
@@ -109,6 +111,8 @@ class AdaptiveStepper:
         if (self.onNewTrack):
             self.rotateSubdomain()
             self.isCoupled = False
+            self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
+            self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
 
         # Set coupling
         if (self.adimDt <= 0.5+1e-7) and not(self.isCoupled):
@@ -120,48 +124,52 @@ class AdaptiveStepper:
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
-        self.pFixed.domain.resetActivation()
+        self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
         self.shapeSubdomain()
 
-        self.pMoving.intersectExternal( self.pFixed, False )
+        self.pMoving.intersectExternal( self.pFixed, False )#tn intersect
+
+        # Motion, other operations
+        self.pMoving.preiterate(False)
         self.pFixed.preiterate(False)
 
-        # Update speeds moving domain
-        self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
-        self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
-        self.pMoving.preiterate(False)
-
-        self.pMoving.intersectExternal( self.pFixed, False )
+        self.pMoving.intersectExternal( self.pFixed, False )#physical domain intersect
 
         if self.isCoupled:
             self.pFixed.substractExternal( self.pMoving, False )
-        self.pFixed.updateInterface( self.pMoving )
-        self.pMoving.updateInterface( self.pFixed )
-        #Dirichet gamma
-        self.pFixed.setGamma2Dirichlet()
-        # Pre-assembly, updating free dofs
+            self.pFixed.updateInterface( self.pMoving )
+            self.pMoving.updateInterface( self.pFixed )
+            #Dirichet gamma
+            self.pFixed.setGamma2Dirichlet()
+
         self.pMoving.preAssemble(allocateLs=False)
-        self.pFixed.preAssemble(allocateLs=False)
-        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
-        # Assembly
-        self.pMoving.assemble()
-        self.pFixed.assemble()
-        # Assembly Gamma
-        self.pFixed.assembleDirichletGamma( self.pMoving )
-        self.pMoving.assembleNeumannGamma( self.pFixed )
-        # Build ls
-        ls.assemble()
-        # Solve ls
-        ls.solve()
-        # Recover solution
-        self.pFixed.gather()
-        self.pMoving.gather()
-        self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, False )
+
         if self.isCoupled:
+            # Pre-assembly, updating free dofs
+            self.pFixed.preAssemble(allocateLs=False)
+        
+            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+            # Assembly
+            self.pMoving.assemble()
+            self.pFixed.assemble()
+            # Assembly Gamma
+            self.pFixed.assembleDirichletGamma( self.pMoving )
+            self.pMoving.assembleNeumannGamma( self.pFixed )
+            # Build ls
+            ls.assemble()
+            # Solve ls
+            ls.solve()
+            # Recover solution
+            self.pFixed.gather()
+            self.pMoving.gather()
+
+            self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, False )
             self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, True )
         else:
+            self.pFixed.preAssemble(allocateLs=True)
+            self.pFixed.iterate()
             self.pMoving.unknown.interpolate( self.pFixed.unknown, True )
 
         # Post iteration
@@ -177,7 +185,11 @@ class AdaptiveStepper:
             nodeMeshTags={
                 "gammaNodes":self.pFixed.gammaNodes,
                 "activeInExternal":activeInExternal,
-                          },)
+                },
+            cellMeshTags={
+                "physicalDomain":self.physicalDomain,
+                },
+                          )
         self.pMoving.writepos(
             nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
             )
