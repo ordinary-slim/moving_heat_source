@@ -10,7 +10,7 @@ void Problem::assemble() {
   // LHS & RHS, time
   assembleTime();
 
-  // Proper assembly
+  // If I own the LS, assemble it
   if (not(assembling2external)) {
     ls->assemble();
   }

@@ -76,10 +76,6 @@ class Problem {
       if (advectionSpeed.norm() > 1e-10) isAdvection = true;
     }
 
-    void setAssembling2External(bool isLsExternal){
-      assembling2external = isLsExternal;
-    }
-
     void initializeIntegrator(Eigen::MatrixXd pSols);
     void iterate();
     void updateInterface( const Problem &pExt );

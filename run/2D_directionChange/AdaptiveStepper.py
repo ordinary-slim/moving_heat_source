@@ -118,8 +118,6 @@ class AdaptiveStepper:
 
     def iterate( self ):
         # MY SCHEME ITERATE
-        self.pFixed.setAssembling2External( True )
-        self.pMoving.setAssembling2External( True )
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
         self.pFixed.domain.resetActivation()

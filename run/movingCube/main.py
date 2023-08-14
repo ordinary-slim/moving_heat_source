@@ -94,8 +94,6 @@ if __name__=="__main__":
                 pFineFRF.iterate()
 
         # MY SCHEME ITERATE
-        pFixed.setAssembling2External( True )
-        pMoving.setAssembling2External( True )
         # PRE-ITERATE AND DOMAIN OPERATIONS
         pMoving.domain.resetActivation()
         pFixed.domain.resetActivation()

@@ -43,7 +43,7 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
     return meshBox(box, meshDen)
 
 if __name__=="__main__":
-    boxPhys = [-10, 10, -10, 10]
+    boxPhys = [-10, 10, -2, 0]
 
     # read input
     fixedProblemInput = dict( problemInput )
@@ -75,7 +75,8 @@ if __name__=="__main__":
 
     # Set path
     for p in [pFRF, pFixed]:
-        p.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
+        #p.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
+        p.mhs.setPath( *gcode2laserPath( "path2.gcode" ) )
 
     myDriver = AdaptiveStepper( pFixed, pMoving,
                                adimMaxSubdomainSize=adimR_domain, rotateSubdomain=True )

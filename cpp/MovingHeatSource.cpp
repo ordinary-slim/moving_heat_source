@@ -54,7 +54,6 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("gammaNodes", &Problem::gammaNodes)
         .def_readonly("elsOwnedByOther", &Problem::elsOwnedByOther)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
-        .def("setAssembling2External", &Problem::setAssembling2External)
         .def("setDt", &Problem::setDt)
         .def("setPointers", &Problem::setPointers)
         .def("setStabilization", &Problem::setStabilization)

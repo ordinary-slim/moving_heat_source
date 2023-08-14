@@ -84,8 +84,6 @@ if __name__=="__main__":
             pLeft.iter,
             pLeft.time) )
 
-        pLeft.setAssembling2External( True )
-        pRight.setAssembling2External( True )
 
         pLeft.preiterate(False)
         pRight.preiterate(False)

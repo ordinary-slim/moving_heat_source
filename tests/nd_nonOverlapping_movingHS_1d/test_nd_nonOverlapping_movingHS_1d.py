@@ -77,8 +77,6 @@ def run():
 
     while (pMoving.time < Tfinal - 1e-7) :
 
-        pFixed.setAssembling2External( True )
-        pMoving.setAssembling2External( True )
 
         # PRE-ITERATE AND DOMAIN OPERATIONS
         pMoving.domain.resetActivation()
