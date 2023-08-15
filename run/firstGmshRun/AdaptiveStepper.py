@@ -8,7 +8,14 @@ class AdaptiveStepper:
 
     tol = 1e-7
 
-    def __init__(self, pFixed, pMoving, factor=2, adimMaxSubdomainSize=10, threshold= 0.01, isCoupled=True, rotateSubdomain=False ):
+    def __init__(self,
+                 pFixed,
+                 pMoving,
+                 factor=2,
+                 adimMaxSubdomainSize=10,
+                 threshold= 0.01,
+                 isCoupled=True,
+                 rotateSubdomain=False ):
         self.isCoupled = isCoupled
         self.pFixed = pFixed
         self.pMoving = pMoving
@@ -27,8 +34,29 @@ class AdaptiveStepper:
         self.adimSubdomainSize = self.adimFineSubdomainSize
         self.update()
         self.onNewTrack = True
-        # Initialize physical domain
+        self.hasPrinter = False
         self.physicalDomain = mhs.MeshTag( self.pFixed.domain.activeElements )
+
+        # Match heat source positions at t = 0.0
+        self.pMoving.mhs.setPosition( self.pFixed.mhs.position )
+
+    def getTime(self):
+        return self.pFixed.time
+
+    def setupPrinter( self, mdwidth, mdheight ):
+        self.printer = mhs.Printer( self.pFixed, mdwidth, mdheight )
+        self.hasPrinter = True
+
+    def print( self ):
+        '''
+        Do deposition for interval [tn, tn1] at tn
+        , when dt is already known
+        '''
+        origin = self.pFixed.mhs.position
+        destination = self.pFixed.mhs.path.interpolatePosition( self.getTime() + self.dt )
+        self.printer.deposit( origin, destination,
+                            self.physicalDomain
+                            )
 
     def update(self):
         '''
@@ -111,11 +139,9 @@ class AdaptiveStepper:
         if (self.onNewTrack):
             self.rotateSubdomain()
             self.isCoupled = False
-            self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
-            self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
 
         # Set coupling
-        if (self.adimDt <= 0.5+1e-7) and not(self.isCoupled):
+        if (self.adimDt <= 0.0+1e-7) and not(self.isCoupled):
             self.isCoupled = False
         else:
             self.isCoupled = True
@@ -124,9 +150,11 @@ class AdaptiveStepper:
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
-        self.pFixed.domain.setActivation(self.physicalDomain)
+        self.pFixed.domain.setActivation( self.physicalDomain )
 
         self.setDt()
+        if self.hasPrinter:
+            self.print()
         self.shapeSubdomain()
 
         self.pMoving.intersectExternal( self.pFixed, False )#tn intersect

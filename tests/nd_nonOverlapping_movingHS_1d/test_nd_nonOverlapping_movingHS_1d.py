@@ -111,8 +111,8 @@ def run():
         pMoving.gather()
 
         # Get inactive points information from other
-        pFixed.unknown.interpolateInactive( pMoving.unknown, False )
-        pMoving.unknown.interpolateInactive( pFixed.unknown, True )
+        pFixed.unknown.interpolateInactive( pMoving.unknown, ignoreOutside = False )
+        pMoving.unknown.interpolateInactive( pFixed.unknown, ignoreOutside = True )
 
         pFixed.postIterate()
         pMoving.postIterate()

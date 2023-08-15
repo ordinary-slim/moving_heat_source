@@ -116,8 +116,8 @@ if __name__=="__main__":
         # Recover solution
         pFixed.gather()
         pMoving.gather()
-        pFixed.unknown.interpolateInactive( pMoving.unknown, False )
-        pMoving.unknown.interpolateInactive( pFixed.unknown, True )
+        pFixed.unknown.interpolateInactive( pMoving.unknown, ignoreOutside = False )
+        pMoving.unknown.interpolateInactive( pFixed.unknown, ignoreOutside = True )
         # Post iteration
         pFixed.postIterate()
         pMoving.postIterate()

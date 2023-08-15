@@ -142,9 +142,12 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::self - py::self)
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
-        .def("interpolate", py::overload_cast<const fem::Function &, bool>(&fem::Function::interpolate))
-        .def("interpolate", py::overload_cast<const fem::Function &, const mesh::MeshTag<int> &, bool>(&fem::Function::interpolate))
-        .def("interpolateInactive", &fem::Function::interpolateInactive)
+        .def("interpolate", py::overload_cast<const fem::Function &, bool>(&fem::Function::interpolate),
+          py::arg("extFEMFunc"), py::arg("ignoreOutside") = false )
+        .def("interpolate", py::overload_cast<const fem::Function &, const mesh::MeshTag<int> &, bool>(&fem::Function::interpolate),
+          py::arg("extFEMFunc"), py::arg("nodalTag"), py::arg("ignoreOutside") = false )
+        .def("interpolateInactive", &fem::Function::interpolateInactive,
+          py::arg("extFEMFunc"), py::arg("ignoreOutside") = false )
         .def("setValues", &fem::Function::setValues)
         .def("getL2Norm", &fem::Function::getL2Norm)
         .def_readonly("values", &fem::Function::values);

@@ -199,7 +199,7 @@ if __name__=="__main__":
         # Union
         pFixed.uniteExternal( pMoving, False )
         activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
-        pMoving.unknown.interpolateInactive( pFixed.unknown, True )
+        pMoving.unknown.interpolateInactive( pFixed.unknown, ignoreOutside = True )
 
         # Post iteration
         pFixed.postIterate()
