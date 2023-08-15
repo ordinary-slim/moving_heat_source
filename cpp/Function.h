@@ -49,7 +49,11 @@ class Function{
 
     double evaluate( Eigen::Vector3d point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
-    void interpolate(const Function &extFEMFunc, bool ignoreOutside=false );
+    void interpolate(const Function &extFEMFunc,
+        const mesh::MeshTag<int> &nodalTag,
+        bool ignoreOutside=false );
+    void interpolate(const Function &extFEMFunc,
+        bool ignoreOutside=false );
     void interpolateInactive( const Function &extFEMFunc, bool ignoreOutside );
     void setValues( const Eigen::VectorXd &values ) { this->values = values; }
     double getL2Norm() const;

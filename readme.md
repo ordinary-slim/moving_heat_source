@@ -2,7 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Reduce code duplication in Function class (inteprolate methods)
+- [ ] Remove setValues methods (unused, unoptimized)
+- [x] Reduce code duplication in Function class (inteprolate methods)
 - [ ] Include path
 - [ ] What's happening in back of subdomain ?
 - [ ] 10 layer example 2d printing

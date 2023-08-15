@@ -38,11 +38,16 @@ Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
 }
 
 
-void Function::interpolate( const Function &extFEMFunc, bool ignoreOutside ) {
+void Function::interpolate(const Function &extFEMFunc, const mesh::MeshTag<int> &nodalTag, bool ignoreOutside ) {
 
-  for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
+  if (nodalTag.dim() != 0) {
+    throw std::invalid_argument("Interpolate requires nodal mesh tag.");
+  }
+  vector<int> nodesOfInterest = nodalTag.getIndices();
+
+  for (int inode : nodesOfInterest) {
     // Move to reference frame of external
-    Eigen::Vector3d posExt = domain->mesh->pos.row(inode) + (domain->translationLab - extFEMFunc.domain->translationLab).transpose();
+    Eigen::Vector3d posExt = domain->posLab.row(inode) - extFEMFunc.domain->translationLab.transpose();
     try {
       values[inode] = extFEMFunc.evaluate( posExt );
     } catch ( const std::invalid_argument &e ) {
@@ -50,28 +55,20 @@ void Function::interpolate( const Function &extFEMFunc, bool ignoreOutside ) {
       if (domain->activeNodes[inode] && not(ignoreOutside)) {
         throw;
       } else {
-        values[inode] = -1;
+        values[inode] = -1;// sentinel value
       }
     }
   }
 }
 
-void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutside ) {
-  // code duplicated from interpolate
-  Eigen::Vector3d posExt;
+void Function::interpolate(const Function &extFEMFunc, bool ignoreOutside ) {
+  mesh::MeshTag<int> allNodes = mesh::MeshTag<int>( domain->mesh, 0, 1 );
+  interpolate( extFEMFunc, allNodes, ignoreOutside );
+}
 
-  vector<int> indicesInactive = domain->activeNodes.filterIndices( [](int v){return (v==0);});
-  for (int inactiveNode : indicesInactive) {
-    // Move to reference frame of external
-    posExt = domain->mesh->pos.row(inactiveNode) + (domain->translationLab - extFEMFunc.domain->translationLab).transpose();
-    try {
-      values[inactiveNode] = extFEMFunc.evaluate( posExt );
-    } catch (const std::invalid_argument &e) {
-      if (not(ignoreOutside)) {
-        throw;
-      }
-    }
-  }
+void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutside ) {
+  // Shorthand
+  interpolate( extFEMFunc, not( domain->activeNodes ), ignoreOutside );
 }
 
 double Function::getL2Norm() const {
@@ -89,22 +86,9 @@ double Function::getL2Norm() const {
 fem::Function interpolate( const fem::Function &extFEMFunc,
                            const mesh::Domain *domain,
                            bool ignoreOutside ) {
-  Eigen::VectorXd vals = Eigen::VectorXd::Zero( domain->mesh->nnodes );
-
-  for (int inode = 0; inode < domain->mesh->nnodes; inode++) {
-    // Move to reference frame of external
-    Eigen::Vector3d posExt = domain->posLab.row(inode) - extFEMFunc.domain->translationLab.transpose();
-    try {
-      vals[inode] = extFEMFunc.evaluate( posExt );
-    } catch ( const std::invalid_argument &e ) {
-      // Point outside of domain
-      if (not( ignoreOutside )) {
-        throw;
-      }
-    }
-  }
-
-  return fem::Function( domain, vals );
+  fem::Function f = fem::Function( domain );
+  f.interpolate( extFEMFunc, ignoreOutside );
+  return f;
 }
 
 Function operator-(const Function& f1, const Function& f2) {

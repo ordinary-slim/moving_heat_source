@@ -22,7 +22,7 @@ class MeshTag {
 
     MeshTag(const mesh::Mesh *mesh, const std::vector<int> &indices, const std::vector<T> &values, const int dim=0);
 
-    MeshTag(const mesh::MeshTag<T> &mt) = default;
+    MeshTag(const mesh::MeshTag<T> &tag) = default;
 
     T& operator[](int idx);
 
@@ -43,6 +43,15 @@ class MeshTag {
         x[ient] = int( x[ient] & rhs[ient] );
       }
       return *this;
+    }
+
+
+    friend MeshTag<int> operator!(const MeshTag<T> &tag) {
+      MeshTag<T> complement = MeshTag<T>( tag );//copy input tag
+      for (int ient = 0; ient < complement.size(); ++ient) {
+        complement[ient] = int( not( complement[ient] ) );
+      }
+      return complement;
     }
 
     int dim() const { return _dim; }
