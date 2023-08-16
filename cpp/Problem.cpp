@@ -293,12 +293,8 @@ void Problem::uniteExternal( const Problem &pExt, bool updateGamma ) {
   domain.setActivation( activationCriterion );
 
   // Set values for just activated nodes
-  vector<int> indicesJustActivated =
-    domain.activeNodes.filterIndices( [](int inode){return (inode==2);});
-  for (int inode : indicesJustActivated) {
-    Eigen::Vector3d posExt = domain.mesh->pos.row(inode) + (domain.translationLab - pExt.domain.translationLab).transpose();
-    unknown.values[inode] = pExt.unknown.evaluate( posExt );
-  }
+  unknown.interpolate( pExt.unknown, domain.activeNodes,  [](int inode){return (inode==2);}, false );
+
   if (updateGamma) {
     updateInterface( activeInExternal );
   }
@@ -345,8 +341,7 @@ void Problem::updateInterface( mesh::MeshTag<int> &activeInExternal ) {
 }
 
 void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
-  fem::Function fh = fem::Function( &domain );
-  fh.interpolate( extFEMFunc );
+  fem::Function fh = fem::interpolate( extFEMFunc, &domain );
   for (int inode = 0; inode < domain.mesh->nnodes; inode++) {
     if (fh.values(inode) >= 0) {//If interpolated
       unknown.values(inode) = fh.values(inode);

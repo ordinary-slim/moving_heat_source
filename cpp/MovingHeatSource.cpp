@@ -137,20 +137,20 @@ PYBIND11_MODULE(cpp, m) {
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const myOBB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
         .def("getElement", &mesh::Mesh::getElement);
-    py::class_<fem::Function>(m, "Function", py::dynamic_attr())
+    py::class_<AbstractFunction>(m, "AbstractFunction");
+    py::class_<fem::Function, AbstractFunction>(m, "Function")
         .def(py::init<const mesh::Domain*>())
         .def(py::init<const mesh::Domain*, Eigen::VectorXd&>())
         .def(py::init<const fem::Function&>())
         .def(py::self - py::self)
         .def("evaluate", &fem::Function::evaluate)
         .def("evaluateGrad", &fem::Function::evaluateGrad)
-        .def("interpolate", py::overload_cast<const fem::Function &, bool>(&fem::Function::interpolate),
+        .def("interpolate", py::overload_cast<const AbstractFunction &, bool>(&fem::Function::interpolate),
           py::arg("extFEMFunc"), py::arg("ignoreOutside") = false )
-        .def("interpolate", py::overload_cast<const fem::Function &, const mesh::MeshTag<int> &, bool>(&fem::Function::interpolate),
+        .def("interpolate", py::overload_cast<const AbstractFunction &, const mesh::MeshTag<int> &, bool>(&fem::Function::interpolate),
           py::arg("extFEMFunc"), py::arg("nodalTag"), py::arg("ignoreOutside") = false )
         .def("interpolateInactive", &fem::Function::interpolateInactive,
           py::arg("extFEMFunc"), py::arg("ignoreOutside") = false )
-        .def("setValues", &fem::Function::setValues)
         .def("getL2Norm", &fem::Function::getL2Norm)
         .def_readonly("values", &fem::Function::values);
     m.def( "interpolate", &fem::interpolate);

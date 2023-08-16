@@ -2,10 +2,12 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Check if point in ConstantFunction eval is in domain
 - [ ] Add interpolartion option for External methods
 - [x] Add named arguments for interpolate methods
 - [x] It seems only one thing left. Figure out why power is low
 - [ ] Remove setValues methods (unused, unoptimized)
+- [ ] Reduce code duplication in Function class (constructors)
 - [x] Reduce code duplication in Function class (inteprolate methods)
 - [ ] Include path
 - [x] What's happening in back of subdomain ?

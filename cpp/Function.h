@@ -4,15 +4,19 @@
 #include "mesh/Mesh.h"
 #include "mesh/Element.h"
 #include <Eigen/Core>
-#include <list>
 #include <vector>
+
+class AbstractFunction {
+  public:
+    const mesh::Domain* domain;
+    virtual double evaluate( Eigen::Vector3d &point ) const = 0;
+};
 
 namespace fem
 {
-class Function{
+class Function : public AbstractFunction {
   public:
     Eigen::VectorXd values;
-    const mesh::Domain* domain;
 
     Function(const mesh::Domain* dom) {
       domain = dom;
@@ -47,20 +51,36 @@ class Function{
     }
     Function(const Function&) = default;
 
-    double evaluate( Eigen::Vector3d point ) const;
-    Eigen::Vector3d evaluateGrad( Eigen::Vector3d point );
-    void interpolate(const Function &extFEMFunc,
+    double evaluate( Eigen::Vector3d &point ) const;
+    Eigen::Vector3d evaluateGrad( Eigen::Vector3d &point );
+    void interpolate(const AbstractFunction &extFEMFunc,
+        const mesh::MeshTag<int> &nodalTag,
+        std::function<bool(int)> filter = nullptr,
+        bool ignoreOutside=false );
+    void interpolate(const AbstractFunction &extFEMFunc,
         const mesh::MeshTag<int> &nodalTag,
         bool ignoreOutside=false );
-    void interpolate(const Function &extFEMFunc,
-        bool ignoreOutside=false );
-    void interpolateInactive( const Function &extFEMFunc, bool ignoreOutside );
-    void setValues( const Eigen::VectorXd &values ) { this->values = values; }
+    void interpolate(const AbstractFunction &extFEMFunc, bool ignoreOutside=false );
+    void interpolateInactive( const AbstractFunction &extFEMFunc, bool ignoreOutside );
     double getL2Norm() const;
     friend Function operator-(const Function& f1, const Function& f2);
 };
 
-Function interpolate( const Function &extFEMFunc, const mesh::Domain *domain,
+Function interpolate( const AbstractFunction &extFEMFunc, const mesh::Domain *domain,
                            bool ignoreOutside = false );
 }
+
+class ConstantFunction : public AbstractFunction {
+  public:
+    double constant = 0.0;
+    ConstantFunction( const mesh::Domain* dom, double c ) {
+      domain = dom;
+      constant = c;
+    }
+    double evaluate( Eigen::Vector3d &point ) const {
+      //TODO: Check if point is in domain (?)
+      return constant;
+    }
+};
+
 #endif

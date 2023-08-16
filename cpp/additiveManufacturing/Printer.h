@@ -19,16 +19,12 @@ class Printer : public HatchCollider {
         (*activeEls)[ielem] = 1;
       }
       p->domain.setActivation((*activeEls));
-      // Set deposition temperature
-      vector<int> indicesJustActivated =
-        p->domain.activeNodes.filterIndices( [](int inode){return (inode==2);});
-      for (int inode : indicesJustActivated) {
-        p->unknown.values[inode] = p->Tdeposition;
-      }
+      // Set deposition temperature at just activated nodes
+      // TODO: Maybe compute MeshTag only once to avoid filtering it
+      ConstantFunction depositionTemperature = ConstantFunction( &p->domain, p->Tdeposition );
+      p->unknown.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
       for (fem::Function& prevVal : p->previousValues) {
-        for (int inode : indicesJustActivated) {
-          prevVal.values[inode] = p->Tdeposition;
-        }
+        prevVal.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
       }
     }
 };

@@ -3,7 +3,7 @@
 
 namespace fem
 {
-double Function::evaluate( Eigen::Vector3d point ) const {
+double Function::evaluate( Eigen::Vector3d &point ) const {
   /*
   Output val of Function at input point
   */
@@ -19,7 +19,7 @@ double Function::evaluate( Eigen::Vector3d point ) const {
   return val;
 }
 
-Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
+Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d &point ) {
   /*
   Output gradient of Function @ input point
   */
@@ -38,12 +38,17 @@ Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d point ) {
 }
 
 
-void Function::interpolate(const Function &extFEMFunc, const mesh::MeshTag<int> &nodalTag, bool ignoreOutside ) {
+void Function::interpolate(const AbstractFunction &extFEMFunc, const mesh::MeshTag<int> &nodalTag,
+    std::function<bool(int)> filter, bool ignoreOutside ) {
 
-  if (nodalTag.dim() != 0) {
-    throw std::invalid_argument("Interpolate requires nodal mesh tag.");
+  if (nodalTag.dim() != 0) { throw std::invalid_argument("Interpolate requires nodal mesh tag."); }
+
+  vector<int> nodesOfInterest;
+  if (filter == nullptr) {
+     nodesOfInterest = nodalTag.getIndices();
+  } else {
+     nodesOfInterest = nodalTag.filterIndices( filter );
   }
-  vector<int> nodesOfInterest = nodalTag.getIndices();
 
   for (int inode : nodesOfInterest) {
     // Move to reference frame of external
@@ -55,20 +60,28 @@ void Function::interpolate(const Function &extFEMFunc, const mesh::MeshTag<int> 
       if (domain->activeNodes[inode] && not(ignoreOutside)) {
         throw;
       } else {
-        values[inode] = -1;// sentinel value
+        values[inode] = -1;// sentinel value, if it shows up in active
+                           // nodes of simulation something went wrong
       }
     }
   }
 }
 
-void Function::interpolate(const Function &extFEMFunc, bool ignoreOutside ) {
-  mesh::MeshTag<int> allNodes = mesh::MeshTag<int>( domain->mesh, 0, 1 );
-  interpolate( extFEMFunc, allNodes, ignoreOutside );
+void Function::interpolate(const AbstractFunction &extFEMFunc, const mesh::MeshTag<int> &nodalTag, bool ignoreOutside ) {
+  interpolate( extFEMFunc, nodalTag, nullptr, ignoreOutside );
 }
 
-void Function::interpolateInactive( const Function &extFEMFunc, bool ignoreOutside ) {
+void Function::interpolate(const AbstractFunction &extFEMFunc, bool ignoreOutside ) {
+  mesh::MeshTag<int> allNodes = mesh::MeshTag<int>( domain->mesh, 0, 1 );
+  interpolate( extFEMFunc, allNodes, nullptr, ignoreOutside );
+}
+
+void Function::interpolateInactive( const AbstractFunction &extFEMFunc, bool ignoreOutside ) {
   // Shorthand
-  interpolate( extFEMFunc, not( domain->activeNodes ), ignoreOutside );
+  interpolate( extFEMFunc,
+      domain->activeNodes,
+      [](int val){ return (val == 0); },
+      ignoreOutside );
 }
 
 double Function::getL2Norm() const {
@@ -83,7 +96,7 @@ double Function::getL2Norm() const {
   return sqrt( l2norm );
 }
 
-fem::Function interpolate( const fem::Function &extFEMFunc,
+fem::Function interpolate( const AbstractFunction &extFEMFunc,
                            const mesh::Domain *domain,
                            bool ignoreOutside ) {
   fem::Function f = fem::Function( domain );
