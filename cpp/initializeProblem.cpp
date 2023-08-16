@@ -35,6 +35,15 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   // HEAT SOURCE
   // set type of source term
   switch (int(py::cast<int>( input["sourceTerm"] ))) {
+    case 1:
+      mhs = std::make_unique<heat::gaussianPowerDensity1D>(input, this);
+      break;
+    case 2 :
+      mhs = std::make_unique<heat::gaussianPowerDensity2D>(input, this);
+      break;
+    case 3 :
+      mhs = std::make_unique<heat::gaussianPowerDensity3D>(input, this);
+      break;
     case 11: { 
         double heatSouceWidth  = py::cast<double>(input["heatSourceWidth"]);
         double heatSouceHeight = py::cast<double>(input["heatSourceHeight"]);
@@ -55,7 +64,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
         } else {
           mhs = std::make_unique<heat::gaussianPowerDensity3D>(input, this);
         }
-        break; }
+        break;
+      }
   }
 
   // TIME DEPENDENCY

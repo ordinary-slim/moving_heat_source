@@ -80,7 +80,7 @@ def run():
     pRight  = mhs.Problem(meshRight, problemInput, caseName="right")
 
     # Activation
-    pLeft.substractExternal( pRight, True )
+    pLeft.substractExternal(pRight, updateGamma=True)
     pRight.updateInterface( pLeft )
 
     print("Setting BCs...")

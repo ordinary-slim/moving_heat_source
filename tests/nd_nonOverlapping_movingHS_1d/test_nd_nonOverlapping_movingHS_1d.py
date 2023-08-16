@@ -81,11 +81,11 @@ def run():
         # PRE-ITERATE AND DOMAIN OPERATIONS
         pMoving.domain.resetActivation()
         pFixed.domain.resetActivation()
-        pMoving.intersectExternal( pFixed, False )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
         pFixed.preiterate(False)
         pMoving.preiterate(False)
-        pMoving.intersectExternal( pFixed, False )
-        pFixed.substractExternal( pMoving, True )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
+        pFixed.substractExternal(pMoving, updateGamma=True)
         pMoving.updateInterface( pFixed )
 
         #Dirichet gamma

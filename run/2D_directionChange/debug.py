@@ -51,7 +51,7 @@ class MyIterator:
         #TODO: Replace by intersect with OBB
         #pMoving.domain.intersectObb( self.adaptiveStepper.OBB )
 
-        pMoving.intersectExternal( pFixed, False )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
         pFixed.preiterate(False)
 
         # Update speeds moving domain
@@ -59,9 +59,9 @@ class MyIterator:
         pMoving.domain.mesh.setSpeedFRF( pFixed.mhs.speed )
         pMoving.preiterate(False)
 
-        pMoving.intersectExternal( pFixed, False )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
         if self.isCoupled:
-            pFixed.substractExternal( pMoving, False )
+            pFixed.substractExternal(pMoving, updateGamma=False)
         pFixed.updateInterface( pMoving )
         pMoving.updateInterface( pFixed )
         #Dirichet gamma

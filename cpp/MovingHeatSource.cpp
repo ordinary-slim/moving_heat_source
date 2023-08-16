@@ -75,18 +75,20 @@ PYBIND11_MODULE(cpp, m) {
         .def("clearBCs", &Problem::clearBCs)
         .def("project", &Problem::project)
         .def("checkSteadiness", &Problem::checkSteadiness)
-        .def("getActiveInExternal", static_cast<mesh::MeshTag<int> (Problem::*)( const Problem &, double)>(&Problem::getActiveInExternal),
-            "Find interface between two problems")
+        .def("getActiveInExternal", &Problem::getActiveInExternal)
         .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
             "Find interface between two problems")
         .def("updateInterface", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::updateInterface),
             "Find interface between two problems given external activation MeshTag")
-        .def("substractExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::substractExternal),
-            "Substract external domain from domain.")
-        .def("intersectExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::intersectExternal),
-            "Intersect domain with external domain.")
-        .def("uniteExternal", static_cast<void (Problem::*)( const Problem &, bool)>(&Problem::uniteExternal),
-            "Unite domain with external domain.");
+        .def("substractExternal", &Problem::substractExternal,
+            "Substract external domain from domain.",
+            py::arg("pExt"), py::arg("updateGamma") = true )
+        .def("intersectExternal", &Problem::intersectExternal,
+            "Intersect domain with external domain.",
+            py::arg("pExt"), py::arg("updateGamma") = true )
+        .def("uniteExternal", &Problem::uniteExternal,
+            "Unite domain with external domain.",
+            py::arg("pExt"), py::arg("updateGamma") = true );
     py::class_<mesh::Domain>(m, "Domain")
         .def_readonly("posLab", &mesh::Domain::posLab)
         .def_readonly("translationLab", &mesh::Domain::translationLab)
@@ -193,6 +195,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("currentTrack", &heat::HeatSource::currentTrack)
         .def_property_readonly("path", [](const heat::HeatSource& h){ return h.path.get(); },
             py::return_value_policy::reference_internal)
+        .def("__call__", &heat::HeatSource::operator())
         .def("setPower", &heat::HeatSource::setPower)
         .def("setPosition", &heat::HeatSource::setPosition)
         .def("setSpeed", &heat::HeatSource::setSpeed)

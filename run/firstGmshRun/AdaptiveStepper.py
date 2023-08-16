@@ -1,8 +1,9 @@
 import numpy as np
-import pdb
+import meshzoo
 import MovingHeatSource as mhs
 
 #TODO: Store hatch and not adim + nonAdim
+#TODO: Build pMoving here in order to reduce risk of mistake
 
 class AdaptiveStepper:
 
@@ -10,7 +11,6 @@ class AdaptiveStepper:
 
     def __init__(self,
                  pFixed,
-                 pMoving,
                  factor=2,
                  adimMaxSubdomainSize=10,
                  threshold= 0.01,
@@ -18,11 +18,11 @@ class AdaptiveStepper:
                  rotateSubdomain=False ):
         self.isCoupled = isCoupled
         self.pFixed = pFixed
-        self.pMoving = pMoving
+        self.adimMaxSubdomainSize = adimMaxSubdomainSize
+        self.buildMovingProblem()
         # TODO: better initialization
         self.adimFineDt = 0.5
         self.adimFineSubdomainSize = 1
-        self.adimMaxSubdomainSize = adimMaxSubdomainSize
         self.adimMaxDt = adimMaxSubdomainSize / factor
         self.threshold = threshold
         self.factor = factor
@@ -40,6 +40,18 @@ class AdaptiveStepper:
         # Match heat source positions at t = 0.0
         self.pMoving.mhs.setPosition( self.pFixed.mhs.position )
 
+    def buildMovingProblem(self):
+        adimR = self.pFixed.input["radius"] / np.linalg.norm(self.pFixed.input["HeatSourceSpeed"])
+        meshInputMoving = {}
+        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(self.adimMaxSubdomainSize, self.pFixed)
+        self.meshMoving = mhs.Mesh(meshInputMoving)
+        movingProblemInput = dict( self.pFixed.input )
+        movingProblemInput["isAdvection"] = 1
+        movingProblemInput["advectionSpeed"] = -self.pFixed.input["HeatSourceSpeed"]
+        movingProblemInput["speedFRF"]      = self.pFixed.input["HeatSourceSpeed"]
+        movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
+        self.pMoving  = mhs.Problem(self.meshMoving, movingProblemInput, caseName="moving")
+
     def getTime(self):
         return self.pFixed.time
 
@@ -47,7 +59,7 @@ class AdaptiveStepper:
         self.printer = mhs.Printer( self.pFixed, mdwidth, mdheight )
         self.hasPrinter = True
 
-    def print( self ):
+    def deposit( self ):
         '''
         Do deposition for interval [tn, tn1] at tn
         , when dt is already known
@@ -137,11 +149,16 @@ class AdaptiveStepper:
         self.pFixed.setDt( self.dt )
         # New track operations
         if (self.onNewTrack):
+            #TODO: This is in the wrong place
+            #check if this is called at tn or tn+1
             self.rotateSubdomain()
             self.isCoupled = False
+            self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
+            self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
+            self.pMoving.mhs.setPower( self.pFixed.mhs.power )
 
         # Set coupling
-        if (self.adimDt <= 0.0+1e-7) and not(self.isCoupled):
+        if (self.adimDt <= 0.5+1e-7) and not(self.isCoupled):
             self.isCoupled = False
         else:
             self.isCoupled = True
@@ -150,23 +167,23 @@ class AdaptiveStepper:
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
-        self.pFixed.domain.setActivation( self.physicalDomain )
+        self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
         if self.hasPrinter:
-            self.print()
+            self.deposit()
         self.shapeSubdomain()
 
-        self.pMoving.intersectExternal( self.pFixed, False )#tn intersect
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
         self.pMoving.preiterate(False)
         self.pFixed.preiterate(False)
 
-        self.pMoving.intersectExternal( self.pFixed, False )#physical domain intersect
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
 
         if self.isCoupled:
-            self.pFixed.substractExternal( self.pMoving, False )
+            self.pFixed.substractExternal(self.pMoving, updateGamma=False)
             self.pFixed.updateInterface( self.pMoving )
             self.pMoving.updateInterface( self.pFixed )
             #Dirichet gamma
@@ -194,11 +211,11 @@ class AdaptiveStepper:
             self.pMoving.gather()
 
             self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
-            self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = True )
+            self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
         else:
             self.pFixed.preAssemble(allocateLs=True)
             self.pFixed.iterate()
-            self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = True )
+            self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
 
         # Post iteration
         self.pFixed.postIterate()
@@ -221,3 +238,27 @@ class AdaptiveStepper:
         self.pMoving.writepos(
             nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
             )
+
+def meshBox(box, meshDen=4):
+    cell_type="quad4"
+    nelsX = int(meshDen*(box[1]-box[0])) +1
+    nelsY = int(meshDen*(box[3]-box[2])) +1
+    points, cells = meshzoo.rectangle_quad(
+        np.linspace(box[0], box[1], nelsX),
+        np.linspace(box[2], box[3], nelsY),
+        cell_type=cell_type
+        #variant="zigzag",  # or "up", "down", "center"
+    )
+    cells = cells.astype( int )
+    return points, cells, cell_type
+
+def meshAroundHS( adimR, pFixed, meshDen=4 ):
+    radius = pFixed.mhs.radius
+    initialPosition = pFixed.mhs.position
+    trailLength = adimR * radius
+    capotLength = min( trailLength, 2*radius )
+    halfLengthY = min( trailLength, capotLength )
+    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
+           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY]
+    return meshBox(box, meshDen)
+

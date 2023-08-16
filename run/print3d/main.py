@@ -136,13 +136,13 @@ if __name__=="__main__":
         pMoving.domain.resetActivation()
         pFixed.domain.setActivation(activeElsFixed)
 
-        pMoving.intersectExternal( pFixed, False )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
 
         pFixed.preiterate(False)
         pMoving.preiterate(False)
 
-        pMoving.intersectExternal( pFixed, False )
-        pFixed.substractExternal( pMoving, True )
+        pMoving.intersectExternal(pFixed, updateGamma=False)
+        pFixed.substractExternal(pMoving, updateGamma=True)
         pMoving.updateInterface( pFixed )
         # Print
         # Setup print
@@ -170,7 +170,7 @@ if __name__=="__main__":
         pMoving.gather()
 
         # Union
-        pFixed.uniteExternal( pMoving, False )
+        pFixed.uniteExternal(pMoving, updateGamma=False)
         activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
         pMoving.unknown.interpolateInactive( pFixed.unknown, ignoreOutside = True )
 

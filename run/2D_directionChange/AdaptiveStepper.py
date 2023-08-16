@@ -129,16 +129,16 @@ class AdaptiveStepper:
         self.setDt()
         self.shapeSubdomain()
 
-        self.pMoving.intersectExternal( self.pFixed, False )#tn intersect
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
         self.pMoving.preiterate(False)
         self.pFixed.preiterate(False)
 
-        self.pMoving.intersectExternal( self.pFixed, False )#physical domain intersect
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
 
         if self.isCoupled:
-            self.pFixed.substractExternal( self.pMoving, False )
+            self.pFixed.substractExternal(self.pMoving, updateGamma=False)
             self.pFixed.updateInterface( self.pMoving )
             self.pMoving.updateInterface( self.pFixed )
             #Dirichet gamma
