@@ -26,7 +26,8 @@ PYBIND11_MODULE(cpp, m) {
         //.def(py::init<Problem>())//copy constructor
         // doesnt work currently with HeatSource unique pointer
         .def(py::init<mesh::Mesh&, py::dict&>())
-        .def("preIterate", &Problem::preIterate)
+        .def("preIterate", &Problem::preIterate, "Time goes from t^n to t^{n+1}",
+            py::arg("canPreassemble") = true)
         .def("preAssemble", &Problem::preAssemble, "Before assembly operations",
             py::arg("allocateLs") = true )
         .def("updateForcedDofs", &Problem::updateForcedDofs)
@@ -52,6 +53,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("advectionSpeed", &Problem::advectionSpeed)
         .def_readonly("dirichletNodes", &Problem::dirichletNodes)
         .def_readonly("gammaNodes", &Problem::gammaNodes)
+        .def_readonly("forcedDofs", &Problem::forcedDofs)
         .def_readonly("elsOwnedByOther", &Problem::elsOwnedByOther)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setDt", &Problem::setDt)
@@ -73,6 +75,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
         .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)
         .def("clearBCs", &Problem::clearBCs)
+        .def("clearGamma", &Problem::clearGamma)
         .def("project", &Problem::project)
         .def("checkSteadiness", &Problem::checkSteadiness)
         .def("getActiveInExternal", &Problem::getActiveInExternal)
@@ -214,6 +217,8 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("p1", &heat::Track::p1)
         .def("getSpeed", &heat::Track::getSpeed)
         .def_readonly("speed", &heat::Track::speed)
+        .def_readonly("power", &heat::Track::power)
+        .def_readonly("hasDeposition", &heat::Track::hasDeposition)
         .def_readonly("startTime", &heat::Track::startTime)
         .def_readonly("endTime", &heat::Track::endTime);
     py::class_<heat::Path>(m, "Path")

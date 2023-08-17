@@ -14,7 +14,7 @@ class LinearSystem
   public:
     Eigen::SparseMatrix<double> lhs;
     Eigen::VectorXd rhs;
-    int _ndofs;
+    size_t _ndofs;
     std::vector<Eigen::Triplet<double>> lhsCoeffs;
     Eigen::VectorXd sol;
 

@@ -12,6 +12,9 @@ class Printer : public HatchCollider {
       this->p    = p;
     }
     void deposit( const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, mesh::MeshTag<int> *activeEls = NULL ) {
+      /*
+       * Deposit elements at hatch defined by points p1 and p2 in lab reference frame
+       */
       vector<int> collidedEls = collide( p1-p->domain.translationLab, p2-p->domain.translationLab);
 
       if (not(activeEls)) { activeEls = &p->domain.activeElements; };

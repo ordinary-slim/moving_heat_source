@@ -80,9 +80,11 @@ struct myOBB{
         throw std::invalid_argument("Steps in Z-axis not allowed.");
       }
       yAxis = zAxis.cross( xAxis );
-      halfWidths(0) = step.norm() / 2.0;
-      halfWidths(1) = width / 2.0;
-      halfWidths(2) = height / 2.0;
+      tol = 1e-5;
+      halfWidths(0) = step.norm() / 2.0 - tol;//tolerance to avoid
+                                              //touching collisions
+      halfWidths(1) = width / 2.0 - tol;
+      halfWidths(2) = height / 2.0 - tol;
     }
     void appendPlanes(std::vector<Plane3_CGAL> &v) const {
       v.reserve( std::min<int>(v.size(), 12) );

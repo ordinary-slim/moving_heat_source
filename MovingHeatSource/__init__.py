@@ -63,7 +63,7 @@ class Problem(Problem):
         except FileNotFoundError:
             pass
 
-    def preiterate(self, canPreassemble):
+    def preiterate(self, canPreassemble=True):
         self.iter += 1
         super(Problem, self).preIterate(canPreassemble)
 

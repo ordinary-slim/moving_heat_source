@@ -14,8 +14,8 @@ class AdaptiveStepper:
                  factor=2,
                  adimMaxSubdomainSize=10,
                  threshold= 0.01,
-                 isCoupled=True,
-                 rotateSubdomain=False ):
+                 isCoupled=True, ):
+
         self.isCoupled = isCoupled
         self.pFixed = pFixed
         self.adimMaxSubdomainSize = adimMaxSubdomainSize
@@ -40,6 +40,8 @@ class AdaptiveStepper:
         # Match heat source positions at t = 0.0
         self.pMoving.mhs.setPosition( self.pFixed.mhs.position )
 
+        self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
+
     def buildMovingProblem(self):
         adimR = self.pFixed.input["radius"] / np.linalg.norm(self.pFixed.input["HeatSourceSpeed"])
         meshInputMoving = {}
@@ -56,19 +58,24 @@ class AdaptiveStepper:
         return self.pFixed.time
 
     def setupPrinter( self, mdwidth, mdheight ):
-        self.printer = mhs.Printer( self.pFixed, mdwidth, mdheight )
+        self.printerFixed = mhs.Printer( self.pFixed, mdwidth, mdheight )
+        self.printerMoving = mhs.Printer( self.pMoving, mdwidth, mdheight )
         self.hasPrinter = True
 
     def deposit( self ):
         '''
-        Do deposition for interval [tn, tn1] at tn
-        , when dt is already known
+        Do deposition for interval [tn, tn1] at tn+1
         '''
-        origin = self.pFixed.mhs.position
-        destination = self.pFixed.mhs.path.interpolatePosition( self.getTime() + self.dt )
-        self.printer.deposit( origin, destination,
-                            self.physicalDomain
-                            )
+        if (self.pFixed.mhs.currentTrack.hasDeposition):
+            origin = self.pFixed.mhs.path.interpolatePosition( self.getTime() - self.dt )
+            destination = self.pFixed.mhs.position
+
+            self.printerFixed.deposit( origin, destination,
+                                self.physicalDomain,
+                                )
+            self.printerMoving.deposit( origin, destination,
+                                self.pMoving.domain.activeElements,
+                                )
 
     def update(self):
         '''
@@ -88,9 +95,9 @@ class AdaptiveStepper:
         dt2trackEnd = self.pFixed.mhs.currentTrack.endTime - time
         adimMaxDt = self.adimMaxDt
         if ( dt2trackEnd < 1e-7) or ( time == 0.0 ):#new track
+            self.onNewTrack = True
             self.adimDt = self.adimFineDt
             self.adimSubdomainSize = self.adimFineSubdomainSize
-            self.onNewTrack = True
         else:
             adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
             delta = self.pMoving.unknown - self.pMoving.previousValues[0]
@@ -104,14 +111,17 @@ class AdaptiveStepper:
         self.adimSubdomainSize = self.adimDt + 1.0
         self.dt = tUnit * self.adimDt
 
+        if self.onNewTrack:
+            self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
+
     def rotateSubdomain( self ):
         '''
         Align mesh of moving subproblem with track
+        Called at tn
         '''
-        nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
         currentTrack = self.pFixed.mhs.currentTrack
         center = self.pMoving.mhs.position
-        angle = np.arccos( np.dot( nextTrack.getSpeed(), currentTrack.getSpeed() ) / nextTrack.speed / currentTrack.speed )
+        angle = np.arccos( np.dot( self.nextTrack.getSpeed(), currentTrack.getSpeed() ) / self.nextTrack.speed / currentTrack.speed )
         if (angle > 1e-5):
             self.pMoving.domain.inPlaneRotate( center, angle )
             self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = True )
@@ -120,7 +130,6 @@ class AdaptiveStepper:
         '''
         At t^n, do things
         '''
-        nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
         # OBB
         radius = self.pFixed.mhs.radius
 
@@ -129,7 +138,7 @@ class AdaptiveStepper:
         adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
         backRadius = max( adimBackRadius, self.adimMinRadius ) * radius
         zRadius    = 1
-        xAxis      = nextTrack.getSpeed() / nextTrack.speed
+        xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
 
         backRadiusObb = max(backRadius - radius, 0.0)
         p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
@@ -144,24 +153,25 @@ class AdaptiveStepper:
 
 
     def setDt( self ):
+        # Called at tn
         print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
-        # New track operations
-        if (self.onNewTrack):
-            #TODO: This is in the wrong place
-            #check if this is called at tn or tn+1
-            self.rotateSubdomain()
-            self.isCoupled = False
-            self.pMoving.setAdvectionSpeed( -self.pFixed.mhs.speed )
-            self.pMoving.domain.setSpeed( self.pFixed.mhs.speed )
-            self.pMoving.mhs.setPower( self.pFixed.mhs.power )
-
         # Set coupling
-        if (self.adimDt <= 0.5+1e-7) and not(self.isCoupled):
+        if ( ((self.adimDt <= 0.5+1e-7) and not(self.isCoupled)) \
+            or not(self.nextTrack.hasDeposition) ):
             self.isCoupled = False
         else:
             self.isCoupled = True
+        # New track operations
+        if (self.onNewTrack):
+            #self.rotateSubdomain()
+            self.isCoupled = False
+            speed = self.nextTrack.getSpeed()
+            print("speed = {}".format( speed ) )
+            self.pMoving.setAdvectionSpeed( -speed )
+            self.pMoving.domain.setSpeed( speed )
+            self.pMoving.mhs.setPower( self.nextTrack.power )
 
     def iterate( self ):
         # MY SCHEME ITERATE
@@ -170,17 +180,19 @@ class AdaptiveStepper:
         self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
-        if self.hasPrinter:
-            self.deposit()
         self.shapeSubdomain()
 
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
-        self.pMoving.preiterate(False)
-        self.pFixed.preiterate(False)
+        self.pMoving.preiterate(canPreassemble=False)
+        self.pFixed.preiterate(canPreassemble=False)
 
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
+
+        if self.hasPrinter:
+            self.deposit()
+
 
         if self.isCoupled:
             self.pFixed.substractExternal(self.pMoving, updateGamma=False)
@@ -213,6 +225,7 @@ class AdaptiveStepper:
             self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
             self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
         else:
+            self.pFixed.clearGamma()
             self.pFixed.preAssemble(allocateLs=True)
             self.pFixed.iterate()
             self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
@@ -229,6 +242,7 @@ class AdaptiveStepper:
         self.pFixed.writepos(
             nodeMeshTags={
                 "gammaNodes":self.pFixed.gammaNodes,
+                "forcedDofs":self.pFixed.forcedDofs,
                 "activeInExternal":activeInExternal,
                 },
             cellMeshTags={

@@ -114,6 +114,18 @@ class Problem {
       weakBcFacets.setCteValue( 0 );
       neumannFluxes.setCteValue( vector<double>() );
     }
+    void clearGamma() {
+      // Clear BCs at Gamma and Gamma itself
+      vector<int> oldGammaNodes = gammaNodes.getIndices();
+      for (int inode : oldGammaNodes) {
+        if (dirichletNodes[inode] == 2) {
+          dirichletNodes[inode] = 0;
+        }
+      }
+      // Find new Gamma
+      gammaNodes.setCteValue( 0 );
+      gammaFacets.setCteValue( 0 );
+    }
     fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };
 

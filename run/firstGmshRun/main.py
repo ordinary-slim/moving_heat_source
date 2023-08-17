@@ -51,7 +51,8 @@ if __name__=="__main__":
 
     myDriver = AdaptiveStepper( pFixed,
                                adimMaxSubdomainSize=10,
-                               rotateSubdomain=True )
+                               threshold=0.025,
+                               )
 
 
     # Set up printer

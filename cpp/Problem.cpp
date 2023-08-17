@@ -44,6 +44,7 @@ void Problem::preAssemble(bool allocateLs) {
   // If problem is not coupled, get its own Linear System
   if (allocateLs) {
     this->ls = std::make_shared<LinearSystem>(*this);
+    assembling2external = false;
   }
 
 }
@@ -310,17 +311,8 @@ void Problem::updateInterface( mesh::MeshTag<int> &activeInExternal ) {
    * activeInExternal is a tag on the current mesh of which nodes
    * are owned by another problem
    */
+  clearGamma();
 
-  // Clear BCs @ old gamma
-  vector<int> oldGammaNodes = gammaNodes.getIndices();
-  for (int inode : oldGammaNodes) {
-    if (dirichletNodes[inode] == 2) {
-      dirichletNodes[inode] = 0;
-    }
-  }
-  // Find new Gamma
-  gammaNodes.setCteValue( 0 );
-  gammaFacets.setCteValue( 0 );
   vector<int> indicesBoundaryFacets = domain.boundaryFacets.getIndices();
   for ( int ifacet : indicesBoundaryFacets ) {
     const vector<unsigned int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
