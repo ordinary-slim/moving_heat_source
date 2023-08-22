@@ -105,6 +105,7 @@ if __name__=="__main__":
         pMoving.updateInterface( pFixed )
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
+        pMoving.setGamma2Neumann()
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=True)
         pFixed.preAssemble(allocateLs=True)

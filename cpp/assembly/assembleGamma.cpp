@@ -4,9 +4,9 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> Dense3ColMat;
 typedef Eigen::Triplet<double> T;
 
 void Problem::assembleNeumannGamma(const Problem &pExt) {
-  vector<int> gammaIndices = gammaFacets.getIndices();
+  vector<int> neumannGammaIndices = weakBcFacets.filterIndices( [](int tag){return tag==3;} );
 
-  for (int ifacet : gammaIndices) {
+  for (int ifacet : neumannGammaIndices) {
     mesh::Element facet = domain.getBoundaryFacet( ifacet );
 
     for (int igp = 0; igp < facet.ngpoints; ++igp) {
@@ -62,8 +62,8 @@ void Problem::assembleNeumannGamma(const Problem &pExt) {
 }
 
 void Problem::assembleDirichletGamma(const Problem &pExt) {
-  vector<int> indicesGammaNodes = gammaNodes.getIndices();
-  for (int inode: indicesGammaNodes) {
+  vector<int> indicesDirichletGammaNodes = dirichletNodes.filterIndices( [](int tag){return tag==2;} );
+  for (int inode: indicesDirichletGammaNodes) {
     Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.translationLab - pExt.domain.translationLab;
 
     int idx_el_ext = pExt.domain.findOwnerElements( xnode_ext ) ;

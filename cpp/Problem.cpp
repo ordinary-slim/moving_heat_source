@@ -381,10 +381,20 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   return fh;
 }
 
+void Problem::setGamma2Neumann() {
+  vector<int> gammaFacetsIndices = gammaFacets.getIndices();
+  for (int ifacet : gammaFacetsIndices) {
+    weakBcFacets[ifacet] = 3;
+  }
+}
+
 void Problem::setGamma2Dirichlet() {
-  vector<int> gammaNodesIndices = gammaNodes.getIndices();
-  for (int inode : gammaNodesIndices) {
-    dirichletNodes[inode] = 2;
+  vector<int> gammaFacetsIndices = gammaFacets.getIndices();
+  for (int ifacet : gammaFacetsIndices) {
+    const vector<unsigned int>* incidentNodes = domain.mesh->con_FacetPoint.getLocalCon(ifacet);
+    for (int inode : *incidentNodes) {
+      dirichletNodes[inode] = 2;
+    }
   }
 }
 

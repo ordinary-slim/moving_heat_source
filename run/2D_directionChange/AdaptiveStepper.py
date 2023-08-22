@@ -143,6 +143,7 @@ class AdaptiveStepper:
             self.pMoving.updateInterface( self.pFixed )
             #Dirichet gamma
             self.pFixed.setGamma2Dirichlet()
+            self.pMoving.setGamma2Neumann()
 
         self.pMoving.preAssemble(allocateLs=False)
 

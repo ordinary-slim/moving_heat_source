@@ -90,6 +90,7 @@ def run():
 
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
+        pMoving.setGamma2Neumann()
 
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=False)

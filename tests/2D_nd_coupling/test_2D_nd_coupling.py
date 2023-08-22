@@ -89,6 +89,7 @@ def run():
 
     # Dirichlet interface left
     pRight.setGamma2Dirichlet()
+    pLeft.setGamma2Neumann()
 
     # Pre-assembly, updating free dofs
     pLeft.preAssemble(allocateLs=False)
