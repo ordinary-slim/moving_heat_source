@@ -1,11 +1,11 @@
 #include "mesh/Element.h"
 #include "Problem.h"
 #include "additiveManufacturing/Printer.h"
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/stl.h"
-#include "../external/pybind11/include/pybind11/eigen.h"
-#include "../external/pybind11/include/pybind11/functional.h"
-#include "../external/pybind11/include/pybind11/operators.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+#include <pybind11/functional.h>
+#include <pybind11/operators.h>
 
 namespace py = pybind11;
 

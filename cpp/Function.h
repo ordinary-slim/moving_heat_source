@@ -16,7 +16,8 @@ namespace fem
 {
 class Function : public AbstractFunction {
   public:
-    Eigen::VectorXd values;
+    Eigen::VectorXd values;// value at each node
+                           // mesh is accessed through the domain
 
     Function(const mesh::Domain* dom) {
       domain = dom;

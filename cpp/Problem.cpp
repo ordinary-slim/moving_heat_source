@@ -1,6 +1,6 @@
 #include "Problem.h"
 #include "Function.h"
-#include "../external/pybind11/include/pybind11/eigen.h"
+#include <pybind11/eigen.h>
 #include <Eigen/Core>
 
 void Problem::preIterate( bool canPreassemble ) {

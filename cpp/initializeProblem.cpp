@@ -2,10 +2,10 @@
 #include <map>
 #include <string>
 #include <algorithm>
-#include "../external/pybind11/include/pybind11/pybind11.h"
-#include "../external/pybind11/include/pybind11/numpy.h"
-#include "../external/pybind11/include/pybind11/eigen.h"
-#include "../external/pybind11/include/pybind11/stl.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/eigen.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 

@@ -2,6 +2,7 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Test compilation at home computer
 - [ ] Check if point in ConstantFunction eval is in domain
 - [ ] Add interpolartion option for External methods
 - [ ] Reduce code duplication in Function class (constructors)
@@ -19,6 +20,7 @@ To-do:
 - [ ] neumannFluxes ?
 - [ ] Undefined behaviour if activation && weakBcFacets not updated
 - [ ] Refactor gammaFacets into weakBcFacets?
+- [x] Add Eigen to external
 - [x] Add named arguments for interpolate methods
 - [x] It seems only one thing left. Figure out why power is low
 - [x] Remove setValues methods (unused, unoptimized)
@@ -30,8 +32,6 @@ To-do:
 
 Ideas:
 ------
-- Move FRF stuff to domain instead of mesh
-- Privatize more
 - Timer object
 - Move down intersection to domain level
 Difficult because ActiveNodes interpolation relies on
