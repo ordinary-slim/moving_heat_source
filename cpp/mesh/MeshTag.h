@@ -30,8 +30,6 @@ class MeshTag {
 
     void setCteValue(const T &val);
 
-    void setValues(std::vector<T> &v);
-
     std::vector<int> getIndices() const;
     std::vector<int> filterIndices( std::function<bool(T)> filter ) const;
 

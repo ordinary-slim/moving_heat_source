@@ -272,7 +272,6 @@ void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
 }
 
 void Problem::uniteExternal( const Problem &pExt, bool updateGamma ) {
-  elsOwnedByOther.setCteValue( 0 );
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
@@ -287,7 +286,6 @@ void Problem::uniteExternal( const Problem &pExt, bool updateGamma ) {
     }
     if ( activeInExt ) {
       activationCriterion[ielem] = 1;
-      elsOwnedByOther[ielem] = 1;
     }
   }
 

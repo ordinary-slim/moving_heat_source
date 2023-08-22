@@ -59,14 +59,6 @@ void MeshTag<T>::setCteValue(const T &val) {
   // Set constant value
   fill(x.begin(), x.end(), val);
 }
-template<typename T>
-void MeshTag<T>::setValues(std::vector<T> &v) {
-  if (size()!=v.size() ) {
-    throw std::invalid_argument( "Values provided don't match internal size." );
-  } else {
-    x = v;
-  }
-}
 
 template<typename T>
 std::vector<int> MeshTag<T>::getIndices() const {

@@ -180,11 +180,9 @@ if __name__=="__main__":
 
         pFixed.writepos(
             nodeMeshTags={ "gammaNodes":pFixed.gammaNodes, },
-            cellMeshTags={ "elsOwnedByOther":pFixed.elsOwnedByOther, },
                 )
         pMoving.writepos(
             nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
-            cellMeshTags={ "elsOwnedByOther":pMoving.elsOwnedByOther, },
             )
 
     while (pFRF.time < Tfinal - tol) :

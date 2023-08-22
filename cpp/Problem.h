@@ -55,7 +55,6 @@ class Problem {
     mesh::MeshTag<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
 
     // Coupling BC
-    mesh::MeshTag<int> elsOwnedByOther;//Quick-fix for POST solely
     mesh::MeshTag<int> gammaNodes;
     mesh::MeshTag<int> gammaFacets;
 

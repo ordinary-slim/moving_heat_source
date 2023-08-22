@@ -54,7 +54,6 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("dirichletNodes", &Problem::dirichletNodes)
         .def_readonly("gammaNodes", &Problem::gammaNodes)
         .def_readonly("forcedDofs", &Problem::forcedDofs)
-        .def_readonly("elsOwnedByOther", &Problem::elsOwnedByOther)
         .def("interpolate2dirichlet", &Problem::interpolate2dirichlet)
         .def("setDt", &Problem::setDt)
         .def("setPointers", &Problem::setPointers)
@@ -116,7 +115,6 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::init<const mesh::Mesh*, int>())
         .def(py::init<const mesh::Mesh*, int, vector<int>>())
         .def("dim", &mesh::MeshTag<int>::dim)
-        .def("setValues", &mesh::MeshTag<int>::setValues)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     //DEBUG
