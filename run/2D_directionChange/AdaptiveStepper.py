@@ -143,6 +143,7 @@ class AdaptiveStepper:
             self.pMoving.updateInterface( self.pFixed )
             #Dirichet gamma
             self.pFixed.setGamma2Dirichlet()
+            self.pMoving.setGamma2Neumann()
 
         self.pMoving.preAssemble(allocateLs=False)
 
@@ -152,11 +153,8 @@ class AdaptiveStepper:
         
             ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
             # Assembly
-            self.pMoving.assemble()
-            self.pFixed.assemble()
-            # Assembly Gamma
-            self.pFixed.assembleDirichletGamma( self.pMoving )
-            self.pMoving.assembleNeumannGamma( self.pFixed )
+            self.pMoving.assemble( self.pFixed )
+            self.pFixed.assemble( self.pMoving )
             # Build ls
             ls.assemble()
             # Solve ls

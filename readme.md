@@ -2,6 +2,7 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] gmsh scripting
 - [ ] Test compilation at home computer
 - [ ] Check if point in ConstantFunction eval is in domain
 - [ ] Add interpolartion option for External methods

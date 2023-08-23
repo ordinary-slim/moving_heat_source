@@ -89,17 +89,16 @@ def run():
 
     # Dirichlet interface left
     pRight.setGamma2Dirichlet()
+    pLeft.setGamma2Neumann()
 
     # Pre-assembly, updating free dofs
     pLeft.preAssemble(allocateLs=False)
     pRight.preAssemble(allocateLs=False)
     ls = mhs.LinearSystem.Create( pLeft, pRight )
 
-    pLeft.assemble()
-    pRight.assemble()
+    pLeft.assemble( pRight )
+    pRight.assemble( pLeft )
 
-    pRight.assembleDirichletGamma( pLeft )
-    pLeft.assembleNeumannGamma( pRight )
 
     ls.assemble()
 

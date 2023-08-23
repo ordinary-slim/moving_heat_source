@@ -81,5 +81,17 @@ std::vector<int> MeshTag<T>::filterIndices( std::function<bool(T)> filter ) cons
   }
   return indices;
 }
+
+template<typename T>
+void MeshTag<T>::tag( std::function<bool(T)> filter, T value ) {
+  /*
+   * Tag indices which pass the filter
+   */
+  for (int index = 0; index < size(); ++index) {
+    if (filter( x[index] ) ) {
+      x[index] = value;
+    }
+  }
+}
 }
 #endif

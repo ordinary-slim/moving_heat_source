@@ -31,7 +31,8 @@ PYBIND11_MODULE(cpp, m) {
         .def("preAssemble", &Problem::preAssemble, "Before assembly operations",
             py::arg("allocateLs") = true )
         .def("updateForcedDofs", &Problem::updateForcedDofs)
-        .def("assemble", &Problem::assemble)
+        .def("assemble", &Problem::assemble,
+            py::arg("externalProblem") = static_cast<Problem *>(nullptr))
         .def("iterate", &Problem::iterate)
         .def("gather", &Problem::gather)
         .def("postIterate", &Problem::postIterate)
@@ -70,9 +71,8 @@ PYBIND11_MODULE(cpp, m) {
             "Set Neumann condition from index of facet and flux function.")
         .def("setConvection", &Problem::setConvection,
             "Set all boundary to convection boundary condition.")
+        .def("setGamma2Neumann", &Problem::setGamma2Neumann)
         .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
-        .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
-        .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)
         .def("clearBCs", &Problem::clearBCs)
         .def("clearGamma", &Problem::clearGamma)
         .def("project", &Problem::project)

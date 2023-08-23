@@ -90,6 +90,7 @@ def run():
 
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
+        pMoving.setGamma2Neumann()
 
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=False)
@@ -97,11 +98,9 @@ def run():
         ls = mhs.LinearSystem.Create( pMoving, pFixed )
         ls.cleanup()
 
-        pMoving.assemble()
-        pFixed.assemble()
+        pMoving.assemble( pFixed )
+        pFixed.assemble( pMoving )
 
-        pFixed.assembleDirichletGamma( pMoving )
-        pMoving.assembleNeumannGamma( pFixed )
 
         ls.assemble()
 

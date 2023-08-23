@@ -381,11 +381,20 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
   return fh;
 }
 
+void Problem::setGamma2Neumann() {
+  vector<int> gammaFacetIndices = gammaFacets.getIndices();
+  for (int ifacet : gammaFacetIndices) {
+    weakBcFacets[ifacet] = 3;
+  }
+  isCoupled = true;
+}
+
 void Problem::setGamma2Dirichlet() {
   vector<int> gammaNodesIndices = gammaNodes.getIndices();
   for (int inode : gammaNodesIndices) {
     dirichletNodes[inode] = 2;
   }
+  isCoupled = true;
 }
 
 void Problem::updateForcedDofs() {

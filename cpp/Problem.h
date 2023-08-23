@@ -46,15 +46,18 @@ class Problem {
     mesh::MeshTag<int>    forcedDofs;
 
     // Dirichlet BC
-    mesh::MeshTag<int>    dirichletNodes;
+    mesh::MeshTag<int>    dirichletNodes;// 1 is Dirichlet
+                                         // 2 is Dirichlet @ interface
     mesh::MeshTag<double> dirichletValues;
 
     // Neumann BC
     mesh::MeshTag<int>    weakBcFacets; // 1 is Neumann
                                         // 2 is convection
+                                        // 3 is Neumann @ interface
     mesh::MeshTag<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
 
     // Coupling BC
+    bool isCoupled = false;
     mesh::MeshTag<int> gammaNodes;
     mesh::MeshTag<int> gammaFacets;
 
@@ -79,13 +82,13 @@ class Problem {
     void iterate();
     void updateInterface( const Problem &pExt );
     void updateInterface( mesh::MeshTag<int> &activeInExternal );
-    void assemble();
+    void assemble(const Problem* externalProblem = nullptr);
     void gather();
     void assembleSpatialPDE();//mass, diffusion, advection
     void assembleWeakBcs();
     void assembleTime();
-    void assembleDirichletGamma( const Problem &pExt ); 
-    void assembleNeumannGamma( const Problem &pExt ); 
+    void assembleDirichletGamma( const Problem *pExt ); 
+    void assembleNeumannGamma( const Problem *pExt ); 
     void updateForcedDofs();
     void preAssemble(bool allocateLs=true);
     void preIterate(bool canPreassemble=true);
@@ -99,6 +102,7 @@ class Problem {
     void setConvection();
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
+    void setGamma2Neumann();
     void setGamma2Dirichlet();
     mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-5 );
     void uniteExternal( const Problem &pExt, bool updateGamma = true);
@@ -114,14 +118,13 @@ class Problem {
       neumannFluxes.setCteValue( vector<double>() );
     }
     void clearGamma() {
-      // Clear BCs at Gamma and Gamma itself
-      vector<int> oldGammaNodes = gammaNodes.getIndices();
-      for (int inode : oldGammaNodes) {
-        if (dirichletNodes[inode] == 2) {
-          dirichletNodes[inode] = 0;
-        }
-      }
-      // Find new Gamma
+      /* Clear boundary conditions at interfacet
+       * and interface itself
+       */
+      // Clear Dirichlet BCs at Gamma
+      weakBcFacets.tag( [](int tag){ return tag==3; }, 0 );
+      dirichletNodes.tag( [](int tag){ return tag==2; }, 0 );
+      // Clear Gamma
       gammaNodes.setCteValue( 0 );
       gammaFacets.setCteValue( 0 );
     }

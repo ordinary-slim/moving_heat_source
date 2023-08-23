@@ -32,6 +32,7 @@ class MeshTag {
 
     std::vector<int> getIndices() const;
     std::vector<int> filterIndices( std::function<bool(T)> filter ) const;
+    void tag( std::function<bool(T)> filter, T value );
 
     MeshTag<int>& operator&=( const MeshTag<T>& rhs ) {
       if ( (_mesh != rhs._mesh) || (_dim != rhs._dim ) ) {
