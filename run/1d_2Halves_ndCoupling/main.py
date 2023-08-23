@@ -93,7 +93,6 @@ if __name__=="__main__":
 
         # Dirichlet interface left
         pRight.setGamma2Dirichlet()
-        pLeft.setGamma2Neumann()
 
         # Pre-assembly, updating free dofs
         pLeft.preAssemble(allocateLs=True)

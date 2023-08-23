@@ -71,7 +71,6 @@ PYBIND11_MODULE(cpp, m) {
         .def("setConvection", &Problem::setConvection,
             "Set all boundary to convection boundary condition.")
         .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
-        .def("setGamma2Neumann", &Problem::setGamma2Neumann)
         .def("assembleNeumannGamma", &Problem::assembleNeumannGamma)
         .def("assembleDirichletGamma", &Problem::assembleDirichletGamma)
         .def("clearBCs", &Problem::clearBCs)

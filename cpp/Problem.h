@@ -52,7 +52,6 @@ class Problem {
     // Neumann BC
     mesh::MeshTag<int>    weakBcFacets; // 1 is Neumann
                                         // 2 is convection
-                                        // 3 is gamma Neumann facet
     mesh::MeshTag<std::vector<double>> neumannFluxes;//[ifacet][igpoint]
 
     // Coupling BC
@@ -63,7 +62,7 @@ class Problem {
     TimeIntegratorHandler timeIntegrator;
 
     void setDt( double dt ) {
-      /* Should only be used before first time-step if BDF2 or higher
+      /* Should only be used before first time-step
        * Not ready yet for change of DeltaT between time iterations */
       this->dt = dt;
     }
@@ -100,7 +99,6 @@ class Problem {
     void setConvection();
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
-    void setGamma2Neumann();
     void setGamma2Dirichlet();
     mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-5 );
     void uniteExternal( const Problem &pExt, bool updateGamma = true);
@@ -116,19 +114,14 @@ class Problem {
       neumannFluxes.setCteValue( vector<double>() );
     }
     void clearGamma() {
-      // Clear BCs at Gamma
-      vector<int> oldGammaFacets = gammaFacets.getIndices();
-      for (int ifacet : oldGammaFacets) {
-        if (weakBcFacets[ifacet] == 3) {
-          weakBcFacets[ifacet] = 0;
-        }
-      }
-      for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+      // Clear BCs at Gamma and Gamma itself
+      vector<int> oldGammaNodes = gammaNodes.getIndices();
+      for (int inode : oldGammaNodes) {
         if (dirichletNodes[inode] == 2) {
           dirichletNodes[inode] = 0;
         }
       }
-      // Clear gamma
+      // Find new Gamma
       gammaNodes.setCteValue( 0 );
       gammaFacets.setCteValue( 0 );
     }

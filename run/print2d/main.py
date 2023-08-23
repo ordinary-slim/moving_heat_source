@@ -178,7 +178,6 @@ if __name__=="__main__":
 
         #Dirichet gamma
         pFixed.setGamma2Dirichlet()
-        pMoving.setGamma2Neumann()
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=True)
         pFixed.preAssemble(allocateLs=True)
