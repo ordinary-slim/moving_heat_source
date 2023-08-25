@@ -1,9 +1,8 @@
 import MovingHeatSource as mhs
 from MovingHeatSource.gcode import gcode2laserPath
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper
 import numpy as np
 import meshio
-import meshzoo
-from AdaptiveStepper import AdaptiveStepper
 
 def deactivateBelowSurface(p,
                            surfacey = 0):

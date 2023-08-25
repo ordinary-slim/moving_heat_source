@@ -42,7 +42,7 @@ Element Mesh::getElement(int ielem) const {
   return getEntity( ielem, con_CellPoint, &refCellEl, &refFacetEl );
 }
 vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
-  vector<int> idxOwnerEl;
+  vector<int> indicesOwnerElements;
   vector<int> potentialOwners;
   //Broad  Phase Search
   //Convert to CGAL point and use bounding boxes tree
@@ -54,6 +54,7 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   Element facetEl;
 
   double narrowPhaseTol = 1e-10;//numerical tol
+  indicesOwnerElements.reserve( potentialOwners.size() );
   for ( int ielem : potentialOwners ) {
     bool isInside = true;
     cellEl = getElement( ielem );
@@ -70,10 +71,10 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
       }
     }
     if (isInside) {
-      idxOwnerEl.push_back( ielem );
+      indicesOwnerElements.push_back( ielem );
     }
   }
-  return idxOwnerEl;
+  return indicesOwnerElements;
 }
 vector<int> Mesh::findCollidingElements( const myOBB &obb ) const {
   vector<int> indicesCollidingEls;
@@ -84,6 +85,7 @@ vector<int> Mesh::findCollidingElements( const myOBB &obb ) const {
   tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
 
   //Narrow Phase
+  indicesCollidingEls.reserve( potentialCollidingEls.size() );
   for ( int ielem : potentialCollidingEls ) {
     Element cellEl = getElement( ielem );
     if (obb.hasCollided( cellEl )) {
@@ -105,6 +107,7 @@ vector<int> Mesh::findCollidingElements( const Eigen::Vector3d &center, const do
   tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
 
   // Narrow phase
+  indicesCollidingEls.reserve( potentialCollidingEls.size() );
   for ( int ielem : potentialCollidingEls ) {
     Element cellEl = getElement( ielem );
     // Compute distance to center of ball

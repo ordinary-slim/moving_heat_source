@@ -2,6 +2,8 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Replace meshzoo dependency by gmsh
+- [ ] Look into why shapeSubdomain is slow (line profiling)
 - [ ] gmsh scripting
 - [ ] Test compilation at home computer
 - [ ] Check if point in ConstantFunction eval is in domain

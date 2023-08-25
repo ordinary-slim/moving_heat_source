@@ -226,5 +226,50 @@ def meshio_comparison(ref, new,
         print("These keys are not matching:", differentKeys)
     return isSame
 
+def gmshModelToMesh( model ):
+    '''
+    gmsh model to points and cells
+    Highly inspired from Dolfinx project:
+    https://github.com/FEniCS/dolfinx/blob/main/python/dolfinx/io/gmshio.py
+    Doesn't support mixed meshes nor multiple physical groups
+    '''
+    gmshElType2myElType = {
+            1 : "line2",
+            2 : "triangle3",
+            3 : "quad4",
+            5 : "hexa8",
+            }
+    # POINTS & INDICES
+    indices, points, _ = model.mesh.getNodes()
+    points = points.reshape(-1, 3)
+
+    #Gmsh indices starts at 1
+    indices -= 1
+
+    # In some cases, Gmsh does not return the points in the same
+    # order as their unique node index.
+    # We therefore sort nodes in
+    # geometry according to the unique index
+    perm_sort = np.argsort(indices)
+    assert np.all(indices[perm_sort] == np.arange(len(indices)))
+    points = points[perm_sort]
+
+    # CONNECTIVITY
+    # Only extract connectivity from max dim of model
+    dim = model.getDimension()
+    domainPhysicalGroup = model.getPhysicalGroups(dim=dim)
+    _, tag = domainPhysicalGroup[0]
+    (cellTypes, _, connectivity) = model.mesh.getElements(dim, tag=tag)
+    assert len(cellTypes) == 1# no support for multiple cell types
+
+    # Determine number of local nodes per element
+    properties = model.mesh.getElementProperties( cellTypes[0] )
+    name, _, _, num_nodes_per_el, _, _ = properties
+
+    # Reshape connectivity and set to zero-indexing (gmsh is 1-indexed)
+    connectivity = connectivity[0].reshape(-1, num_nodes_per_el) - 1
+    return points, connectivity, gmshElType2myElType[ cellTypes[0] ]
+    
+
 if __name__=="__main__":
     pass
