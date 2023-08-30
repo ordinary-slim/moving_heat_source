@@ -6,8 +6,8 @@ class Printer : public HatchCollider {
   private:
     Problem *p;
   public:
-    Printer( Problem *p, double width, double height ) :
-      HatchCollider( p->domain.mesh, width, height )
+    Printer( Problem *p, double width, double height, double depth=0.0 ) :
+      HatchCollider( p->domain.mesh, width, height, depth )
     {
       this->p    = p;
     }

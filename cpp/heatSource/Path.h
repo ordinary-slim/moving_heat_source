@@ -29,6 +29,7 @@ class Track {
     }
 
     Eigen::Vector3d getSpeed() const { return (*p1 - *p0).normalized()*speed; }
+    bool isOver(double t) { return (t + 1e-7 >= endTime); }
 };
 
 class Path {

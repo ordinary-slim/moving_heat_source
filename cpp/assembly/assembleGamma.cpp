@@ -25,7 +25,7 @@ void Problem::assembleNeumannGamma(const Problem *pExt) {
 
         for (int inode = 0; inode < facet.nnodes; ++inode) {
 
-          lhs_loc(inode, jnode) += -pExt->conductivity * 
+          lhs_loc(inode, jnode) += -pExt->material.conductivity * 
                           facet.BaseGpVals[inode][igp] * gradj_n *
                           facet.gpweight[igp] * facet.vol;
         }

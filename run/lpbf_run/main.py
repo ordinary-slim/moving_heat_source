@@ -1,6 +1,10 @@
 import gmsh
 import numpy as np
 import MovingHeatSource as mhs
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper
+
+inputFile = "input.yaml"
+problemInput = mhs.readInput( inputFile )
 
 substrateZLen = 1
 partZLen = 1
@@ -8,11 +12,11 @@ xLength = 5.0
 yLength = 5.0
 halfLenX = xLength / 2
 halfLenY = yLength / 2
-laserDiameter = 0.4
-laserRadius = laserDiameter / 2
-layerThickness = 0.1
+laserRadius = problemInput["radius"]
+laserDiameter = 2*laserRadius
+layerThickness = problemInput["layerThickness"]
 
-def writeGcode():
+def writeGcode(fileName="Path.gcode"):
     '''
     Write serpentine path
     '''
@@ -61,11 +65,13 @@ def writeGcode():
                 else:
                     X += delta
                 E += 0.02
-                gcodeLines.append( "G1 X{:.2f} Y{:.2f} E{:.2f}".format(X, Y, E) )
+                gcodeLines.append( "G0 X{:.2f} Y{:.2f} E{:.2f}".format(X, Y, E) )
         Z += layerThickness
 
-    with open("Path.gcode", "w") as gcodeFile:
+    with open(fileName, "w") as gcodeFile:
         gcodeFile.writelines( [line+"\n" for line in gcodeLines] )
+
+    return fileName
 
 
 
@@ -92,7 +98,7 @@ def getGmshModel(xLength, yLength, partZLen, substrateZLen):
     # TRANSFINITE
     # CURVES
     ## BOT
-    nelsInPlaneLines = 20
+    nelsInPlaneLines = 50
     nelsVerticalLines = 20
     gmsh.model.geo.mesh.setTransfiniteCurve(1, nelsInPlaneLines+1)
     gmsh.model.geo.mesh.setTransfiniteCurve(2, nelsInPlaneLines+1)
@@ -135,7 +141,6 @@ def deactivateBelowSurface(p, surfaceZ = 0):
 
 
 if __name__=="__main__":
-    '''
     # MESH
     gmsh.initialize()
     gmshModel = getGmshModel(xLength, yLength, partZLen, substrateZLen)
@@ -146,15 +151,19 @@ if __name__=="__main__":
     mesh = mhs.Mesh( meshInput )
 
     # PROBLEM INPUT
-    inputFile = "input.yaml"
 
     # read input
-    problemInput = mhs.readInput( inputFile )
     pFixed = mhs.Problem(mesh, problemInput, caseName="fixed")
     deactivateBelowSurface( pFixed, surfaceZ=0 )
-    '''
 
     # Set laser path
-    writeGcode()
+    gcodeFile = writeGcode(problemInput["path"])
 
-    #pFixed.writepos()
+    myDriver = AdaptiveStepper( pFixed,
+                                      adimMaxSubdomainSize=10,
+                                      threshold=0.1,
+                                      meshDenMoving=20,
+                                      )
+
+    while not(pFixed.mhs.path.isOver(pFixed.time)):
+        myDriver.iterate()

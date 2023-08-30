@@ -222,15 +222,15 @@ class AdaptiveStepper:
 
             self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
             self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
+            # Post iteration
+            self.pFixed.postIterate()
+            self.pMoving.postIterate()
         else:
             self.pFixed.clearGamma()
             self.pFixed.preAssemble(allocateLs=True)
             self.pFixed.iterate()
             self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
-
-        # Post iteration
-        self.pFixed.postIterate()
-        self.pMoving.postIterate()
+            self.pMoving.postIterate()
 
         activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
 

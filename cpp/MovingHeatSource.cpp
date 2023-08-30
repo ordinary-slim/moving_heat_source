@@ -76,7 +76,6 @@ PYBIND11_MODULE(cpp, m) {
         .def("clearBCs", &Problem::clearBCs)
         .def("clearGamma", &Problem::clearGamma)
         .def("project", &Problem::project)
-        .def("checkSteadiness", &Problem::checkSteadiness)
         .def("getActiveInExternal", &Problem::getActiveInExternal)
         .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
             "Find interface between two problems")
@@ -207,13 +206,16 @@ PYBIND11_MODULE(cpp, m) {
         .def("markHeatedElements", &heat::LumpedHeatSource::markHeatedElements);
     py::class_<HatchCollider>(m, "HatchCollider");
     py::class_<Printer, HatchCollider>(m, "Printer")
-        .def( py::init<Problem*, double, double>() )
+        .def( py::init<Problem*, double, double, double>(),
+            py::arg("problem"), py::arg("width"), py::arg("height"), py::arg("depth")=0.0 )
         .def("collide", &Printer::collide)
-        .def("deposit", &Printer::deposit);
+        .def("deposit", &Printer::deposit,
+            py::arg("p1"), py::arg("p2"), py::arg("activeEls") = static_cast<mesh::MeshTag<int> *>(nullptr));
     py::class_<heat::Track>(m, "Track")
         .def_readonly("p0", &heat::Track::p0)
         .def_readonly("p1", &heat::Track::p1)
         .def("getSpeed", &heat::Track::getSpeed)
+        .def("isOver", &heat::Track::isOver)
         .def_readonly("speed", &heat::Track::speed)
         .def_readonly("power", &heat::Track::power)
         .def_readonly("hasDeposition", &heat::Track::hasDeposition)

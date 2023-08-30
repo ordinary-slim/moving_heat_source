@@ -40,4 +40,10 @@ void HeatSource::preIterate() {
   step( problem->dt );
 }
 
+void HeatSource::postIterate() {
+  /*
+   * Placeholder
+   */
+}
+
 }

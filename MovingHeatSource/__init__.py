@@ -5,8 +5,8 @@ from MovingHeatSource.cpp import *
 import os, shutil
 import numpy as np
 import meshio
-import importlib
 import yaml
+from MovingHeatSource.gcode import gcode2laserPath
 
 def readInput(fileName):
     params = {}
@@ -91,6 +91,9 @@ class Problem(Problem):
         self.setAdvectionSpeed( -speed )
         self.mhs.setSpeed( np.zeros(3) )
 
+    def setPath(self, gcodeFile):
+        self.mhs.setPath( *gcode2laserPath( gcodeFile, defaultPower=self.input["power"] ) )
+
     #POSTPROCESSING
     def writepos( self,
                  rf = "Lab",
@@ -159,7 +162,7 @@ class Problem(Problem):
                 pvd.write( "\n".join(baseLinesPVD) )
         #insert time-step into pvd.
         #always two lines before last
-        timestepLine = '<DataSet timestep="{}" group="" part="0" file="{}"/>\n'.format(round(self.time, 3), postFilePath)
+        timestepLine = '<DataSet timestep="{:.6f}" group="" part="0" file="{}"/>\n'.format(self.time, postFilePath)
 
         pvdContents = []
         with open(pvdFileName, "r") as f:
@@ -185,11 +188,13 @@ def meshio_comparison(ref, new,
     # Compare points
     pdiff = np.abs( refds.points - newds.points )
     if not( (pdiff < tol).all() ):
-        return False
+        isSame = False
+        differentKeys.append("Points")
     # Compare connectivities
     for ref_cblock, new_cblock in zip( refds.cells, newds.cells ):
         if not( (ref_cblock.data == new_cblock.data).all() ):
-            return False
+            isSame = False
+            differentKeys.append("Connectivity")
     # Compare point data
     if not psets:
         try:
@@ -223,52 +228,75 @@ def meshio_comparison(ref, new,
                 differentKeys.append( key )
     # All comparisons passed
     if not(isSame):
-        print("These keys are not matching:", differentKeys)
+        print("{}:\nTHESE KEYS ARE NOT MATCHING: {}".format( new, differentKeys) )
     return isSame
 
-def gmshModelToMesh( model ):
-    '''
-    gmsh model to points and cells
-    Highly inspired from Dolfinx project:
-    https://github.com/FEniCS/dolfinx/blob/main/python/dolfinx/io/gmshio.py
-    Doesn't support mixed meshes nor multiple physical groups
-    '''
-    gmshElType2myElType = {
-            1 : "line2",
-            2 : "triangle3",
-            3 : "quad4",
-            5 : "hexa8",
-            }
-    # POINTS & INDICES
-    indices, points, _ = model.mesh.getNodes()
-    points = points.reshape(-1, 3)
+try:
+    import gmsh
+    _has_gmsh = True
+except ModuleNotFoundError:
+    _has_gmsh = False
 
-    #Gmsh indices starts at 1
-    indices -= 1
+if _has_gmsh:
+    def gmshModelToMesh( model: gmsh.model ):
+        '''
+        gmsh model to points and cells
+        Taken from Dolfinx project:
+        https://github.com/FEniCS/dolfinx/blob/main/python/dolfinx/io/gmshio.py
+        Doesn't support mixed meshes nor multiple physical groups
+        '''
+        gmshElType2myElType = {
+                1 : "line2",
+                2 : "triangle3",
+                3 : "quad4",
+                5 : "hexa8",
+                }
+        # POINTS & INDICES
+        indices, points, _ = model.mesh.getNodes()
+        points = points.reshape(-1, 3)
 
-    # In some cases, Gmsh does not return the points in the same
-    # order as their unique node index.
-    # We therefore sort nodes in
-    # geometry according to the unique index
-    perm_sort = np.argsort(indices)
-    assert np.all(indices[perm_sort] == np.arange(len(indices)))
-    points = points[perm_sort]
+        #Gmsh indices starts at 1
+        indices -= 1
 
-    # CONNECTIVITY
-    # Only extract connectivity from max dim of model
-    dim = model.getDimension()
-    domainPhysicalGroup = model.getPhysicalGroups(dim=dim)
-    _, tag = domainPhysicalGroup[0]
-    (cellTypes, _, connectivity) = model.mesh.getElements(dim, tag=tag)
-    assert len(cellTypes) == 1# no support for multiple cell types
+        # In some cases, Gmsh does not return the points in the same
+        # order as their unique node index.
+        # We therefore sort nodes in
+        # geometry according to the unique index
+        perm_sort = np.argsort(indices)
+        assert np.all(indices[perm_sort] == np.arange(len(indices)))
+        points = points[perm_sort]
 
-    # Determine number of local nodes per element
-    properties = model.mesh.getElementProperties( cellTypes[0] )
-    name, _, _, num_nodes_per_el, _, _ = properties
+        # CONNECTIVITY
+        domainCellType = None
+        domainConnectivity = None
+        # Only extract connectivity from max dim of model
+        dim = model.getDimension()
+        _, domainTag = model.getPhysicalGroups(dim=dim)[0]#only first physical group
+        subdomains = model.getEntitiesForPhysicalGroup( dim, domainTag )
+        subdomainConnectivities = []
+        for domain in subdomains:
+            (entity_types, entity_tags, entity_connectivities) = model.mesh.getElements(dim, tag=domain)
+            assert len(entity_types) == 1# no support for multiple cell types
+            # Determine number of local nodes per element to create the
+            # topology of the elements
+            properties = model.mesh.getElementProperties(entity_types[0])
+            name, dim, _, num_nodes, _, _ = properties
 
-    # Reshape connectivity and set to zero-indexing (gmsh is 1-indexed)
-    connectivity = connectivity[0].reshape(-1, num_nodes_per_el) - 1
-    return points, connectivity, gmshElType2myElType[ cellTypes[0] ]
+            subdomainConnectivity = entity_connectivities[0].reshape(-1, num_nodes) - 1
+            subdomainConnectivities.append( (entity_types[0], subdomainConnectivity) )
+        # Condense all connectivities into one
+        domainCellType = subdomainConnectivities[0][0]
+        domainConnectivity = subdomainConnectivities[0][1]
+        for subdomainCellType, subdomainConnecitivity in subdomainConnectivities[1:]:
+            if not(subdomainCellType == domainCellType):
+                raise ValueError("Mixed element meshes are not supported")
+            domainConnectivity = np.concatenate( (domainConnectivity, subdomainConnecitivity), axis=0 )
+
+        return Mesh( {"points":points,
+                      "cells":domainConnectivity,
+                      "cell_type":gmshElType2myElType[ domainCellType ],
+                      "dimension":model.getDimension(), }
+                    )
     
 
 if __name__=="__main__":

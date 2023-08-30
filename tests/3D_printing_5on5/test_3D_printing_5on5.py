@@ -4,11 +4,11 @@ import meshzoo
 
 nsteps=5
 
-def mesh(box, meshDen=4):
+def mesh(box, elementSize):
     cell_type="hexa8"
-    nelsX = int((box[1] - box[0])*meshDen)
-    nelsY = int((box[3] - box[2])*meshDen)
-    nelsZ = int((box[5] - box[4])*meshDen)
+    nelsX = int((box[1] - box[0])/elementSize)
+    nelsY = int((box[3] - box[2])/elementSize)
+    nelsZ = int((box[5] - box[4])/elementSize)
 
     points, cells = meshzoo.cube_hexa(
         np.linspace( box[0], box[1], nelsX+1),
@@ -17,22 +17,6 @@ def mesh(box, meshDen=4):
     )
     cells = cells.astype( np.uint32 )
     return points, cells, cell_type
-
-def meshAroundHS( adimR, problemInput, meshDen=4 ):
-    radius = problemInput["radius"]
-    initialPositionX = problemInput["initialPositionX"]
-    initialPositionY = problemInput["initialPositionY"]
-    initialPositionZ = problemInput["initialPositionY"]
-    trailLength = adimR * radius
-    capotLength = min( trailLength, 3*radius )
-    halfLengthY = min( trailLength, capotLength )
-    halfLengthZ = halfLengthY
-    box = [initialPositionX - trailLength, initialPositionX + capotLength,
-           initialPositionY - halfLengthY, initialPositionY + halfLengthY,
-           initialPositionZ - halfLengthZ, initialPositionZ + halfLengthZ,
-           ]
-
-    return mesh(box, meshDen)
 
 def deactivateBelowSurface(p, surfaceZ = 0):
     nels = p.domain.mesh.nels
@@ -66,9 +50,8 @@ def run():
     fixedProblemInput = dict( problemInput )
 
     # Mesh
-    meshDen = 100
     meshInputFixed = {}
-    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
+    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, elementSize=0.01)
 
     meshFixed  = mhs.Mesh(meshInputFixed)
 
@@ -83,7 +66,7 @@ def run():
         deactivateBelowSurface( p, surfaceZ=0.01 )
 
     # Set up printer
-    printerFRF = mhs.Printer( p, mdwidth, mdheight )
+    printerFRF = mhs.Printer( p, mdwidth, mdheight/2, mdheight/2 )
 
     for _ in range(nsteps):
         # Setup print

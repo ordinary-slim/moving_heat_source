@@ -3,7 +3,7 @@
 
 void Problem::iterate() {
   if (not(hasPreIterated)) {
-    preIterate();
+    preIterate(true);
   }
 
   assemble();

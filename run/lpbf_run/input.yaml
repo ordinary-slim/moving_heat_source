@@ -1,4 +1,4 @@
-radius : 2.0
+radius : 0.1
 power : 800.0
 Tfinal : 2.0
 initialPosition : [-10.0, 0.0, 0.5]
@@ -17,6 +17,8 @@ isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
 speedFRF : [0.0, 0.0, 0.0]
 isStabilized : 1
-printer: {"a" : 2,
-          "b" : 24,
+layerThickness : 0.1
+path: "Path.gcode"
+printer: {"width" : 0.2,
+          "height" : 0.099
           }

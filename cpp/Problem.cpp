@@ -18,13 +18,12 @@ void Problem::preIterate( bool canPreassemble ) {
 
   // UPDATE to tn+1
   time += dt;
-  ++iter;
 
   mhs->preIterate();
   domain.preIterate();
 
   if (canPreassemble) {
-    preAssemble();
+    preAssemble(true);
   }
 
   hasPreIterated = true;
@@ -70,6 +69,8 @@ void Problem::postIterate() {
     std::cout << "Singular matrix!" << std::endl;
   }
   mhs->pulse = solver.solve(mhs->pulse);
+
+  //mhs->postIterate();
 
   hasPreIterated = false;
 }
@@ -412,10 +413,4 @@ void Problem::updateForcedDofs() {
       forcedDofs[inode] = 2;
     }
   }
-}
-
-bool Problem::checkSteadiness(double threshold) const {
-  // || f^{n+1} - f^{n} || / || f^{n+1} || < threshold
-  fem::Function delta = (unknown - *previousValues.begin());
-  return ( delta.getL2Norm() / unknown.getL2Norm()  ) < threshold ;
 }

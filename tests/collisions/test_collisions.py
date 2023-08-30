@@ -50,7 +50,7 @@ def run2d():
     mdwidth = 0.1
     mdheight = 0.1
 
-    printer = mhs.Printer( p, mdwidth, mdheight )
+    printer = mhs.Printer( p, mdwidth, mdheight/2, mdheight/2 )
     collidedEls = mhs.MeshTag( myMesh, myMesh.dim )
     printer.deposit( origin, destin, collidedEls )
 
@@ -80,7 +80,7 @@ def run3d():
     mdwidth = 0.01
     mdheight = 0.01
 
-    printer = mhs.Printer( p, mdwidth, mdheight )
+    printer = mhs.Printer( p, mdwidth, mdheight/2, mdheight/2 )
     collidedEls = mhs.MeshTag( myMesh, myMesh.dim )
     printer.deposit( origin, destin, collidedEls )
 
@@ -104,3 +104,6 @@ def test():
                                             csets=["collidedEls"] ) )
 
     assert all(tests)
+
+if __name__=="__main__":
+    test()

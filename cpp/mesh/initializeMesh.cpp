@@ -26,7 +26,11 @@ mesh::Mesh::Mesh(const py::dict &input) {
   //READ POINTS
   py::array points = input["points"];
   nnodes = points.shape(0);
-  dim    = points.shape(1);
+  if (input.contains("dimension")){
+    dim = py::cast<int>( input["dimension"] );
+  } else {
+    dim    = points.shape(1);
+  }
   pos.resize( nnodes, 3 );
   pos.setZero();
   auto aux_points = points.unchecked<double>();

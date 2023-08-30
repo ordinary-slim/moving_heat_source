@@ -1,0 +1,32 @@
+radius : 0.1 # mm
+power : 100 # W, net power
+initialPosition : [0.0, -2.0, 0.0] # mm
+HeatSourceSpeed : [0, 10.0, 0] # mm/s
+dt : 0.1 # s
+#rho : 4.43E-06 # kg / mm3
+rho : 1
+#conductivity : 8.0E-03 # W / mm / K
+conductivity : 1
+#specific_heat : 500 # J / kg / K
+specific_heat : 1
+environmentTemperature : 25 # Celsius
+depositionTemperature : 25 # C
+timeIntegration : 1 # Backward-Euler
+sourceTerm : 3 # 3D-Gaussian
+advectionSpeed : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
+isStabilized : 1
+path: "Path.gcode"
+layerThickness : &layerThickness
+  0.1
+printer: {"width" : 0.2,
+  "height" : 0.0,
+  "depth" : *layerThickness
+}
+partLen : [0.2, 4.0, 1.0]
+substrateLen : [2.0, 6.0, 1.0]
+ASSStabilization : {
+  "advectionConstant" : 100,
+  "diffusionConstant" : 200,
+}
+

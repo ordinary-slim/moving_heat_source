@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <memory>
+#include "Material.h"
 #include "mesh/Domain.h"
 #include "Function.h"
 #include "heatSource/HeatSource.h"
@@ -26,17 +27,15 @@ class Problem {
     list<fem::Function> previousValues;
     std::unique_ptr<heat::HeatSource> mhs;//run time polymporphism
     bool hasPreIterated = false;
-    double density = 1.0, conductivity = 1.0, specificHeat = 1.0, convectionCoeff = 0.0;
+    ThermalMaterial material;
     double time = 0.0;
     double dt = 0.0;
-    int iter;
 
     double Tdeposition, Tenv;
 
     bool isAdvection = false;
     bool isSteady    = false;
     bool isStabilized = false;
-    bool isConvection = false;
     Eigen::Vector3d advectionSpeed;
 
     std::shared_ptr<LinearSystem> ls = NULL;
@@ -109,7 +108,6 @@ class Problem {
     void substractExternal( const Problem &pExt, bool updateGamma = true);
     void intersectExternal( const Problem &pExt, bool updateGamma = true );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
-    bool checkSteadiness(double threshold = 0.05) const;
 
     void clearBCs() {
       dirichletNodes.setCteValue( 0 );

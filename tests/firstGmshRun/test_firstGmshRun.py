@@ -1,6 +1,6 @@
 import MovingHeatSource as mhs
 from MovingHeatSource.gcode import gcode2laserPath
-from MovingHeatSource.adaptiveStepper import AdaptiveStepper
+from CustomStepper import CustomStepper
 import numpy as np
 import meshio
 
@@ -23,6 +23,7 @@ def readMesh(gmshFile):
     cells = np.vstack( [cell.data for cell in m.cells] )
     mDict["cells"] = cells
     mDict["cell_type"] = "quad4"
+    mDict["dimension"] = 2
 
     return mhs.Mesh( mDict )
 
@@ -38,22 +39,13 @@ def main():
 
     pFixed   = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
 
-    maxIter = pFixed.input["maxIter"]
-
-
     # Set path, deactivate
-    pFixed.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
     deactivateBelowSurface( pFixed )
 
-    myDriver = AdaptiveStepper( pFixed,
-                               adimMaxSubdomainSize=4,
-                               threshold=0.025,
+    myDriver = CustomStepper( pFixed,
+                              adimMaxSubdomainSize=4,
+                              threshold=0.025,
                                )
-
-
-    # Set up printer
-    y_width = 0.99
-    myDriver.setupPrinter( y_width, 1 )
 
     #while not(pFixed.mhs.path.isOver(pFixed.time)):
     for _ in range(4):

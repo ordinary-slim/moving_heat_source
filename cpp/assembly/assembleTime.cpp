@@ -26,7 +26,7 @@ void Problem::assembleTime() {
       if ( inodeDof < 0 ) { continue; }// if forced node, keep going
       int jnodeGlobal = domain.massCoeffs[iMassEntry].col();
       int jnodeDof = dofNumbering[ jnodeGlobal ];
-      double coeff = density*specificHeat*timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt;
+      double coeff = material.density*material.specificHeat*timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt;
       if ( jnodeDof < 0 ) {
         // To RHS
         ls->rhs[inodeDof] += - coeff * unknown.values[ jnodeGlobal ];
@@ -41,7 +41,7 @@ void Problem::assembleTime() {
     //RHS
     int prevValCounter = 0;
     for (fem::Function prevFun: previousValues) {
-      Eigen::VectorXd rhsContrib = density*specificHeat* domain.massMat *
+      Eigen::VectorXd rhsContrib = material.density*material.specificHeat* domain.massMat *
         (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
         int inodeDof = freeDofsNumbering[inode];

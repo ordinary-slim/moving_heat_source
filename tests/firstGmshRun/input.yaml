@@ -17,3 +17,9 @@ advectionSpeed : [0.0, 0.0, 0.0]
 speedFRF : [0.0, 0.0, 0.0]
 isStabilized : 1
 sourceTerm: 2
+printer: {
+  width : 1,
+  height : 0.5,
+  depth : 0.5
+}
+path : "Path.gcode"

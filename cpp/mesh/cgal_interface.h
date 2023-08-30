@@ -67,60 +67,25 @@ struct myOBB{
   public:
     Eigen::Vector3d pos, halfWidths, xAxis, yAxis, zAxis;
 
-    myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
-        double height){
-      double tol = 1e-7;
-      // Printing dir as xAxis
-      Eigen::Vector3d step = (p2 - p1);
-      pos = (p2 + p1)/2.0;
-      xAxis = step.normalized();
+    myOBB() {
+      pos << 0.0, 0.0, 0.0;
+      halfWidths << 0.0, 0.0, 0.0;
+      xAxis << 1.0, 0.0, 0.0;
+      yAxis << 0.0, 1.0, 0.0;
       zAxis << 0.0, 0.0, 1.0;
-      zAxis = (zAxis - zAxis.dot( xAxis )*xAxis).normalized();//Gram schmidt
-      if ( zAxis.norm() < (1 - tol) ) {
-        throw std::invalid_argument("Steps in Z-axis not allowed.");
-      }
-      yAxis = zAxis.cross( xAxis );
-      tol = 1e-5;
-      halfWidths(0) = step.norm() / 2.0 - tol;//tolerance to avoid
-                                              //touching collisions
-      halfWidths(1) = width / 2.0 - tol;
-      halfWidths(2) = height / 2.0 - tol;
     }
-    void appendPlanes(std::vector<Plane3_CGAL> &v) const {
-      v.reserve( std::min<int>(v.size(), 12) );
-      // Mins
-      v.push_back( Plane3_CGAL( -xAxis[0],
-                           -xAxis[1],
-                           -xAxis[2],
-                           (pos.dot( xAxis ) - halfWidths[0])
-                           ) );
-      v.push_back( Plane3_CGAL( -yAxis[0],
-                           -yAxis[1],
-                           -yAxis[2],
-                           (pos.dot( yAxis ) - halfWidths[1])
-                           ) );
-      v.push_back( Plane3_CGAL( -zAxis[0],
-                           -zAxis[1],
-                           -zAxis[2],
-                           (pos.dot( zAxis ) - halfWidths[2])
-                           ) );
-      //Maxes
-      v.push_back( Plane3_CGAL( +xAxis[0],
-                           +xAxis[1],
-                           +xAxis[2],
-                           -(pos.dot( xAxis ) + halfWidths[0])
-                           ) );
-      v.push_back( Plane3_CGAL( +yAxis[0],
-                           +yAxis[1],
-                           +yAxis[2],
-                           -(pos.dot( yAxis ) + halfWidths[1])
-                           ) );
-      v.push_back( Plane3_CGAL( +zAxis[0],
-                           +zAxis[1],
-                           +zAxis[2],
-                           -(pos.dot( zAxis ) + halfWidths[2])
-                           ) );
-    }
+
+    // 3D-printing constructors
+    myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+        double height, bool shrink = true);
+
+    myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+        double aboveLen, double belowLen, bool shrink = true);
+
+    void setTransverseAxes();
+
+    void appendPlanes(std::vector<Plane3_CGAL> &v) const;
+
     explicit operator inex_K::Iso_cuboid_3() const
     {
         double minX = pos[0] - halfWidths[0]*abs(xAxis[0]) - halfWidths[1]*abs(yAxis[0]) - halfWidths[2]*abs(zAxis[0]);

@@ -49,6 +49,7 @@ class HeatSource {
             std::vector<int> &arePrinting );
 
       void preIterate();
+      void postIterate();
       virtual double operator()(Eigen::Vector3d x, double t) const {
         return 0.0;
       }
