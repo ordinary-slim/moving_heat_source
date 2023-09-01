@@ -1,5 +1,5 @@
 radius : 2.0
-power : 800.0
+power : 800
 Tfinal : 2.0
 initialPosition : [-10.0, 0.0, 0.5]
 HeatSourceSpeed : [10, 0, 0]
@@ -10,7 +10,7 @@ rho : 1
 conductivity : 1
 specific_heat : 1
 environmentTemperature : 25
-depositionTemperature : 60
+depositionTemperature : 40
 timeIntegration : 1
 sourceTerm : 0
 isAdvection : 0

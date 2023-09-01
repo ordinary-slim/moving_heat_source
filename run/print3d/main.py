@@ -1,14 +1,25 @@
 import MovingHeatSource as mhs
 import numpy as np
 import meshzoo
-import pdb
 import sys
 
-def mesh(box, meshDen=4):
+inputFile = "input.yaml"
+boxDomain = [-25, 25, -5, 5, -5, 1]
+problemInput = mhs.readInput( inputFile )
+Tfinal = problemInput["Tfinal"]
+tol = 1e-7
+mdwidth = 1
+mdheight = 1
+
+# read input
+problemInput = mhs.readInput( inputFile )
+
+
+def mesh(box, elementSize=0.25):
     cell_type="hexa8"
-    nelsX = int((box[1] - box[0])*meshDen)
-    nelsY = int((box[3] - box[2])*meshDen)
-    nelsZ = int((box[5] - box[4])*meshDen)
+    nelsX = int((box[1] - box[0])/elementSize)
+    nelsY = int((box[3] - box[2])/elementSize)
+    nelsZ = int((box[5] - box[4])/elementSize)
 
     points, cells = meshzoo.cube_hexa(
         np.linspace( box[0], box[1], nelsX+1),
@@ -18,7 +29,7 @@ def mesh(box, meshDen=4):
     cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
-def meshAroundHS( adimR, problemInput, meshDen=4 ):
+def meshAroundHS( adimR, problemInput, elementSize=0.25 ):
     radius = problemInput["radius"]
     initialPosition = problemInput["initialPosition"]
     trailLength = adimR * radius
@@ -30,7 +41,10 @@ def meshAroundHS( adimR, problemInput, meshDen=4 ):
            initialPosition[2] - halfLengthZ, initialPosition[2] + halfLengthZ,
            ]
 
-    return mesh(box, meshDen)
+    meshDict = {}
+    meshDict["points"], meshDict["cells"], meshDict["cell_type"] = mesh(box, elementSize)
+    meshDict["dimension"] = 3
+    return mhs.Mesh( meshDict )
 
 def deactivateBelowSurface(p, surfaceZ = 0):
     nels = p.domain.mesh.nels
@@ -47,40 +61,51 @@ def setAdimR( adimR, input ):
     speed  = np.linalg.norm( input["HeatSourceSpeed"] )
     return (adimR * r / speed)
 
-if __name__=="__main__":
-    runReference = False
-    if (len(sys.argv)>1):
-        if sys.argv[1]=="True":
-            runReference = True
-    inputFile = "input.yaml"
-    boxDomain = [-25, 25, -5, 5, -5, 1]
+def getMesh( boxDomain, elementSize ):
+    meshInputFixed, meshInputMoving = {}, {}
+    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, elementSize=elementSize)
+    return mhs.Mesh(meshInputFixed)
+
+def runReference():
+    elementSize = 0.5
+    mesh = getMesh( boxDomain, elementSize )
+    pFRF           = mhs.Problem(mesh, dict(problemInput), caseName="FRF")
+
+    pFRF.setDt( setAdimR(0.5, pFRF.input ) )
+
+    deactivateBelowSurface( pFRF )
+
+    printerFRF = mhs.Printer( pFRF, mdwidth, mdheight/2, mdheight/2 )
+
+    while (pFRF.time < Tfinal - tol) :
+        # Setup print
+        p1 = pFRF.mhs.position
+        p2 = p1 + pFRF.mhs.speed * pFRF.dt
+        # Print
+        printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
+
+        # FRF ITERATE
+        pFRF.iterate()
+
+        pFRF.writepos(
+                )
+
+def runCoupled():
     adimR_tstep = 2
     adimR_domain = 4
-
-    # read input
-    problemInput = mhs.readInput( inputFile )
-
     fixedProblemInput = dict( problemInput )
-    referenceProblemInput = dict( problemInput )
     movingProblemInput = dict( problemInput )
 
     # Mesh
-    meshDen = 2
-    meshInputFixed, meshInputMoving = {}, {}
-    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
-    meshDen = 2
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen)
-
-    meshFixed  = mhs.Mesh(meshInputFixed)
-    meshMoving = mhs.Mesh(meshInputMoving)
+    elementSize = 0.5
+    meshFixed = getMesh( boxDomain, elementSize )
+    meshMoving = meshAroundHS(adimR_domain, movingProblemInput, elementSize=elementSize)
 
     # mhs.Problem params
     # set dt
     dt = setAdimR( adimR_tstep, fixedProblemInput )
-    for input in [fixedProblemInput, movingProblemInput,]:
+    for input in [fixedProblemInput, movingProblemInput]:
         input["dt"] = dt
-    finedt = setAdimR( 0.5, referenceProblemInput )
-    referenceProblemInput["dt"] = finedt
 
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
@@ -89,44 +114,14 @@ if __name__=="__main__":
     movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
-    pFRF           = mhs.Problem(meshFixed, fixedProblemInput, caseName="FRF")
-    pFineFRF       = None
-    if runReference:
-        pFineFRF = mhs.Problem(meshFixed, referenceProblemInput, caseName="FineFRF")
-    pMoving        = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")
+    pMoving         = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")
 
-    Tfinal = pFixed.input["Tfinal"]
-
-    tol = 1e-7
-
-    for p in [pFixed, pFRF]:
-        deactivateBelowSurface( p )
-    if pFineFRF:
-        deactivateBelowSurface( pFineFRF )
-
+    deactivateBelowSurface( pFixed )
 
     # Set up printer
-    mdwidth = 1
-    mdheight = 2
-    printerFRF = mhs.Printer( pFRF, mdwidth, mdheight )
 
-    if runReference:
-        printerFineFRF = mhs.Printer( pFineFRF, mdwidth, mdheight )
-
-        while (pFineFRF.time < Tfinal - tol) :
-            # Setup print
-            p1 = pFineFRF.mhs.position
-            p2 = p1 + pFineFRF.mhs.speed * finedt
-            # Print
-            printerFineFRF.deposit( p1, p2, pFineFRF.domain.activeElements )
-
-            # FRF ITERATE
-            pFineFRF.iterate()
-
-            pFineFRF.writepos()
-
-    printerMoving = mhs.Printer( pMoving, mdwidth, mdheight )
-    activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
+    printerMoving = mhs.Printer( pMoving, mdwidth, mdheight/2, mdheight/2 )
+    physicalEls = mhs.MeshTag( pFixed.domain.activeElements )
 
     while (pFixed.time < Tfinal - tol) :
         p1 = np.array(pFixed.mhs.position)
@@ -134,7 +129,7 @@ if __name__=="__main__":
         # MY SCHEME ITERATE
         # PRE-ITERATE AND DOMAIN OPERATIONS
         pMoving.domain.resetActivation()
-        pFixed.domain.setActivation(activeElsFixed)
+        pFixed.domain.setActivation(physicalEls)
 
         pMoving.intersectExternal(pFixed, updateGamma=False)
 
@@ -169,7 +164,7 @@ if __name__=="__main__":
 
         # Union
         pFixed.uniteExternal(pMoving, updateGamma=False)
-        activeElsFixed = mhs.MeshTag( pFixed.domain.activeElements )
+        physicalEls = mhs.MeshTag( pFixed.domain.activeElements )
         pMoving.unknown.interpolateInactive( pFixed.unknown, ignoreOutside = True )
 
         # Post iteration
@@ -183,15 +178,10 @@ if __name__=="__main__":
             nodeMeshTags={ "gammaNodes":pMoving.gammaNodes, },
             )
 
-    while (pFRF.time < Tfinal - tol) :
-        # Setup print
-        p1 = pFRF.mhs.position
-        p2 = p1 + pFRF.mhs.speed * dt
-        # Print
-        printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
-
-        # FRF ITERATE
-        pFRF.iterate()
-
-        pFRF.writepos(
-                )
+if __name__=="__main__":
+    isRunReference = ("--run-reference" in sys.argv)
+    isOnlyRunReference = ("--only-reference"  in sys.argv)
+    if isRunReference or isOnlyRunReference:
+        runReference()
+    if not(isOnlyRunReference):
+        runCoupled()
