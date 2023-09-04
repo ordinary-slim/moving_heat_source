@@ -27,7 +27,7 @@ class Problem(Problem):
         }
     def __init__(self, mesh, input, problem=None, caseName="case"):
         self.caseName= caseName
-        self.input = input
+        self.input = dict(input)
         self.iter = 0
         self.postFolder = "post_{}".format( self.caseName )
 

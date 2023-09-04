@@ -98,7 +98,7 @@ class Problem {
     void setNeumann( vector<vector<unsigned int>> otherNeumannNodes, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );
-    void setConvection();
+    void setConvection(bool resetBcs = false);
     void setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc );
     void setDirichlet( const vector<int> &otherDirichletNodes, const vector<double> &otherDirichletValues );
     void setGamma2Neumann();
@@ -106,7 +106,7 @@ class Problem {
     mesh::MeshTag<int> getActiveInExternal( const Problem &pExt, double tol=1e-5 );
     void uniteExternal( const Problem &pExt, bool updateGamma = true);
     void substractExternal( const Problem &pExt, bool updateGamma = true);
-    void intersectExternal( const Problem &pExt, bool updateGamma = true );
+    void intersectExternal( const Problem &pExt, bool updateGamma = true, bool interpolateIntersected = false );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
 
     void clearBCs() {
@@ -125,6 +125,8 @@ class Problem {
       // Clear Gamma
       gammaNodes.setCteValue( 0 );
       gammaFacets.setCteValue( 0 );
+
+      isCoupled = false;
     }
     fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };

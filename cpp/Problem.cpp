@@ -170,10 +170,12 @@ void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::V
   }
 }
 
-void Problem::setConvection() {
-  weakBcFacets.setCteValue( 0 );
+void Problem::setConvection(bool resetBcs) {
+  if (resetBcs) {
+    weakBcFacets.setCteValue( 0 );
+  }
   for (int ifacet : domain.boundaryFacets.getIndices() ) {
-    weakBcFacets[ifacet] = 2;
+    if (not(weakBcFacets[ifacet])) { weakBcFacets[ifacet] = 2; }
   }
 }
 
@@ -248,7 +250,7 @@ void Problem::substractExternal( const Problem &pExt, bool updateGamma ) {
   }
 }
 
-void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
+void Problem::intersectExternal( const Problem &pExt, bool updateGamma, bool interpolateIntersected ) {
   mesh::MeshTag<int> activationCriterion = domain.activeElements;
   mesh::MeshTag<int> activeInExternal = getActiveInExternal( pExt );
 
@@ -269,6 +271,9 @@ void Problem::intersectExternal( const Problem &pExt, bool updateGamma ) {
   domain.setActivation( activationCriterion );
   if (updateGamma) {
     updateInterface( activeInExternal );
+  }
+  if (interpolateIntersected) {
+    unknown.interpolate( pExt.unknown, activeInExternal, false );
   }
 }
 

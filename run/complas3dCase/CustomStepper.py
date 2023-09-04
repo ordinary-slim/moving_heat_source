@@ -1,13 +1,12 @@
+import MovingHeatSource as mhs
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper
 import numpy as np
 import meshzoo
-import MovingHeatSource as mhs
-from MovingHeatSource.gcode import gcode2laserPath
-import pdb
 
 #TODO: Store hatch and not adim + nonAdim
 #TODO: Build pMoving here in order to reduce risk of mistake
 
-class AdaptiveStepper:
+class CustomStepper(AdaptiveStepper):
 
     tol = 1e-7
 
@@ -35,9 +34,10 @@ class AdaptiveStepper:
         self.threshold = threshold
         self.factor = factor
         self.adimMinRadius = adimMinRadius
-        self.adimZRadius = adimMinRadius
         if not(adimZRadius is None):
             self.adimZRadius = adimZRadius
+        else:
+            self.adimZRadius = adimMinRadius
 
         self.dt = pFixed.dt
         tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
@@ -195,8 +195,6 @@ class AdaptiveStepper:
         print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
-
-    def setCoupling( self ):
         # Set coupling
         if ( ((self.adimDt <= 0.5+1e-7) and not(self.isCoupled)) \
             or not(self.nextTrack.hasDeposition) ):
@@ -240,7 +238,6 @@ class AdaptiveStepper:
         self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
-        self.setCoupling()
         if self.onNewTrack:
             self.onNewTrackOperations()
 
@@ -350,3 +347,38 @@ def meshAroundHS( adimR, pFixed, elementSize=0.25 ):
         return meshRectangle(bounds, elementSize)
     elif pFixed.domain.dim()==3:
         return meshBox(bounds, elementSize)
+
+class DriverReference:
+    def __init__(self, problem):
+        self.problem = problem
+        if "path" in self.problem.input:
+            self.problem.setPath( self.problem.input["path"] )
+        self.dt2trackEnd = None
+        self.printer = None
+        if "printer" in self.problem.input:
+            self.printer = mhs.Printer( self.problem,
+                                     self.problem.input["printer"]["width"],
+                                     self.problem.input["printer"]["height"],
+                                     self.problem.input["printer"]["depth"]
+                                     )
+        self.isCoupled = False
+
+    def setDtFromAdimR( self, adimR, maxDt=None):
+        r =self.problem.input["radius"]
+        speed = max( np.linalg.norm(self.problem.input["HeatSourceSpeed"] ), np.linalg.norm(self.problem.input["advectionSpeed"] ) )
+        dt =  adimR * r / speed 
+        if maxDt:
+            dt = min(dt, maxDt)
+        self.problem.setDt( dt )
+
+    def iterate( self ):
+        self.setDtFromAdimR( 0.5, self.dt2trackEnd )
+        tnp1 = self.problem.time + self.problem.dt
+        track = self.problem.mhs.path.interpolateTrack( tnp1 )
+        if (track.hasDeposition) and (self.printer is not None):
+            self.printer.deposit( self.problem.mhs.position,
+                                self.problem.mhs.path.interpolatePosition(tnp1)
+                               )
+        self.problem.iterate()
+        self.dt2trackEnd = self.problem.mhs.currentTrack.endTime - self.problem.time
+        self.problem.writepos()

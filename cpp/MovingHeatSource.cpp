@@ -39,6 +39,8 @@ PYBIND11_MODULE(cpp, m) {
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def("gather", &Problem::gather)
+        .def_readonly("isStabilized", &Problem::isStabilized)
+        .def_readonly("isCoupled", &Problem::isCoupled)
         .def_readonly("ls", &Problem::ls)
         .def_readonly("dofNumbering", &Problem::dofNumbering)
         .def_readonly("freeDofsNumbering", &Problem::freeDofsNumbering)
@@ -70,7 +72,8 @@ PYBIND11_MODULE(cpp, m) {
         .def("setNeumann", static_cast<void (Problem::*)(vector<int>, std::function<Eigen::Vector3d(Eigen::Vector3d)>)>(&Problem::setNeumann),
             "Set Neumann condition from index of facet and flux function.")
         .def("setConvection", &Problem::setConvection,
-            "Set all boundary to convection boundary condition.")
+            "Set all external boundary to convection.",
+            py::arg("resetBcs") = true)
         .def("setGamma2Neumann", &Problem::setGamma2Neumann)
         .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
         .def("clearBCs", &Problem::clearBCs)
@@ -86,7 +89,7 @@ PYBIND11_MODULE(cpp, m) {
             py::arg("pExt"), py::arg("updateGamma") = true )
         .def("intersectExternal", &Problem::intersectExternal,
             "Intersect domain with external domain.",
-            py::arg("pExt"), py::arg("updateGamma") = true )
+            py::arg("pExt"), py::arg("updateGamma") = true, py::arg("interpolateIntersected") = false )
         .def("uniteExternal", &Problem::uniteExternal,
             "Unite domain with external domain.",
             py::arg("pExt"), py::arg("updateGamma") = true );
@@ -210,7 +213,8 @@ PYBIND11_MODULE(cpp, m) {
             py::arg("problem"), py::arg("width"), py::arg("height"), py::arg("depth")=0.0 )
         .def("collide", &Printer::collide)
         .def("deposit", &Printer::deposit,
-            py::arg("p1"), py::arg("p2"), py::arg("activeEls") = static_cast<mesh::MeshTag<int> *>(nullptr));
+            py::arg("p1"), py::arg("p2"), py::arg("activeEls") = static_cast<mesh::MeshTag<int> *>(nullptr),
+            py::arg("modifyValues") = true);
     py::class_<heat::Track>(m, "Track")
         .def_readonly("p0", &heat::Track::p0)
         .def_readonly("p1", &heat::Track::p1)

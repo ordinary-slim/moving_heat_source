@@ -2,6 +2,7 @@ Moving heat sources using FEM
 
 To-do:
 ------
+- [ ] Investigate decrease / increase of dt
 - [ ] Replace meshzoo dependency by gmsh
 - [ ] Look into why shapeSubdomain is slow (line profiling)
 - [ ] gmsh scripting
