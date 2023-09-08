@@ -109,22 +109,22 @@ class LumpedSourceForm : public LinearForm {
     }
 };
 
-class ASSSBilinearForm : public BilinearForm {
-  private:
+class ASSS {
+  public:
     double h = -1, tau = -1, dt = 0.0;
     double advectionConstant = 2, diffusionConstant = 4;//stabilization cte advection / diffusion
     Eigen::Vector3d advectionSpeed;
     double norm_advectionSpeed = 0.0;
-  public:
-    ASSSBilinearForm( const Problem *problem )
-      : BilinearForm( problem ) {
-        advectionSpeed = p->advectionSpeed;
-        norm_advectionSpeed = advectionSpeed.norm();
-        advectionConstant = problem->material.stabilization.advectionConstant;
-        diffusionConstant = problem->material.stabilization.diffusionConstant;
-        dt = problem->dt;
+
+    ASSS( const Problem *problem ) {
+      advectionSpeed = problem->advectionSpeed;
+      norm_advectionSpeed = advectionSpeed.norm();
+      advectionConstant = problem->material.stabilization.advectionConstant;
+      diffusionConstant = problem->material.stabilization.diffusionConstant;
+      dt = problem->dt;
     }
-    void preGauss(const mesh::Element *e){
+
+    void setTau(const mesh::Element *e, const Problem *p) {
       //Compute tau
       h = e->getSizeAlongVector( p->advectionSpeed );
       double advectionEstimate = h / advectionConstant / (p->material.density*p->material.specificHeat*norm_advectionSpeed);
@@ -136,6 +136,18 @@ class ASSSBilinearForm : public BilinearForm {
         tau = advectionEstimate;
       }
       //if (dt > 0.0) { tau /= dt; }
+    }
+};
+
+class ASSSBilinearForm : public BilinearForm, public ASSS {
+  public:
+    ASSSBilinearForm( const Problem *problem )
+      : BilinearForm( problem ),
+        ASSS( problem ) {
+          // pass
+    }
+    void preGauss(const mesh::Element *e){
+      setTau(e, p);
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return (e->gpweight[igp] * e->vol)* p->material.density * p->material.specificHeat * tau *
@@ -144,34 +156,18 @@ class ASSSBilinearForm : public BilinearForm {
     }
 };
 
-class ASSSLinearForm : public LinearForm {
+class ASSSLinearForm : public LinearForm, public ASSS {
   private:
     Eigen::Vector3d xgp;
-    double h = -1, tau = -1, dt = 0.0;
-    double advectionConstant = 2, diffusionConstant = 4;//stabilization cte advection / diffusion
-    Eigen::Vector3d advectionSpeed;
-    double norm_advectionSpeed = 0.0;
   public:
     ASSSLinearForm( const Problem *problem )
-      : LinearForm( problem ) {
-        advectionSpeed = p->advectionSpeed;
-        norm_advectionSpeed = advectionSpeed.norm();
-        advectionConstant = problem->material.stabilization.advectionConstant;
-        diffusionConstant = problem->material.stabilization.diffusionConstant;
-        dt = problem->dt;
+      : LinearForm( problem ),
+        ASSS( problem )
+    {
+          //pass
     }
     void preGauss(const mesh::Element *e){
-      //Compute tau
-      h = e->getSizeAlongVector( p->advectionSpeed );
-      double advectionEstimate = h / advectionConstant / (p->material.density*p->material.specificHeat*norm_advectionSpeed);
-      tau = advectionEstimate;
-      if (p->material.conductivity != 0) {
-        double diffusionEstimate = pow(h, 2) / (diffusionConstant * p->material.conductivity);
-        tau = 1 / ( 1/advectionEstimate + 1/diffusionEstimate );
-      } else {
-        tau = advectionEstimate;
-      }
-      //if (dt > 0.0) { tau /= dt; }
+      setTau(e, p);
     }
     void inGauss(int igp, const mesh::Element *e){
       xgp = e->gpos.row( igp );
