@@ -27,9 +27,18 @@ void HeatSource::setPath( std::vector<Eigen::Vector3d> &coordinates,
     position = path->interpolatePosition( problem->time );
 }
 
+const Track* HeatSource::getNextTrack() const {
+  const Track* track = NULL;
+  if (currentTrack->index < (path->tracks.size() + 1)) {
+    track = &path->tracks[currentTrack->index + 1];
+  }
+  return track;
+}
+
 void HeatSource::preIterate() {
   if (path != NULL) {
     currentTrack = path->interpolateTrack( problem->time );
+    cout << "Current track is now heading to \n " << *currentTrack->p1 << endl;
     if (currentTrack != NULL) {
       this->speed = currentTrack->getSpeed();
       this->power = currentTrack->power;

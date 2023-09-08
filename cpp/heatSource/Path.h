@@ -15,9 +15,10 @@ class Track {
     double power = 100;// W
     double length = -1;
     double startTime, endTime;
+    int index = -1;
 
     Track(Eigen::Vector3d *p0, Eigen::Vector3d *p1,
-        double startTime, double speed, double power, bool hasDeposition) {
+        double startTime, double speed, double power, bool hasDeposition, int index = -1 ) {
       this->p0 = p0;
       this->p1 = p1;
       this->startTime = startTime;
@@ -26,6 +27,7 @@ class Track {
       this->hasDeposition = hasDeposition;
       this->length = (*p1-*p0).norm();
       this->endTime = this->startTime + this->length / this->speed;
+      this->index = index;
     }
 
     Eigen::Vector3d getSpeed() const { return (*p1 - *p0).normalized()*speed; }
@@ -49,13 +51,13 @@ class Path {
       tracks.reserve( this->coordinates.size()-1 );
       for (int itrack = 0; itrack < this->coordinates.size() -1; ++itrack) {
         tracks.push_back( Track( &this->coordinates[ itrack ], &this->coordinates[ itrack+1 ], times[itrack],
-              speeds[ itrack + 1], powers[ itrack + 1], bool(arePrinting[ itrack+1 ]) ) );
+              speeds[ itrack + 1], powers[ itrack + 1], bool(arePrinting[ itrack+1 ]), itrack ) );
         times[itrack+1] = tracks[itrack].endTime;
       }
       endTime = times.back();
     }
 
-    const Track* interpolateTrack(double t) {
+    const Track* interpolateTrack(double t) const {
       double tol = 1e-7;
       const Track* track = NULL;
       auto it = std::find_if( times.begin(), times.end(),

@@ -202,7 +202,8 @@ PYBIND11_MODULE(cpp, m) {
         .def("setPower", &heat::HeatSource::setPower)
         .def("setPosition", &heat::HeatSource::setPosition)
         .def("setSpeed", &heat::HeatSource::setSpeed)
-        .def("setPath", &heat::HeatSource::setPath);
+        .def("setPath", &heat::HeatSource::setPath)
+        .def("getNextTrack", &heat::HeatSource::getNextTrack, pybind11::return_value_policy::reference);
     py::class_<heat::LumpedHeatSource, heat::HeatSource>(m, "LumpedHeatSource")
         .def_readonly("heatedElements", &heat::LumpedHeatSource::heatedElements)
         .def_readonly("elementPulse", &heat::LumpedHeatSource::elementPulse)//DEBUG

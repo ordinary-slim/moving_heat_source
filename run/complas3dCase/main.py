@@ -9,7 +9,6 @@ import pickle
 
 inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
-Tfinal = problemInput["Tfinal"]
 gcodeFile = problemInput["path"]
 tol = 1e-7
 
@@ -64,10 +63,15 @@ def runCoupled():
 
     deactivateBelowSurface( pFixed )
 
-    driver = CustomStepper( pFixed, elementSize=fineElSize, threshold=0.075 )
+    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize, threshold=0.15, adimMinRadius=1.25, adimZRadius=1.0 )
     
+    logger = MyLogger()
     while not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) :
-        driver.iterate()
+        logger.iterate( driver )
+
+    with open("coupled.log", "wb") as reflog:
+        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
+
 
 if __name__=="__main__":
     isRunReference = ("--run-reference" in sys.argv)

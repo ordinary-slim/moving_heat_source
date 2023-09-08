@@ -1,11 +1,13 @@
 import MovingHeatSource as mhs
-from customStepper import MyAdaptiveStepper
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper
+from customStepper import MyAdaptiveStepper, DriverReference
 import thinWall
 from scanningPath import writeGcode
 import numpy as np
 import sys
 import re
-import pdb
+from MyLogger import MyLogger
+import pickle
 
 nLayers=None
 problemInput = mhs.readInput("input.yaml")
@@ -13,14 +15,6 @@ gcodeFile = "Path.gcode"
 layerThickness = problemInput["layerThickness"]
 radius = problemInput["radius"]
 maxTsteps = None
-
-def setDtFromAdimR( problem, adimR, maxDt=None):
-    r = problem.input["radius"]
-    speed = max( np.linalg.norm( problem.input["HeatSourceSpeed"] ), np.linalg.norm( problem.input["advectionSpeed"] ) )
-    dt =  adimR * r / speed 
-    if maxDt:
-        dt = min(dt, maxDt)
-    problem.setDt( dt )
 
 def deactivateBelowSurface(p,
                            surfaceZ = 0):
@@ -36,31 +30,20 @@ def deactivateBelowSurface(p,
 def runReference():
     mesh = thinWall.generateMesh()
     pReference = mhs.Problem( mesh, problemInput, caseName="reference" )
-    for p in [pReference]:
-        p.setPath( gcodeFile )
-        deactivateBelowSurface( p ) 
-    dt2trackEnd = None
-    printerRef = None
-    if "printer" in problemInput:
-        printerRef = mhs.Printer( pReference,
-                                 problemInput["printer"]["width"],
-                                 problemInput["printer"]["height"],
-                                 problemInput["printer"]["depth"]
-                                 )
-    while not(pReference.mhs.path.isOver(pReference.time)):
-        setDtFromAdimR( pReference, 0.5, dt2trackEnd )
-        tnp1 = pReference.time + pReference.dt
-        track = pReference.mhs.path.interpolateTrack( tnp1 )
-        if (track.hasDeposition) and (printerRef is not None):
-            printerRef.deposit( pReference.mhs.position,
-                                pReference.mhs.path.interpolatePosition(tnp1)
-                               )
-        pReference.iterate()
-        dt2trackEnd = pReference.mhs.currentTrack.endTime - pReference.time
-        pReference.writepos()
+    deactivateBelowSurface( pReference ) 
+
+    driver = DriverReference( pReference )
+
+    logger = MyLogger()
+
+    while not(driver.problem.mhs.path.isOver(pReference.time)):
+        logger.iterate( driver )
         if maxTsteps:
             if pReference.iter >= maxTsteps:
                 break
+
+    with open("reference.log", "wb") as reflog:
+        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 def runCoupled():
     mesh = thinWall.generateMesh()
@@ -69,14 +52,18 @@ def runCoupled():
     deactivateBelowSurface( pFixed ) 
     
     elementSize = thinWall.fineElementSize
-    driver = MyAdaptiveStepper( pFixed, factor=2, adimMaxSubdomainSize=10,
-                 threshold= 0.3, elementSize=elementSize, isCoupled=True )
+    driver = MyAdaptiveStepper( pFixed, factor=2, maxAdimtDt=10,
+                 threshold= 0.3, elementSize=elementSize, isCoupled=True, adimMinRadius=1.5 )
 
+    logger = MyLogger()
     while not(pFixed.mhs.path.isOver(driver.getTime())):
-        driver.iterate()
+        logger.iterate( driver )
         if maxTsteps:
             if driver.pFixed.iter >= maxTsteps:
                 break
+
+    with open("coupled.log", "wb") as reflog:
+        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 if __name__=="__main__":
     for arg in sys.argv:

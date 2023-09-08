@@ -2,7 +2,8 @@ import MovingHeatSource as mhs
 from MovingHeatSource.gcode import gcode2laserPath
 import numpy as np
 import meshzoo
-from AdaptiveStepper import AdaptiveStepper
+from CustomStepper import CustomStepper
+import sys
 import pdb
 
 inputFile = "input.yaml"
@@ -10,11 +11,15 @@ tol = 1e-7
 adimR_domain = 10 
 problemInput = mhs.readInput( inputFile )
 adimR = problemInput["radius"] / np.linalg.norm(problemInput["HeatSourceSpeed"])
+boxPhys = [-10, 10, -10, 10]
+gcodeFile = problemInput["path"]
+radiusHs = problemInput["radius"]
+fineElSize = radiusHs/4
 
-def meshBox(box, meshDen=4):
+def meshBox(box, elementSize=0.25):
     cell_type="quad4"
-    nelsX = int(meshDen*(box[1]-box[0])) +1
-    nelsY = int(meshDen*(box[3]-box[2])) +1
+    nelsX = int((box[1]-box[0]) / elementSize) +1
+    nelsY = int((box[3]-box[2]) / elementSize) +1
     points, cells = meshzoo.rectangle_quad(
         np.linspace(box[0], box[1], nelsX),
         np.linspace(box[2], box[3], nelsY),
@@ -24,67 +29,39 @@ def meshBox(box, meshDen=4):
     cells = cells.astype( int )
     return points, cells, cell_type
 
-def meshSquare(center, sideLength, meshDen=4):
-    cell_type="quad4"
-    box = [center[0] - sideLength / 2,
-           center[0] + sideLength / 2,
-           center[1] - sideLength / 2,
-           center[1] + sideLength / 2]
-    return meshBox(box, meshDen=meshDen)
-
-def meshAroundHS( adimR, problemInput, meshDen=4 ):
-    radius = problemInput["radius"]
-    initialPosition = problemInput["initialPosition"]
-    trailLength = adimR * radius
-    capotLength = min( trailLength, 2*radius )
-    halfLengthY = min( trailLength, capotLength )
-    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
-           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY]
-    return meshBox(box, meshDen)
-
-if __name__=="__main__":
-    boxPhys = [-10, 10, -2, 0]
-
-    # read input
-    fixedProblemInput = dict( problemInput )
-    movingProblemInput = dict( problemInput )
-
-    FRFInput = dict( problemInput )
-
+def getMesh(elementSize=fineElSize):
     # Mesh
-    meshInputPhys, meshInputMoving = {}, {}
-    meshInputPhys["points"], meshInputPhys["cells"], meshInputPhys["cell_type"] = meshBox(boxPhys)
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput)
-    #meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshSquare(movingProblemInput["initialPosition"], 2*adimR_domain, meshDen=8)
+    meshInput, meshInputMoving = {}, {}
+    meshInput["points"], meshInput["cells"], meshInput["cell_type"] = meshBox(boxPhys, elementSize=elementSize)
+    return mhs.Mesh( meshInput )
 
-    meshFixed           = mhs.Mesh(meshInputPhys)
-    meshMoving           = mhs.Mesh(meshInputMoving)
-
-    movingProblemInput["isAdvection"] = 1
-    movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
-    movingProblemInput["speedFRF"]      = fixedProblemInput["HeatSourceSpeed"]
-    movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
-
-    pFRF     = mhs.Problem(meshFixed, FRFInput, caseName="FRF")
-    pFixed   = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
-    pMoving  = mhs.Problem(meshMoving, movingProblemInput, caseName="moving")
-
-
-    maxIter = pFRF.input["maxIter"]
-
-
+def runReference():
+    mesh = getMesh()
+    pFRF     = mhs.Problem(mesh, problemInput, caseName="FRF")
     # Set path
-    for p in [pFRF, pFixed]:
-        #p.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
-        p.mhs.setPath( *gcode2laserPath( "path2.gcode" ) )
-
-    myDriver = AdaptiveStepper( pFixed, pMoving,
-                               adimMaxSubdomainSize=adimR_domain, rotateSubdomain=True )
+    pFRF.setPath( gcodeFile )
 
     pFRF.setDt( 0.5*adimR )
+
     while not(pFRF.mhs.path.isOver(pFRF.time)):
         pFRF.iterate()
         pFRF.writepos()
 
+def runCoupled():
+    meshFixed  = getMesh()
+    pFixed   = mhs.Problem(meshFixed, problemInput, caseName="fixed")
+    myDriver = CustomStepper( pFixed, maxAdimtDt=adimR_domain-2, elementSize=fineElSize, adimMinRadius=3, threshold=0.015 )
+
     while not(pFixed.mhs.path.isOver(pFixed.time)):
         myDriver.iterate()
+
+
+if __name__=="__main__":
+
+    isRunReference = ("--run-reference" in sys.argv)
+    onlyRunReference = ("--only-reference" in sys.argv)
+    if isRunReference or onlyRunReference:
+        runReference()
+
+    if not(onlyRunReference):
+        runCoupled()

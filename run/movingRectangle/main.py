@@ -37,8 +37,8 @@ if __name__=="__main__":
         if sys.argv[1]=="True":
             runReference = True
     inputFile = "input.yaml"
-    boxDomain = [-25, 25, -5, 5]
-    adimR_tstep = 10
+    boxDomain = [-20, 20, -5, 5]
+    adimR_tstep = 4
     adimR_domain = 11
 
     # read input
@@ -49,7 +49,7 @@ if __name__=="__main__":
     movingProblemInput = dict( problemInput )
 
     # Mesh
-    meshDen = 2
+    meshDen = 4
     meshInputFixed, meshInputMoving = {}, {}
     meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen)
     meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen)
@@ -103,7 +103,7 @@ if __name__=="__main__":
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=True)
         pFixed.preAssemble(allocateLs=True)
-        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+        ls = mhs.LinearSystem.Create( pMoving, pFixed )
         # Assembly
         pMoving.assemble( pFixed )
         pFixed.assemble( pMoving )

@@ -27,22 +27,23 @@ class AdaptiveStepper:
             self.pFixed.setPath( self.pFixed.input["path"] )
         self.isCoupled = isCoupled
         self.adimMaxDt = maxAdimtDt
-        self.adimMaxSubdomainSize = self.adimMaxDt + 1 # ad-hoc
+        self.adimMaxSubdomainSize = self.adimMaxDt + 2 # ad-hoc
+        self.adimMinRadius = adimMinRadius
+        self.adimZRadius = adimMinRadius
+        if not(adimZRadius is None):
+            self.adimZRadius = adimZRadius
         self.buildMovingProblem(elementSize=elementSize)
         # TODO: better initialization
         self.adimFineDt = 0.5
         self.adimFineSubdomainSize = 1
         self.threshold = threshold
         self.factor = factor
-        self.adimMinRadius = adimMinRadius
-        self.adimZRadius = adimMinRadius
-        if not(adimZRadius is None):
-            self.adimZRadius = adimZRadius
 
         self.dt = pFixed.dt
         tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
         self.adimDt = pFixed.dt / tscale
         self.adimSubdomainSize = self.adimFineSubdomainSize
+        self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time )
         self.update()
         self.onNewTrack = True
         self.hasPrinter = False
@@ -51,7 +52,6 @@ class AdaptiveStepper:
         # Match heat source positions at t = 0.0
         self.pMoving.mhs.setPosition( self.pFixed.mhs.position )
 
-        self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
         # Set up printer
         if "printer" in self.pFixed.input:
             self.setupPrinter( pFixed.input["printer"]["width"], pFixed.input["printer"]["height"], pFixed.input["printer"]["depth"] )
@@ -62,7 +62,7 @@ class AdaptiveStepper:
 
     def buildMovingProblem(self, elementSize=0.25):
         meshInputMoving = {}
-        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(self.adimMaxSubdomainSize, self.pFixed, elementSize=elementSize)
+        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
         self.meshMoving = mhs.Mesh(meshInputMoving)
         movingProblemInput = dict( self.pFixed.input )
         movingProblemInput["isStabilized"] = 1
@@ -107,7 +107,10 @@ class AdaptiveStepper:
     def checkSteadinessCriterion( self ):
         return (self.metric < self.threshold)
 
-    def setSizeSubdomain( self ):
+    def increaseDt( self ):
+        self.adimDt = min( self.factor * self.adimDt, self.adimDt + 1 )
+
+    def setSizeSubdomain( self, adimDt = None ):
         self.adimSubdomainSize = min(self.adimDt + 2.0, self.adimDt * 2 )
         return self.adimSubdomainSize
 
@@ -128,23 +131,27 @@ class AdaptiveStepper:
 
         dt2trackEnd = self.pFixed.mhs.currentTrack.endTime - time
         adimMaxDt = self.adimMaxDt
-        if ( dt2trackEnd < 1e-7) or ( time == 0.0 ):#new track
+
+        if ( dt2trackEnd < 1e-7) or ( time== 0.0 ):#new track
             self.onNewTrack = True
             self.adimDt = self.adimFineDt
             self.adimSubdomainSize = self.adimFineSubdomainSize
+
+            if time != 0.0:
+                self.nextTrack = self.pFixed.mhs.getNextTrack()
+
+            # Make sure we don't skip over new track
+            adimMaxDt = min( (self.nextTrack.endTime - time)/ tUnit, adimMaxDt )
         else:
             adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
             if (self.checkSteadinessCriterion()):
-                self.adimDt = min( self.factor * self.adimDt, self.adimDt + 1 )
+                self.increaseDt()
 
         # Cap dt
         self.adimDt = min( adimMaxDt, self.adimDt )
         self.setSizeSubdomain()
         self.dt = tUnit * self.adimDt
-
-        if self.onNewTrack:
-            self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time + self.dt )
 
     def rotateSubdomain( self, currentOrientation=None, nextOrientation=None ):
         '''
@@ -332,21 +339,23 @@ def meshBox(box, elementSize=0.25):
     cells = cells.astype( np.uint32 )
     return points, cells, cell_type
 
-def meshAroundHS( adimR, pFixed, elementSize=0.25 ):
-    radius = pFixed.mhs.radius
-    initialPosition = pFixed.mhs.position
+def meshAroundHS( adimR, driver, elementSize=0.25 ):
+    radius = driver.pFixed.mhs.radius
+    minRadius = driver.adimMinRadius * radius
+    zRadius   = driver.adimZRadius * radius
+    initialPosition = driver.pFixed.mhs.position
     lengths = {}
     lengths["trailLength"] = adimR * radius
-    lengths["capotLength"] = min( lengths["trailLength"], 2*radius )
+    lengths["capotLength"] = min( lengths["trailLength"], minRadius )
     lengths["halfLengthY"] = min( lengths["trailLength"], lengths["capotLength"] )
-    lengths["halfLengthZ"] = min( lengths["trailLength"], lengths["capotLength"] )
+    lengths["halfLengthZ"] = min( lengths["trailLength"], zRadius )
     # Round to element size
     for key in lengths.keys():
         lengths[key] = np.ceil( lengths[key] / elementSize ) * elementSize
     bounds = np.array( [[initialPosition[0] - lengths["trailLength"], initialPosition[0] + lengths["capotLength"]],
            [initialPosition[1] - lengths["halfLengthY"], initialPosition[1] + lengths["halfLengthY"]],
            [initialPosition[2] - lengths["halfLengthZ"], initialPosition[2] + lengths["halfLengthZ"]]] )
-    if pFixed.domain.dim()==2:
+    if driver.pFixed.domain.dim()==2:
         return meshRectangle(bounds, elementSize)
-    elif pFixed.domain.dim()==3:
+    elif driver.pFixed.domain.dim()==3:
         return meshBox(bounds, elementSize)

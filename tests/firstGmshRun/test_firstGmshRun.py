@@ -43,7 +43,7 @@ def main():
     deactivateBelowSurface( pFixed )
 
     myDriver = CustomStepper( pFixed,
-                              adimMaxSubdomainSize=4,
+                              maxAdimtDt=2,
                               threshold=0.025,
                                )
 

@@ -1,6 +1,5 @@
 radius : 2.0
-power : 1000
-Tfinal : 2.0
+power : 1500
 initialPosition : [-10.0, 0.0, 1]
 HeatSourceSpeed : [10, 0, 0]
 dt : 0.1
@@ -9,6 +8,7 @@ maxIter : 20
 rho : 1
 conductivity : 1
 specific_heat : 1
+convectionCoeff : 0.25
 environmentTemperature : 25
 depositionTemperature : 40
 timeIntegration : 1
@@ -21,7 +21,7 @@ boxDomain : [-25.0, 25, -5.0, 5, -5.0, 1]
 layerThickness : &id001
   0.5
 substrate : [50, 10, 5]
-part: [40, 2, 1]
+part: [40, 2, 5]
 printer: {
   "width" : 2.0,
   "height" : 0.0,

@@ -35,6 +35,7 @@ class HeatSource {
       double radius = 2.0;
       HeatSourceType type = none;
       const Track *currentTrack = NULL;
+      const Track* getNextTrack() const;
 
       HeatSource( pybind11::dict &input, Problem *problem );
 
