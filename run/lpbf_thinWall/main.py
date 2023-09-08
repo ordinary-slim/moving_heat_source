@@ -1,9 +1,7 @@
 import MovingHeatSource as mhs
-from MovingHeatSource.adaptiveStepper import AdaptiveStepper
-from customStepper import MyAdaptiveStepper, DriverReference
+from CustomStepper import MyAdaptiveStepper, DriverReference
 import thinWall
 from scanningPath import writeGcode
-import numpy as np
 import sys
 import re
 from MyLogger import MyLogger
