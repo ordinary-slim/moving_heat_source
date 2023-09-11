@@ -53,7 +53,7 @@ def main():
     # Initialize problems
     p  = mhs.Problem(mesh, problemInput)
 
-    while (p.time < Tfinal - 1e-7):
+    for _ in range(10):
         p.iterate()
         print("Min T = {}".format( min(p.unknown.values) ) )
         plt.clf()

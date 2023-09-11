@@ -1,11 +1,11 @@
-radius : 0.1
+radius : 1
 power : 500
 initialPosition : [0.0, 0.0, 0.0]
 HeatSourceSpeed : [0, 0, 0]
 #MATERIAL
-rho : 1
-conductivity : 1
-specific_heat : 1
+#rho : 1
+#conductivity : 1
+#specific_heat : 1
 rho : 4.43E-06 # kg / mm3
 conductivity : 8.0E-03 # W / mm / K
 specific_heat : 500 # J / kg / K

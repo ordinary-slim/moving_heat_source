@@ -139,17 +139,30 @@ class ASSS {
     }
 
     void setTau(const mesh::Element *e, const Problem *p) {
-      //Compute tau
+      /*
+       * From (John, 2008) : Finite element methods for time-dependent
+       * convection–diffusion–reaction equations with small diffusion
+       */
       h = e->getSizeAlongVector( p->advectionSpeed );
-      double advectionEstimate = h / advectionConstant / (p->material.density*p->material.specificHeat*norm_advectionSpeed);
-      tau = advectionEstimate;
-      if (p->material.conductivity != 0) {
-        double diffusionEstimate = pow(h, 2) / (diffusionConstant * p->material.conductivity);
-        tau = 1 / ( 1/advectionEstimate + 1/diffusionEstimate );
-      } else {
-        tau = advectionEstimate;
-      }
+      tau = pow(h, 2) / (diffusionConstant * dt* p->material.conductivity + advectionConstant * dt* h * norm_advectionSpeed);
       //if (dt > 0.0) { tau /= dt; }
+    }
+};
+
+class ASSSTimeBilinearForm : public BilinearForm, public ASSS {
+  public:
+    ASSSTimeBilinearForm( const Problem *problem )
+      : BilinearForm( problem ),
+        ASSS( problem ) {
+          // pass
+    }
+    void preGauss(const mesh::Element *e){
+      setTau(e, p);
+    }
+    double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
+      return (e->gpweight[igp] * e->vol)* p->material.density * p->material.specificHeat * tau *
+        e->BaseGpVals[jnode][igp] *
+        e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
