@@ -13,7 +13,7 @@ class Form {
     virtual void preGauss(const mesh::Element *e){};
     virtual void inGauss(int igp, const mesh::Element *e){};
   protected:
-    const Problem *p;
+    const Problem *p = nullptr;
 };
 
 class LinearForm : public Form {
@@ -36,12 +36,26 @@ class BilinearForm : public Form {
     }
 };
 
-class MassForm {
-  // Not inheriting from BilinearForm since
-  // material properties are not used here.
+class MassForm : public BilinearForm {
   public:
+    MassForm()
+      : BilinearForm( nullptr ) {
+      }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return 
+        e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
+        e->gpweight[igp]  * e->vol;
+    }
+};
+
+class TimeMassForm : public BilinearForm {
+  public:
+    TimeMassForm( const Problem *problem )
+      : BilinearForm( problem ) {
+      }
+    double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
+      return 
+        p->material.density*p->material.specificHeat*
         e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
         e->gpweight[igp]  * e->vol;
     }

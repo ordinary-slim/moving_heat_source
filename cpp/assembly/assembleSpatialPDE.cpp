@@ -7,11 +7,12 @@ typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse mat
 typedef Eigen::Triplet<double> T;
 
 void Problem::assembleSpatialPDE() {
-  // numerical params
 
   std::vector<BilinearForm*> bilinearForms;
+  std::vector<BilinearForm*> timeDerivForms;
   std::vector<LinearForm*> linearForms;
 
+  TimeMassForm timeMassForm = TimeMassForm( this );
   DiffusionForm diffusionForm = DiffusionForm( this );
   AdvectionForm advectionForm = AdvectionForm( this );
   ASSSBilinearForm asssLhs = ASSSBilinearForm( this );
@@ -28,8 +29,12 @@ void Problem::assembleSpatialPDE() {
       linearForms.push_back( &asssRhs );
     }
   }
+  timeDerivForms.push_back( &timeMassForm );
 
-  // Source term
+  // Clean-up previous DSs
+  timeDerivMat.resize( domain.mesh->nnodes, domain.mesh->nnodes);
+  timeDerivCoeffs.clear();
+  timeDerivCoeffs.reserve( 3*domain.mesh->nnodes );
   mhs->pulse.setZero();//TODO: Is this necessary?
 
   LinearForm* sourceForm = NULL;
@@ -48,6 +53,7 @@ void Problem::assembleSpatialPDE() {
     e = domain.getElement( ielem );
 
     Eigen::MatrixXd lhs_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
+    Eigen::MatrixXd td_loc = Eigen::MatrixXd::Zero( e.nnodes, e.nnodes );
     Eigen::VectorXd rhs_loc = Eigen::VectorXd::Zero( e.nnodes );
     Eigen::VectorXd pulse_loc = Eigen::VectorXd::Zero( e.nnodes );
 
@@ -57,6 +63,9 @@ void Problem::assembleSpatialPDE() {
     for (auto& bform : bilinearForms) {
       bform->preGauss( &e );
     }
+    for (auto& tdbform : timeDerivForms ) {
+      tdbform->preGauss( &e );
+    }
 
     for (int igp = 0; igp < e.ngpoints; igp++) {
       for (auto& lform : linearForms) {
@@ -65,6 +74,10 @@ void Problem::assembleSpatialPDE() {
       for (auto& bform : bilinearForms) {
         bform->inGauss( igp, &e );
       }
+      for (auto& tdbform : timeDerivForms ) {
+        tdbform->inGauss( igp, &e );
+      }
+
       for (int inode = 0; inode < e.nnodes; inode++) {
         for (auto& lform : linearForms) {
           rhs_loc(inode) += lform->contribute( igp, inode, &e );
@@ -74,6 +87,10 @@ void Problem::assembleSpatialPDE() {
           for (auto& biForm : bilinearForms) {
             lhs_loc(inode, jnode) += biForm->contribute( igp, inode, jnode, &e );
           }
+          for (auto& tdbform : timeDerivForms ) {
+            td_loc(inode, jnode) += tdbform->contribute( igp, inode, jnode, &e );
+          }
+
         }
       }
     }
@@ -100,6 +117,10 @@ void Problem::assembleSpatialPDE() {
                 jnodeDof,
                 lhs_loc(inode, jnode) ) );
         }
+        timeDerivCoeffs.push_back( T(
+              inodeGlobal,
+              jnodeGlobal,
+              td_loc( inode, jnode ) ) );
       }
     }
 
@@ -110,7 +131,9 @@ void Problem::assembleSpatialPDE() {
       mhs->pulse[inodeGlobal] += pulse_loc(inode);
     }
   }
-
+  
+  timeDerivMat.setFromTriplets( timeDerivCoeffs.begin(),
+      timeDerivCoeffs.end() );
   // Post-assembly
   delete sourceForm;
 }

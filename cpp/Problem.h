@@ -26,6 +26,11 @@ class Problem {
     fem::Function unknown;
     list<fem::Function> previousValues;
     std::unique_ptr<heat::HeatSource> mhs;//run time polymporphism
+
+    // Time derivative matrix
+    Eigen::SparseMatrix<double> timeDerivMat;
+    vector<Eigen::Triplet<double>> timeDerivCoeffs;
+
     bool hasPreIterated = false;
     ThermalMaterial material;
     double time = 0.0;

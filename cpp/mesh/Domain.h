@@ -31,7 +31,6 @@ class Domain {
 
     // Mass matrix
     Eigen::SparseMatrix<double> massMat;
-    vector<Eigen::Triplet<double>> massCoeffs;
                      
     bool hasInactive;
     mesh::MeshTag<int> activeNodes, activeElements;

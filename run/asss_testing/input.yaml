@@ -1,0 +1,27 @@
+radius : 0.1
+power : 500
+initialPosition : [0.0, 0.0, 0.0]
+HeatSourceSpeed : [0, 0, 0]
+#MATERIAL
+rho : 1
+conductivity : 1
+specific_heat : 1
+rho : 4.43E-06 # kg / mm3
+conductivity : 8.0E-03 # W / mm / K
+specific_heat : 500 # J / kg / K
+#
+environmentTemperature : 25
+timeIntegration : 1
+sourceTerm : 1
+isAdvection : 1
+advectionSpeed : [-100.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
+isStabilized : 1
+ASSStabilization : {
+  "advectionConstant" : 2,
+  "diffusionConstant" : 4,
+}
+dt : 0.0001
+# Problem specific settings
+L : 10
+Tfinal : 0.001

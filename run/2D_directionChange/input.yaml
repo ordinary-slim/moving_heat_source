@@ -15,6 +15,6 @@ timeIntegration : 1
 sourceTerm : 0
 isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
-speedFRF : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
 isStabilized : 1
 path: "Path.gcode"

@@ -19,30 +19,30 @@ void Problem::assembleTime() {
     }
     //Add time dependency
     //LHS
-    vector<Eigen::Triplet<double>> timeDerivCoeffs;
-    timeDerivCoeffs.reserve( domain.massCoeffs.size() );
-    for (int iMassEntry = 0; iMassEntry < domain.massCoeffs.size(); ++iMassEntry) {
-      int inodeDof = freeDofsNumbering[ domain.massCoeffs[iMassEntry].row() ];
+    vector<Eigen::Triplet<double>> discreteTimeDerivCoeffs;
+    discreteTimeDerivCoeffs.reserve( timeDerivCoeffs.size() );
+    for (int indexContrib = 0; indexContrib < timeDerivCoeffs.size(); ++indexContrib) {
+      int inodeDof = freeDofsNumbering[ timeDerivCoeffs[indexContrib].row() ];
       if ( inodeDof < 0 ) { continue; }// if forced node, keep going
-      int jnodeGlobal = domain.massCoeffs[iMassEntry].col();
+      int jnodeGlobal = timeDerivCoeffs[indexContrib].col();
       int jnodeDof = dofNumbering[ jnodeGlobal ];
-      double coeff = material.density*material.specificHeat*timeIntegrator.lhsCoeff*domain.massCoeffs[iMassEntry].value()/dt;
+      double coeff = timeIntegrator.lhsCoeff*timeDerivCoeffs[indexContrib].value()/dt;
       if ( jnodeDof < 0 ) {
         // To RHS
         ls->rhs[inodeDof] += - coeff * unknown.values[ jnodeGlobal ];
       } else {
         // To LHS
-        timeDerivCoeffs.push_back(  Eigen::Triplet<double>(
+        discreteTimeDerivCoeffs.push_back(  Eigen::Triplet<double>(
             inodeDof, jnodeDof, coeff) );
       }
     }
-    ls->lhsCoeffs.insert( ls->lhsCoeffs.end(), timeDerivCoeffs.begin(), timeDerivCoeffs.end() );
+    ls->lhsCoeffs.insert( ls->lhsCoeffs.end(), discreteTimeDerivCoeffs.begin(), discreteTimeDerivCoeffs.end() );
 
     //RHS
     int prevValCounter = 0;
     for (fem::Function prevFun: previousValues) {
-      Eigen::VectorXd rhsContrib = material.density*material.specificHeat* domain.massMat *
-        (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
+      Eigen::VectorXd rhsContrib = timeDerivMat *
+          (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
         int inodeDof = freeDofsNumbering[inode];
         if (inodeDof >= 0) {

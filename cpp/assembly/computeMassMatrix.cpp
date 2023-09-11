@@ -5,11 +5,10 @@ typedef Eigen::Triplet<double> T;
 
 void mesh::Domain::computeMassMatrix() {
   massMat.resize(mesh->nnodes, mesh->nnodes);
-  massCoeffs.clear();
+  vector<T> massCoeffs;
   massCoeffs.reserve( 3*mesh->nnodes );
 
   MassForm massForm = MassForm();
-  massMat.setZero();
   mesh::Element e;
   vector<int> activeElementsIndices = activeElements.getIndices();
   for (int ielem : activeElementsIndices) {
