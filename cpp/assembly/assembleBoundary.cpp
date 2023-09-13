@@ -5,7 +5,7 @@
 
 typedef Eigen::Triplet<double> T;
 
-void Problem::assembleWeakBcs() {
+void Problem::assembleBoundary() {
 
   ConvectionBilinearForm convectionBi = ConvectionBilinearForm( this );
   ConvectionLinearForm convectionLi = ConvectionLinearForm( this );

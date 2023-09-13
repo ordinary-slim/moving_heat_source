@@ -40,7 +40,8 @@ class Problem {
 
     bool isAdvection = false;
     bool isSteady    = false;
-    bool isStabilized = false;
+    int stabilizationScheme = 0;// 0 is no stabilization
+                                // 1 is SUPG
     Eigen::Vector3d advectionSpeed;
 
     std::shared_ptr<LinearSystem> ls = NULL;
@@ -88,8 +89,8 @@ class Problem {
     void updateInterface( mesh::MeshTag<int> &activeInExternal );
     void assemble(const Problem* externalProblem = nullptr);
     void gather();
-    void assembleSpatialPDE();//mass, diffusion, advection
-    void assembleWeakBcs();
+    void assembleDomain();//mass, diffusion, advection
+    void assembleBoundary();
     void assembleTime();
     void assembleDirichletGamma( const Problem *pExt ); 
     void assembleNeumannGamma( const Problem *pExt ); 
@@ -97,9 +98,7 @@ class Problem {
     void preAssemble(bool allocateLs=true);
     void preIterate(bool canPreassemble=true);
     void postIterate();
-    void setStabilization(bool stabilize) {
-      isStabilized = stabilize;
-    }
+    void setStabilization(py::dict &input);
     void setNeumann( vector<vector<unsigned int>> otherNeumannNodes, double neumannFlux );
     void setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, double neumannFlux );
     void setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc );

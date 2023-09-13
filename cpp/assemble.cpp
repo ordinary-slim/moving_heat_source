@@ -3,9 +3,9 @@
 
 void Problem::assemble(const Problem* externalProblem) {
   // ASSEMBLY
-  assembleSpatialPDE();// Spatial operator and source term
+  assembleDomain();// Spatial operator and source term
 
-  assembleWeakBcs();
+  assembleBoundary();
 
   // LHS & RHS, time
   assembleTime();

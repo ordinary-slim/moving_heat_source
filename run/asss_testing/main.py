@@ -9,6 +9,8 @@ inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
 L = problemInput["L"]
 Tfinal = problemInput["Tfinal"]
+nels = problemInput["nels"]
+maxIter = problemInput["maxIter"]
 
 
 def getMesh(elementSize=0.1):
@@ -47,18 +49,20 @@ def plotProblem( p ):
 
 
 
-def main():
-    mesh = getMesh(elementSize=(L/200))
+def main(plot=False):
+    mesh = getMesh(elementSize=(L/nels))
 
     # Initialize problems
     p  = mhs.Problem(mesh, problemInput)
 
-    for _ in range(10):
+    for _ in range(maxIter):
         p.iterate()
-        print("Min T = {}".format( min(p.unknown.values) ) )
-        plt.clf()
-        plotProblem( p )
-    plt.show()
+        p.writepos()
+        if plot:
+            plt.clf()
+            plotProblem( p )
+    if plot:
+        plt.show()
 
 if __name__=="__main__":
     main()

@@ -39,7 +39,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("initializeIntegrator", &Problem::initializeIntegrator)
         .def("setAdvectionSpeed", &Problem::setAdvectionSpeed)
         .def("gather", &Problem::gather)
-        .def_readonly("isStabilized", &Problem::isStabilized)
+        .def_readonly("stabilizationScheme", &Problem::stabilizationScheme)
         .def_readonly("isCoupled", &Problem::isCoupled)
         .def_readonly("ls", &Problem::ls)
         .def_readonly("dofNumbering", &Problem::dofNumbering)

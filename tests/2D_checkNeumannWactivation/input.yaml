@@ -12,5 +12,5 @@ sourceTerm : 1
 isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
-isStabilized : 0
+SUPG : 0
 environmentTemperature : 25

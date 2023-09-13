@@ -403,6 +403,20 @@ void Problem::setGamma2Dirichlet() {
   isCoupled = true;
 }
 
+void Problem::setStabilization( py::dict &input ) {
+  /*
+   * Sets SUPG stabilization if asked by user
+   */
+  stabilizationScheme = 0;
+  try {
+    if (py::cast<bool>(input["SUPG"])) {
+      stabilizationScheme = 1;
+    }
+  } catch (py::error_already_set &e) {//key error
+    // pass
+  }
+}
+
 void Problem::updateForcedDofs() {
   forcedDofs.setCteValue( 0 );
   for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {

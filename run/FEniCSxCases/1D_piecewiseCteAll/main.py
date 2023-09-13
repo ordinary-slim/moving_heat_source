@@ -6,6 +6,7 @@ from petsc4py.PETSc import ScalarType
 import numpy as np
 
 from dolfinx import fem, mesh, io, plot
+import dolfinx.fem.petsc
 import ufl
 
 def meshBox( interval ):

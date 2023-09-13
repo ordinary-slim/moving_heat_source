@@ -104,15 +104,13 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
     if (advectionSpeed.norm() > 1e-10) isAdvection = true;
   }
 
+  // STABILIZATION
+  setStabilization( input );
+
   // DOMAIN MOTION
   // TODO: Move this down to mesh level!
   if (input.contains("speedDomain")) {
     domain.setSpeed( CreateEigenVector(py::array_t<double>(input["speedDomain"])) );
-  }
-
-  // ASSS STABILIZATION
-  if (input.contains("isStabilized")) {
-    isStabilized = py::cast<bool>(input["isStabilized"]);
   }
 }
 

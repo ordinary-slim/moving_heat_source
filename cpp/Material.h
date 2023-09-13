@@ -3,30 +3,13 @@
 
 namespace py = pybind11;
 
-struct ASSSParameters {
-  double advectionConstant = 2;
-  double diffusionConstant = 4;
-
-  ASSSParameters() = default;
-
-  ASSSParameters( py::dict &input ) {
-    if (input.contains("ASSStabilization")) {
-      advectionConstant = py::cast<double>(input["ASSStabilization"]["advectionConstant"]);
-      diffusionConstant = py::cast<double>(input["ASSStabilization"]["diffusionConstant"]);
-    }
-  }
-};
-
 struct ThermalMaterial {
   double density = 1.0;
   double conductivity = 1.0;
   double specificHeat = 1.0;
   double convectionCoeff = 0.0;
-  ASSSParameters stabilization;
 
-  ThermalMaterial( py::dict &input ) :
-    stabilization( input )
-  {
+  ThermalMaterial( py::dict &input ) {
     density = py::cast<double>(input["rho"]);
     conductivity = py::cast<double>(input["conductivity"]);
     specificHeat = py::cast<double>(input["specific_heat"]);

@@ -15,4 +15,6 @@ sourceTerm : 0
 HeatSourceSpeed : [10, 0, 0]
 advectionSpeed : [5.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
-isStabilized : 1
+SUPG: 1
+nels: 100
+L: 100

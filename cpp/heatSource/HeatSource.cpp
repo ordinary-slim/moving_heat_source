@@ -38,7 +38,6 @@ const Track* HeatSource::getNextTrack() const {
 void HeatSource::preIterate() {
   if (path != NULL) {
     currentTrack = path->interpolateTrack( problem->time );
-    cout << "Current track is now heading to \n " << *currentTrack->p1 << endl;
     if (currentTrack != NULL) {
       this->speed = currentTrack->getSpeed();
       this->power = currentTrack->power;

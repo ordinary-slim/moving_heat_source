@@ -123,73 +123,69 @@ class LumpedSourceForm : public LinearForm {
     }
 };
 
-class ASSS {
+class SUPG {
   public:
-    double h = -1, tau = -1, dt = 0.0;
-    double advectionConstant = 2, diffusionConstant = 4;//stabilization cte advection / diffusion
+    double h = -1, tau = -1;
     Eigen::Vector3d advectionSpeed;
     double norm_advectionSpeed = 0.0;
 
-    ASSS( const Problem *problem ) {
+    SUPG( const Problem *problem ) {
       advectionSpeed = problem->advectionSpeed;
       norm_advectionSpeed = advectionSpeed.norm();
-      advectionConstant = problem->material.stabilization.advectionConstant;
-      diffusionConstant = problem->material.stabilization.diffusionConstant;
-      dt = problem->dt;
     }
 
     void setTau(const mesh::Element *e, const Problem *p) {
       /*
-       * From (John, 2008) : Finite element methods for time-dependent
-       * convection–diffusion–reaction equations with small diffusion
+       * (Codina, 2000)
        */
       h = e->getSizeAlongVector( p->advectionSpeed );
-      tau = pow(h, 2) / (diffusionConstant * dt* p->material.conductivity + advectionConstant * dt* h * norm_advectionSpeed);
-      //if (dt > 0.0) { tau /= dt; }
+      tau = pow(h, 2) / (2 * h * p->material.density * p->material.specificHeat * norm_advectionSpeed +
+          4 * p->material.conductivity);
     }
 };
 
-class ASSSTimeBilinearForm : public BilinearForm, public ASSS {
+
+class SUPGTimeBilinearForm : public BilinearForm, public SUPG {
   public:
-    ASSSTimeBilinearForm( const Problem *problem )
+    SUPGTimeBilinearForm( const Problem *problem )
       : BilinearForm( problem ),
-        ASSS( problem ) {
+        SUPG( problem ) {
           // pass
     }
     void preGauss(const mesh::Element *e){
       setTau(e, p);
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
-      return (e->gpweight[igp] * e->vol)* p->material.density * p->material.specificHeat * tau *
-        e->BaseGpVals[jnode][igp] *
-        e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
+      return (e->gpweight[igp] * e->vol)*tau*
+        p->material.density * p->material.specificHeat * e->BaseGpVals[jnode][igp] *
+        p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
-class ASSSBilinearForm : public BilinearForm, public ASSS {
+class SUPGBilinearForm : public BilinearForm, public SUPG {
   public:
-    ASSSBilinearForm( const Problem *problem )
+    SUPGBilinearForm( const Problem *problem )
       : BilinearForm( problem ),
-        ASSS( problem ) {
+        SUPG( problem ) {
           // pass
     }
     void preGauss(const mesh::Element *e){
       setTau(e, p);
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
-      return (e->gpweight[igp] * e->vol)* p->material.density * p->material.specificHeat * tau *
-        e->GradBaseGpVals[inode][igp].dot( advectionSpeed ) *
-        e->GradBaseGpVals[jnode][igp].dot( advectionSpeed );
+      return (e->gpweight[igp] * e->vol)*tau*
+        p->material.density * p->material.specificHeat * e->GradBaseGpVals[jnode][igp].dot( advectionSpeed ) *
+        p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
-class ASSSLinearForm : public LinearForm, public ASSS {
+class SUPGLinearForm : public LinearForm, public SUPG {
   private:
     Eigen::Vector3d xgp;
   public:
-    ASSSLinearForm( const Problem *problem )
+    SUPGLinearForm( const Problem *problem )
       : LinearForm( problem ),
-        ASSS( problem )
+        SUPG( problem )
     {
           //pass
     }
@@ -201,8 +197,9 @@ class ASSSLinearForm : public LinearForm, public ASSS {
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
         double f_xgp = p->mhs->operator()(xgp, p->time);
-        return (e->gpweight[igp] * e->vol) * tau * f_xgp *
-          e->GradBaseGpVals[inode][igp].dot( advectionSpeed );;
+        return (e->gpweight[igp] * e->vol)*tau*
+          f_xgp *
+          p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 

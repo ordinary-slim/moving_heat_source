@@ -6,7 +6,7 @@
 typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
-void Problem::assembleSpatialPDE() {
+void Problem::assembleDomain() {
 
   std::vector<BilinearForm*> bilinearForms;
   std::vector<BilinearForm*> timeDerivForms;
@@ -15,19 +15,22 @@ void Problem::assembleSpatialPDE() {
   TimeMassForm timeMassForm = TimeMassForm( this );
   DiffusionForm diffusionForm = DiffusionForm( this );
   AdvectionForm advectionForm = AdvectionForm( this );
-  ASSSTimeBilinearForm asssTimeLhs = ASSSTimeBilinearForm( this );
-  ASSSBilinearForm asssLhs = ASSSBilinearForm( this );
-  ASSSLinearForm asssRhs = ASSSLinearForm( this );
+
+  SUPGTimeBilinearForm supgTimeLhs = SUPGTimeBilinearForm( this );
+  SUPGBilinearForm supgLhs = SUPGBilinearForm( this );
+  SUPGLinearForm supgRhs = SUPGLinearForm( this );
+
+
 
   bilinearForms.push_back( &diffusionForm );
-  if (isAdvection) {
+  if (advectionSpeed.norm() > 1e-9) {
     bilinearForms.push_back( &advectionForm );
-  }
-  if (isStabilized) {
-    if (isAdvection && advectionSpeed.norm() > 1e-9) {
-      timeDerivForms.push_back( &asssTimeLhs );
-      bilinearForms.push_back( &asssLhs );
-      linearForms.push_back( &asssRhs );
+    switch (stabilizationScheme) {
+      case 1:
+        timeDerivForms.push_back( &supgTimeLhs );
+        bilinearForms.push_back( &supgLhs );
+        linearForms.push_back( &supgRhs );
+        break;
     }
   }
   timeDerivForms.push_back( &timeMassForm );
