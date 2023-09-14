@@ -14,11 +14,12 @@ To-do:
 - [ ] Determine if mass matrix is computed or not
 - [ ] Sync getEnts from ActiveMesh and Mesh
 - [ ] Sync the getFacetVertexSets implementations
-- [ ] Cleanup CMAKE so that I dont have to link with Qt5
+- [ ] Make CGAL properly external
 - [ ] Reduce number of tags in ActiveMesh
 - [ ] neumannFluxes ?
 - [ ] Undefined behaviour if activation && weakBcFacets not updated
-- [ ] Refactor gammaFacets into weakBcFacets?
+- [x] Refactor gammaFacets into weakBcFacets?
+- [x] Cleanup CMAKE so that I dont have to link with Qt5
 - [x] Change name of functions (assembly) to match files
 - [x] gmsh scripting
 - [x] Test compilation at home computer

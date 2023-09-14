@@ -1,53 +1,42 @@
 #include "../Problem.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include <memory>
 #include "Form.h"
 
-typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
 typedef Eigen::Triplet<double> T;
 
 void Problem::assembleDomain() {
 
-  std::vector<BilinearForm*> bilinearForms;
-  std::vector<BilinearForm*> timeDerivForms;
-  std::vector<LinearForm*> linearForms;
+  std::vector<std::unique_ptr<BilinearForm>> bilinearForms;
+  std::vector<std::unique_ptr<BilinearForm>> timeDerivForms;
+  std::vector<std::unique_ptr<LinearForm>> linearForms;
 
-  TimeMassForm timeMassForm = TimeMassForm( this );
-  DiffusionForm diffusionForm = DiffusionForm( this );
-  AdvectionForm advectionForm = AdvectionForm( this );
-
-  SUPGTimeBilinearForm supgTimeLhs = SUPGTimeBilinearForm( this );
-  SUPGBilinearForm supgLhs = SUPGBilinearForm( this );
-  SUPGLinearForm supgRhs = SUPGLinearForm( this );
-
-
-
-  bilinearForms.push_back( &diffusionForm );
+  bilinearForms.push_back(std::make_unique<DiffusionForm>(this));
   if (advectionSpeed.norm() > 1e-9) {
-    bilinearForms.push_back( &advectionForm );
+    bilinearForms.push_back(std::make_unique<AdvectionForm>(this));
     switch (stabilizationScheme) {
       case 1:
-        timeDerivForms.push_back( &supgTimeLhs );
-        bilinearForms.push_back( &supgLhs );
-        linearForms.push_back( &supgRhs );
+        timeDerivForms.push_back(std::make_unique<SUPGTimeBilinearForm>(this));
+        bilinearForms.push_back(std::make_unique<SUPGBilinearForm>(this));
+        linearForms.push_back(std::make_unique<SUPGLinearForm>(this));
         break;
     }
   }
-  timeDerivForms.push_back( &timeMassForm );
+  timeDerivForms.push_back(std::make_unique<TimeMassForm>(this));
 
   // Clean-up previous DSs
   timeDerivMat.resize( domain.mesh->nnodes, domain.mesh->nnodes);
   timeDerivCoeffs.clear();
   timeDerivCoeffs.reserve( 3*domain.mesh->nnodes );
-  mhs->pulse.setZero();//TODO: Is this necessary?
+  mhs->pulse.setZero();
 
-  LinearForm* sourceForm = NULL;
   if (mhs->type == heat::lumped) {
-    sourceForm = new LumpedSourceForm( this );
+    linearForms.push_back( std::make_unique<LumpedSourceForm>( this ) );
   } else {
-    sourceForm = new SourceForm( this );
+    linearForms.push_back( std::make_unique<SourceForm>( this ) );
   }
-  linearForms.push_back( sourceForm );
+  LinearForm* sourceForm = linearForms[linearForms.size()-1].get();
 
   mesh::Element e;
 
@@ -138,6 +127,4 @@ void Problem::assembleDomain() {
   
   timeDerivMat.setFromTriplets( timeDerivCoeffs.begin(),
       timeDerivCoeffs.end() );
-  // Post-assembly
-  delete sourceForm;
 }
