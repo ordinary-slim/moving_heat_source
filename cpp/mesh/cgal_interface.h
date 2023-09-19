@@ -11,7 +11,7 @@ using inex_K      = CGAL::Simple_cartesian<double>;
 using ex_inex_K   = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Plane3_CGAL = ex_inex_K::Plane_3;
 
-struct myAABB {
+struct MyAABB {
   int ielem = -1;
   double bounds[3][2] = {
     {1, -1},
@@ -21,14 +21,14 @@ struct myAABB {
   constexpr static double stretch = 0.05;
   constexpr static double pad = 1e-7;
 
-  myAABB() = default;
-  myAABB( mesh::Element e );
+  MyAABB() = default;
+  MyAABB( mesh::Element e );
 
 };
 
-struct myBboxPrimitive {
+struct MyBboxPrimitive {
 public:
-    typedef const myAABB* Pointer;
+    typedef const MyAABB* Pointer;
     // this is the type of data that the queries returns
     using Id = int;
     // CGAL types returned
@@ -39,10 +39,10 @@ private:
     Id ielem;// this is what the AABB tree stores internally
     Pointer pt;
 public:
-    myBboxPrimitive() {} // default constructor needed
+    MyBboxPrimitive() {} // default constructor needed
     // the following constructor is the one that receives the iterators from the
     // iterator range given as input to the AABB_tree
-    myBboxPrimitive(std::vector<myAABB>::const_iterator it)
+    MyBboxPrimitive(std::vector<MyAABB>::const_iterator it)
         : pt(&(*it)) {
           ielem = it->ielem;
         }
@@ -63,11 +63,11 @@ public:
     { return Point(pt->bounds[0][0], pt->bounds[1][0], pt->bounds[2][0]); }
 };
 
-struct myOBB{
+struct MyOBB{
   public:
     Eigen::Vector3d pos, halfWidths, xAxis, yAxis, zAxis;
 
-    myOBB() {
+    MyOBB() {
       pos << 0.0, 0.0, 0.0;
       halfWidths << 0.0, 0.0, 0.0;
       xAxis << 1.0, 0.0, 0.0;
@@ -76,13 +76,13 @@ struct myOBB{
     }
 
     // 3D-printing constructors
-    myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
-        double height, bool shrink = true);
+    MyOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+        double height, int dim = 3, bool shrink = true);
 
-    myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
-        double aboveLen, double belowLen, bool shrink = true);
+    MyOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+        double aboveLen, double belowLen, int dim = 3, bool shrink = true);
 
-    void setTransverseAxes();
+    void setTransverseAxes(int dim = 3);
 
     void appendPlanes(std::vector<Plane3_CGAL> &v) const;
 

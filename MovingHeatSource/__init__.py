@@ -19,12 +19,6 @@ def readInput(fileName):
 
 class Problem(Problem):
     # Convenience glob vars
-    cellMappingMeshio = {
-            "line2" : "line",
-            "quad4" : "quad",
-            "triangle3" : "triangle",
-            "hexa8" : "hexahedron",
-        }
     def __init__(self, mesh, input, problem=None, caseName="case"):
         self.caseName= caseName
         self.input = dict(input)
@@ -136,7 +130,13 @@ class Problem(Problem):
 
         #export
         myCellType = self.domain.mesh.elementTypes[0].name
-        cellType = self.cellMappingMeshio[myCellType]
+        cellMappingMeshio = {
+                "line2" : "line",
+                "quad4" : "quad",
+                "triangle3" : "triangle",
+                "hexa8" : "hexahedron",
+            }
+        cellType = cellMappingMeshio[myCellType]
         mesh = meshio.Mesh(
             pos,
             [ (cellType, self.domain.mesh.con_CellPoint.con), ],
@@ -251,6 +251,7 @@ if _has_gmsh:
                 3 : "quad4",
                 5 : "hexa8",
                 }
+        dim = model.getDimension()
         # POINTS & INDICES
         indices, points, _ = model.mesh.getNodes()
         points = points.reshape(-1, 3)
@@ -265,12 +266,18 @@ if _has_gmsh:
         perm_sort = np.argsort(indices)
         assert np.all(indices[perm_sort] == np.arange(len(indices)))
         points = points[perm_sort]
+        if dim < 3:
+            keepDim = [True]*3
+            for idx in range(3):
+                if (np.max(points[:,idx]) - np.min(points[:,idx])) < 1e-7:
+                    keepDim[idx] = False
+            points = np.transpose( np.vstack( tuple( [points[:, idx] for idx in range(3) if keepDim[idx]] ) ) )
+
 
         # CONNECTIVITY
         domainCellType = None
         domainConnectivity = None
         # Only extract connectivity from max dim of model
-        dim = model.getDimension()
         _, domainTag = model.getPhysicalGroups(dim=dim)[0]#only first physical group
         subdomains = model.getEntitiesForPhysicalGroup( dim, domainTag )
         subdomainConnectivities = []

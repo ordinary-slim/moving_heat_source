@@ -44,6 +44,8 @@ def run():
 
     p = mhs.Problem( myMesh, problemInput )
 
+    p.preIterate(canPreassemble=True)
+
     print("Setting BCs...")
     setDirichlet( p )
 

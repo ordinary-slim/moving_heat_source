@@ -1,7 +1,7 @@
 #include "cgal_interface.h"
 #include <CGAL/Convex_hull_3/dual/halfspace_intersection_interior_point_3.h>
 
-myAABB::myAABB( mesh::Element e ) {
+MyAABB::MyAABB( mesh::Element e ) {
   for (int idim = 0; idim < 3; ++idim) {
     double min = e.pos.col(idim).minCoeff();
     double max = e.pos.col(idim).maxCoeff();
@@ -12,15 +12,15 @@ myAABB::myAABB( mesh::Element e ) {
   this->ielem = e.ient;
 }
 
-myOBB::myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
-    double height, bool shrink){
+MyOBB::MyOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+    double height, int dim, bool shrink){
   /*
    * 3D-printing constructor for OBB
    */
   Eigen::Vector3d step = (p2 - p1);
-  pos = (p2 + p1)/2.0;
   xAxis = step.normalized();
-  setTransverseAxes();
+  setTransverseAxes(dim);
+  pos = (p2 + p1)/2.0;
   halfWidths(0) = step.norm() / 2.0;
   halfWidths(1) = width / 2.0;
   halfWidths(2) = height / 2.0;
@@ -29,17 +29,17 @@ myOBB::myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width,
     halfWidths *= 0.999;
   }
 }
-myOBB::myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
-    double aboveLen, double belowLen, bool shrink) {
+MyOBB::MyOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width, 
+    double aboveLen, double belowLen, int dim, bool shrink) {
   /*
    * Another 3D-printing constructor for OBB
    * Height and depth for Z
    */
   Eigen::Vector3d step = (p2 - p1);
-  pos = (p2 + p1)/2.0;
-  pos(2) += (aboveLen - belowLen)/2;
   xAxis = step.normalized();
-  setTransverseAxes();
+  setTransverseAxes(dim);
+  pos = (p2 + p1)/2.0;
+  pos += ((aboveLen - belowLen)/2)*zAxis;
   halfWidths(0) = step.norm() / 2.0;
   halfWidths(1) = width / 2.0;
   halfWidths(2) = (aboveLen + belowLen) / 2;
@@ -47,10 +47,11 @@ myOBB::myOBB(Eigen::Vector3d p1, Eigen::Vector3d p2, double width,
   if (shrink) {
     halfWidths *= 0.999;
   }
+  //std::cout << "pos = " << pos << "\nMy axes are \nxAxis=" << xAxis << "\nyAxis = "  << yAxis << "\nzAxis = "   << zAxis  << std::endl << "My halfWidths are " << halfWidths << std::endl;
 }
 
 
-bool myOBB::hasCollided(const mesh::Element &otherConvex) const {
+bool MyOBB::hasCollided(const mesh::Element &otherConvex) const {
   bool hasCollided = false;
   std::vector<Plane3_CGAL> halfSpaces;
   appendPlanes( halfSpaces );
@@ -59,12 +60,16 @@ bool myOBB::hasCollided(const mesh::Element &otherConvex) const {
   return not(p==boost::none);
 };
 
-void myOBB::setTransverseAxes() {
+void MyOBB::setTransverseAxes(int dim) {
   /*
    * Set transverse axes of OBB
    * Attempt to set 0.0, 0.0, 1.0 as zAxis
    */
-  zAxis << 0.0, 0.0, 1.0;
+  if (dim==2) {
+    zAxis << 0.0, 1.0, 0.0;
+  } else {
+    zAxis << 0.0, 0.0, 1.0;
+  }
   zAxis = (zAxis - zAxis.dot( xAxis )*xAxis).normalized();//Gram schmidt
   if ( zAxis.norm() < (1 - 1e-7) ) {
     throw std::invalid_argument("Steps in Z-axis not allowed.");
@@ -72,7 +77,7 @@ void myOBB::setTransverseAxes() {
   yAxis = zAxis.cross( xAxis );
 }
 
-void myOBB::appendPlanes(std::vector<Plane3_CGAL> &v) const {
+void MyOBB::appendPlanes(std::vector<Plane3_CGAL> &v) const {
   v.reserve( std::min<int>(v.size(), 12) );
   // Mins
   v.push_back( Plane3_CGAL( -xAxis[0],

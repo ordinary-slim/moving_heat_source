@@ -9,7 +9,7 @@ class HatchCollider {
   public:
     double width;
     double height, depth;
-    myOBB obb;//collision detection with mesh elements
+    MyOBB obb;//collision detection with mesh elements
 
     HatchCollider( mesh::Mesh* m, double width, double height, double depth = 0.0 ) {
       this->m      = m;
@@ -22,7 +22,7 @@ class HatchCollider {
       /*
        * Compute mesh elements that collide with hatch p1 *------*p2
        */
-      obb = myOBB( p1, p2, width, height, depth, true );
+      obb = MyOBB( p1, p2, width, height, depth, m->dim, true );
       return this->m->findCollidingElements( obb );
     }
 

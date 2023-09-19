@@ -76,7 +76,7 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   }
   return indicesOwnerElements;
 }
-vector<int> Mesh::findCollidingElements( const myOBB &obb ) const {
+vector<int> Mesh::findCollidingElements( const MyOBB &obb ) const {
   vector<int> indicesCollidingEls;
   vector<int> potentialCollidingEls;
   //Broad  Phase Search
@@ -129,7 +129,7 @@ void Mesh::buildAABBTree() {
 void Mesh::updateAABBTree() {
   for (int ielem = 0; ielem < nels; ++ielem) {
     Element e = getElement(ielem);
-    elementAABBs[ielem] = myAABB( e );
+    elementAABBs[ielem] = MyAABB( e );
   }
   tree.rebuild(elementAABBs.begin(), elementAABBs.end());
 }

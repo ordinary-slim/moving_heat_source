@@ -137,7 +137,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("dim", &mesh::Mesh::dim)
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
         .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
-        .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const myOBB&) const>(&mesh::Mesh::findCollidingElements))
+        .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const MyOBB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<AbstractFunction>(m, "AbstractFunction");
@@ -187,7 +187,7 @@ PYBIND11_MODULE(cpp, m) {
         .value("triangle3", ElementType::triangle3)
         .value("quad4", ElementType::quad4)
         .value("hexa8", ElementType::hexa8);
-    py::class_<myOBB>(m, "myOBB")
+    py::class_<MyOBB>(m, "MyOBB")
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
     py::class_<heat::HeatSource>(m, "HeatSource")
         .def_readonly("position", &heat::HeatSource::position)

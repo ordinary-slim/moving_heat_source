@@ -50,7 +50,7 @@ def runCoupled():
     deactivateBelowSurface( pFixed ) 
     
     elementSize = thinWall.fineElementSize
-    driver = MyAdaptiveStepper( pFixed, factor=2, maxAdimtDt=10,
+    driver = MyAdaptiveStepper( pFixed, factor=2, maxAdimtDt=2,
                  threshold= 0.3, elementSize=elementSize, isCoupled=True, adimMinRadius=1.5 )
 
     logger = MyLogger()

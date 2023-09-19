@@ -83,6 +83,10 @@ def run():
     pLeft.substractExternal(pRight, updateGamma=True)
     pRight.updateInterface( pLeft )
 
+    # Pre-iterating
+    pLeft.preIterate(canPreassemble=False)
+    pRight.preIterate(canPreassemble=False)
+
     print("Setting BCs...")
     setDirichlet( pLeft )
     setDirichlet( pRight )

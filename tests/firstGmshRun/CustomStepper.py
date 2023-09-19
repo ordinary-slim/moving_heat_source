@@ -56,7 +56,7 @@ class CustomStepper(AdaptiveStepper):
 
         backRadiusObb = max(backRadius - radius, 0.0)
         p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
-        obb = mhs.myOBB( p0, self.pMoving.mhs.position, 2*sideRadius, 2*zRadius )
+        obb = mhs.MyOBB( p0, self.pMoving.mhs.position, 2*sideRadius, 2*zRadius )
         subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
         collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
         collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )

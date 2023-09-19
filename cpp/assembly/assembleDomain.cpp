@@ -29,7 +29,6 @@ void Problem::assembleDomain() {
   timeDerivMat.resize( domain.mesh->nnodes, domain.mesh->nnodes);
   timeDerivCoeffs.clear();
   timeDerivCoeffs.reserve( 3*domain.mesh->nnodes );
-  mhs->pulse.setZero();
 
   if (mhs->type == heat::lumped) {
     linearForms.push_back( std::make_unique<LumpedSourceForm>( this ) );

@@ -13,7 +13,7 @@
 
 using namespace std;
 using AABB_tree = CGAL::AABB_tree<CGAL::AABB_traits<CGAL::Simple_cartesian<double>,
-      myBboxPrimitive>>;
+      MyBboxPrimitive>>;
 
 namespace mesh
 {
@@ -37,7 +37,7 @@ class Mesh {
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     // Fast spatial search
-    vector<myAABB> elementAABBs;
+    vector<MyAABB> elementAABBs;
     AABB_tree tree;
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
@@ -57,7 +57,7 @@ class Mesh {
     void buildAABBTree();
     void updateAABBTree();
     vector<int> findOwnerElements( const Eigen::Vector3d &point ) const;
-    vector<int> findCollidingElements( const myOBB &obb ) const;
+    vector<int> findCollidingElements( const MyOBB &obb ) const;
     vector<int> findCollidingElements( const Eigen::Vector3d &center, const double R) const;
 };
 void inPlaneRotate( Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> &points, 

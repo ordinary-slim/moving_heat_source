@@ -27,7 +27,7 @@ class AdaptiveStepper:
             self.pFixed.setPath( self.pFixed.input["path"] )
         self.isCoupled = isCoupled
         self.adimMaxDt = maxAdimtDt
-        self.adimMaxSubdomainSize = self.adimMaxDt + 2 # ad-hoc
+        self.adimMaxSubdomainSize = self.computeSizeSubdomain(self.adimMaxDt)
         self.adimMinRadius = adimMinRadius
         self.adimZRadius = adimMinRadius
         if not(adimZRadius is None):
@@ -70,7 +70,8 @@ class AdaptiveStepper:
         movingProblemInput["advectionSpeed"] = -self.pFixed.input["HeatSourceSpeed"]
         movingProblemInput["speedDomain"]      = self.pFixed.input["HeatSourceSpeed"]
         movingProblemInput["HeatSourceSpeed"] = np.zeros(3)
-        self.pMoving  = mhs.Problem(self.meshMoving, movingProblemInput, caseName="moving")
+        movingProblemInput["initialPosition"] = self.pFixed.mhs.position
+        self.pMoving  = mhs.Problem(self.meshMoving, movingProblemInput, caseName=self.pFixed.caseName + "_moving")
         # Quick-fix: Mesh is built oriented around X
         self.rotateSubdomain( currentOrientation=np.array([1.0, 0.0, 0.0]),
                                nextOrientation=self.pFixed.mhs.currentTrack.getSpeed() )
@@ -110,9 +111,13 @@ class AdaptiveStepper:
     def increaseDt( self ):
         self.adimDt = min( self.factor * self.adimDt, self.adimDt + 1 )
 
-    def setSizeSubdomain( self, adimDt = None ):
-        self.adimSubdomainSize = min(self.adimDt + 2.0, self.adimDt * 2 )
-        return self.adimSubdomainSize
+    def computeSizeSubdomain( self, adimDt = None ):
+        if adimDt is None:
+            adimDt = self.adimDt
+        return min(adimDt + 2.0, adimDt * 2 )
+
+    def setSizeSubdomain( self ):
+        self.adimSubdomainSize = self.computeSizeSubdomain()
 
     def update(self):
         '''
@@ -143,7 +148,14 @@ class AdaptiveStepper:
             # Make sure we don't skip over new track
             adimMaxDt = min( (self.nextTrack.endTime - time)/ tUnit, adimMaxDt )
         else:
-            adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
+            adimDt2TrackEnd = dt2trackEnd/tUnit
+            maxDt2TrackEnd = adimDt2TrackEnd
+            if (maxDt2TrackEnd > self.adimMinRadius + 1e-7):
+                maxDt2TrackEnd -= self.adimMinRadius
+            else:
+                maxDt2TrackEnd = min( 0.5, adimDt2TrackEnd )
+
+            adimMaxDt = min( maxDt2TrackEnd, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
             if (self.checkSteadinessCriterion()):
                 self.increaseDt()
@@ -187,7 +199,7 @@ class AdaptiveStepper:
         #backRadiusObb = max(backRadius - radius, 0.0)
         p0 = self.pMoving.mhs.position - backRadius*xAxis
         p1 = self.pMoving.mhs.position + self.adimMinRadius*xAxis
-        obb = mhs.myOBB( p0, p1, 2*sideRadius, 2*zRadius )
+        obb = mhs.MyOBB( p0, p1, 2*sideRadius, 2*zRadius )
         subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
         #collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
         #collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
@@ -308,7 +320,11 @@ class AdaptiveStepper:
             self.pMoving.postIterate()
 
         # Compute next dt && domain size
-        self.update()
+        try:
+            self.update()
+        except ZeroDivisionError:
+            self.writepos()
+            raise
         # Write vtk files
         self.writepos()
 

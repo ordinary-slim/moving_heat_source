@@ -45,6 +45,7 @@ void HeatSource::preIterate() {
       throw std::invalid_argument("Time is out of bounds.");
     }
   }
+  pulse.setZero();
   step( problem->dt );
 }
 

@@ -170,7 +170,9 @@ int Domain::findOwnerElements( const Eigen::Vector3d &point ) const {
       return ielem;
     }
   }
-  throw std::invalid_argument("Point is not owned by active element.");
+  std::stringstream errorMessage;
+  errorMessage << "Point " << point << " is not owned by active element.";
+  throw std::invalid_argument(errorMessage.str());
 }
 
 
