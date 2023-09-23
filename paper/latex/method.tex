@@ -1,0 +1,22 @@
+\begin{align*}
+  \rho c_p \partial_t u - \nabla \cdot (k \nabla u) = r(x - Vt) \qquad x \in \Omega
+\end{align*}
+
+
+\begin{align}
+  \label{eq:pdeddf}
+  \rho c_p \partial_t u_f - \nabla \cdot (k \nabla u_f) &= r(x - Vt) \qquad &x \in \Omega_f\\
+  u_f &= u_m \qquad &x \in \Gamma \notag
+\end{align}
+\begin{align}
+  \label{eq:pdeddm}
+  \rho c_p \Big( \partial_t u_m - \mathbf{V} \cdot \nabla u_m \Big) -
+  \nabla \cdot ( k \nabla u_m) &= r(\xi)  &\xi \in \Omega_m\\
+  k \partial_n u_m &= k \partial_n u_f  &\xi \in \Gamma \notag
+\end{align}
+
+\begin{figure}
+  \castelincfig{nonOverlappingPartition}
+  \caption{Schematic of proposed model.}
+  \label{fig:schematic}
+\end{figure}

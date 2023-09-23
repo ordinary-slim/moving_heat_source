@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (1:1.2.2+202305151915+b0a8486541)"
+   sodipodi:docname="nonOverlappingPartition.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="6.2430976"
+     inkscape:cx="479.40945"
+     inkscape:cy="386.50685"
+     inkscape:window-width="1608"
+     inkscape:window-height="1013"
+     inkscape:window-x="1992"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid132" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <marker
+       style="overflow:visible"
+       id="Arrow5"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow5"
+       markerWidth="5.8874259"
+       markerHeight="6.6094756"
+       viewBox="0 0 5.8874262 6.6094758"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="m 6,0 c -3,1 -7,3 -9,5 0,0 0,-4 2,-5 -2,-1 -2,-5 -2,-5 2,2 6,4 9,5 z"
+         id="path8893" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#548080;stroke-width:0.3;fill-opacity:1"
+       id="rect236"
+       width="169.33333"
+       height="74.083336"
+       x="42.333332"
+       y="68.791664" />
+    <rect
+       style="fill:#ffdd55;stroke-width:0.5;stroke:#000000;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
+       id="rect952"
+       width="42.333332"
+       height="26.163439"
+       x="132.29167"
+       y="92.604164" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.3;stroke-dasharray:0.6,0.3;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect954"
+       width="42.333332"
+       height="26.163439"
+       x="95.25"
+       y="92.604164" />
+    <circle
+       style="fill:#ff0000;fill-opacity:0.358672;stroke:none;stroke-width:1.10874;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="circle2023"
+       cx="161.39583"
+       cy="105.83334"
+       r="7.3338232" />
+    <circle
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.732052;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path1977"
+       cx="161.30312"
+       cy="105.83334"
+       r="4.8422208" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="39.563477"
+       y="159.54376"
+       id="text1974"><tspan
+         sodipodi:role="line"
+         id="tspan1972"
+         style="stroke-width:0.264583"
+         x="39.563477"
+         y="159.54376">$\Omega_f (t^{n+1})$</tspan></text>
+    <path
+       id="path2089"
+       style="fill:none;stroke:#000000;stroke-width:0.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow5)"
+       d="m 39.6875,154.78125 c -0.754057,-6.54252 -4.356848,-16.19458 2.733636,-20.3717 4.037461,-2.21592 9.61701,-2.80027 11.818444,-7.40955"
+       sodipodi:nodetypes="cccc" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="105.83333"
+       y="156.10417"
+       id="text2358"><tspan
+         sodipodi:role="line"
+         id="tspan2356"
+         style="stroke-width:0.264583"
+         x="105.83333"
+         y="156.10417" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="95.130028"
+       y="159.54376"
+       id="text2364"><tspan
+         sodipodi:role="line"
+         id="tspan2362"
+         style="stroke-width:0.264583"
+         x="95.130028"
+         y="159.54376">$\Gamma(t^n)$</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="148.04669"
+       y="159.54376"
+       id="text2368"><tspan
+         sodipodi:role="line"
+         id="tspan2366"
+         style="stroke-width:0.264583"
+         x="148.04669"
+         y="159.54376">$\Omega_m (t^{n+1})$</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow5)"
+       d="m 95.25,154.78125 c -6.543065,-13.8314 7.13343,-24.03077 13.22917,-34.925"
+       id="path2370"
+       sodipodi:nodetypes="cs" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow5)"
+       d="m 148.16667,154.78125 c 0.94561,-14.11051 11.30092,-30.49053 2.17706,-41.67492"
+       id="path2372"
+       sodipodi:nodetypes="cs" />
+    <g
+       aria-label="{"
+       id="text2481"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       transform="matrix(0,0.30859327,-1,0,135.55494,17.127356)">
+      <path
+         d="m 161.13117,88.282598 q -6.26179,-0.08819 -10.58332,-0.705555 -4.23333,-0.61736 -8.20207,-2.204858 -3.88055,-1.499304 -6.1736,-4.321523 -2.20486,-2.734024 -3.52778,-7.231935 -1.32291,-4.497911 -1.32291,-10.847903 V 30.956281 q 0,-9.348599 -3.175,-13.493733 -3.0868,-4.233328 -12.17082,-7.055547 9.08402,-2.7340238 12.17082,-6.7909631 3.175,-4.1451337 3.175,-13.5819273 V -42.156821 q 0,-4.586105 0.61736,-8.113879 0.70555,-3.615967 1.85208,-6.173603 1.23472,-2.64583 3.26319,-4.497911 2.02847,-1.940275 4.23333,-3.086802 2.29305,-1.146526 5.55624,-1.852081 3.26319,-0.705554 6.52638,-0.970137 3.35139,-0.352778 7.7611,-0.440972 v 2.02847 q -9.3486,2.469441 -12.96456,7.320129 -3.52778,4.762494 -3.52778,14.904843 v 30.33885 q 0,11.2888749 -3.43958,15.9631745 -3.35138,4.5861053 -13.49373,7.3201295 10.14235,2.557636 13.49373,7.231935 3.43958,4.586106 3.43958,15.87498 v 30.338851 q 0,10.142348 3.52778,14.904842 3.61596,4.850689 12.96456,7.32013 z"
+         style="font-size:180.622px;font-family:KacstOne;-inkscape-font-specification:'KacstOne, Normal'"
+         id="path2483" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="122.76668"
+       y="49.741673"
+       id="text2492"><tspan
+         sodipodi:role="line"
+         id="tspan2490"
+         style="stroke-width:0.264583"
+         x="122.76668"
+         y="49.741673">$\Omega$</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:'CMU Sans Serif';-inkscape-font-specification:'CMU Sans Serif, Normal';stroke-width:0.264583"
+       x="188.99924"
+       y="159.54376"
+       id="text20211"><tspan
+         sodipodi:role="line"
+         id="tspan20209"
+         style="stroke-width:0.264583"
+         x="188.99924"
+         y="159.54376">$\Gamma(t^{n+1})$</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow5)"
+       d="m 189.17708,154.78125 c -0.73462,-5.17798 1.15232,-10.75722 -1.44338,-15.61518 -2.51657,-5.19461 -7.25112,-8.75088 -10.66033,-13.2994 -1.7911,-2.22464 -2.92643,-3.23833 -4.30045,-5.74584"
+       id="path20969"
+       sodipodi:nodetypes="ccss" />
+  </g>
+</svg>

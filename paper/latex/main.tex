@@ -1,0 +1,48 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\graphicspath{{figures/}}
+
+% CASTEL PACKAGES
+\usepackage{import}
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+% END CASTEL PACKAGES
+
+\newcommand{\castelincfig}[2][1.0]{%
+      \def\svgwidth{#1\columnwidth}
+          \import{./figures/}{#2.pdf_tex}
+          }
+
+%TITLE
+\title{Moving domain formulation for AM of metals}
+\author{Mehdi Slimani \and Miguel Cervera \and Michele Chiumenti}
+\date{\today}
+%ETITLE
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  \input{abstract.tex}
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+\input{intro.tex}
+
+\section{Methodology}\label{sec:methodman}
+\input{method.tex}
+
+\section{Results}\label{sec:results}
+\input{results.tex}
+
+\section{Conclusions}\label{sec:conclusions}
+\input{conclusions.tex}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
