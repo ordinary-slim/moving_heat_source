@@ -1,18 +1,30 @@
+\subsection{Brief description of reference method}
+For both DED and LPBF,
+posing the energy balance in the reference
+frame of the laboratory results in the following PDE
+\cite{Chiumenti2017}
+
 \begin{align*}
-  \rho c_p \partial_t u - \nabla \cdot (k \nabla u) = r(x - Vt) \qquad x \in \Omega
+  \rho c_p \partial_t T + L \partial_t f
+  - \nabla \cdot (k \nabla T) = r + D_{mech}
+  \qquad x \in \Omega
 \end{align*}
 
+In both DED and LPBF, it is justified to neglect
+the mechanical dissipation \cite{Chiumenti2017, Patil2021}.
 
+\subsection{Proposed method}
+\todo{The model we propose is as follows}
 \begin{align}
   \label{eq:pdeddf}
-  \rho c_p \partial_t u_f - \nabla \cdot (k \nabla u_f) &= r(x - Vt) \qquad &x \in \Omega_f\\
-  u_f &= u_m \qquad &x \in \Gamma \notag
+  \rho c_p \partial_t T_f - \nabla \cdot (k \nabla T_f) &= r(x - Vt) \qquad &x &\in \Omega_f\\
+  T_f &= T_m \qquad &x &\in \Gamma \notag
 \end{align}
 \begin{align}
   \label{eq:pdeddm}
-  \rho c_p \Big( \partial_t u_m - \mathbf{V} \cdot \nabla u_m \Big) -
-  \nabla \cdot ( k \nabla u_m) &= r(\xi)  &\xi \in \Omega_m\\
-  k \partial_n u_m &= k \partial_n u_f  &\xi \in \Gamma \notag
+  \rho c_p \Big( \partial_t T_m - \mathbf{V} \cdot \nabla T_m \Big) -
+  \nabla \cdot ( k \nabla T_m) &= r(\xi)  &\xi &\in \Omega_m\\
+  k \partial_n T_m &= k \partial_n T_f  &\xi &\in \Gamma \notag
 \end{align}
 
 \begin{figure}
@@ -20,3 +32,10 @@
   \caption{Schematic of proposed model.}
   \label{fig:schematic}
 \end{figure}
+
+
+\iffalse
+Show reference model
+Go over limitations
+Introduce my model
+\fi

@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass{elsarticle}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -17,23 +17,31 @@
           \import{./figures/}{#2.pdf_tex}
           }
 
+\newcommand{\todo}[1]{
+  \textcolor{red}{\textbf{Todo}: #1}
+}
+
 %TITLE
 \title{Moving domain formulation for AM of metals}
-\author{Mehdi Slimani \and Miguel Cervera \and Michele Chiumenti}
+\author[1]{Mehdi Slimani}
+\author[1]{Miguel Cervera}
+\author[1]{Michele Chiumenti}
+\affiliation[1]{organization={CIMNE}}
 \date{\today}
 %ETITLE
 
 \begin{document}
-\maketitle
 
 \begin{abstract}
   \input{abstract.tex}
 \end{abstract}
 
+\maketitle
+
 \section{Introduction}\label{sec:intro}
 \input{intro.tex}
 
-\section{Methodology}\label{sec:methodman}
+\section{Description of methods}\label{sec:methodman}
 \input{method.tex}
 
 \section{Results}\label{sec:results}
