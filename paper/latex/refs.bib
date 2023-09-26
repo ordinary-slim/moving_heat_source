@@ -87,3 +87,44 @@ abstract = { An improved computational analysis is presented for the detailed pr
   title = {A Review Paper on Numerical Simulation of Moving Heat Source},
   journal = {International Journal of Current Engineering and Technology}
 }
+@article{Storti2022,
+title = {On the performance of a Chimera-FEM implementation to treat moving heat sources and moving boundaries in time-dependent problems},
+journal = {Finite Elements in Analysis and Design},
+volume = {208},
+pages = {103789},
+year = {2022},
+issn = {0168-874X},
+doi = {https://doi.org/10.1016/j.finel.2022.103789},
+url = {https://www.sciencedirect.com/science/article/pii/S0168874X22000634},
+author = {Bruno A. Storti and Alejandro E. Albanesi and Ignacio Peralta and Mario A. Storti and Víctor D. Fachinotti},
+keywords = {Chimera, Overlapping grids, Finite element, SUPG, ALE, 3D welding simulation},
+abstract = {Problems with moving sources and moving inner boundaries in transient regime are of high interest in many research fields and engineering applications. One approach to properly tackle such problems is based on the Chimera method for non-matching grids, where each moving object is defined on a fine mesh that moves across the fixed coarse background. In this way, the high gradients around moving sources or boundaries are captured by the fine mesh without need of globally fine fixed meshes or adaptive refinement. In this work, Chimera is implemented in the framework of the finite element method, following an arbitrary Lagrangian–Eulerian formulation for the moving meshes and a standard Eulerian formulation for the fixed background mesh. Further, in case of convection-dominated problems, the scheme is stabilized using the streamline upwind Petrov–Galerkin method. The coupling between the moving fine meshes and the coarse fixed one is achieved via Dirichlet boundary conditions and a high-order interpolation algorithm. The performance of the proposed methodology in terms of accuracy and stability is assessed by means of numerical tests to be compared with equivalent problems solved using fixed meshes. Further tests serve to highlight the good performance of the proposed Chimera-based finite element method to address both convection-dominated problems with multiple moving boundaries and sources, and three-dimensional arc welding processes.}
+}
+@article{VanElsen2007,
+title = {Solutions for modelling moving heat sources in a semi-infinite medium and applications to laser material processing},
+journal = {International Journal of Heat and Mass Transfer},
+volume = {50},
+number = {23},
+pages = {4872-4882},
+year = {2007},
+issn = {0017-9310},
+doi = {https://doi.org/10.1016/j.ijheatmasstransfer.2007.02.044},
+url = {https://www.sciencedirect.com/science/article/pii/S0017931007003742},
+author = {M. {Van Elsen} and M. Baelmans and P. Mercelis and J.-P. Kruth},
+keywords = {Moving heat source, Semi-infinite body, Temperature distribution, Laser manufacturing},
+abstract = {This study describes the analytical and numerical solution of the heat conduction equation for a localised moving heat source of any type for use in laser material processing, as welding, layered manufacturing and laser alloying. In this paper, the analytical solution for a uniform heat source is derived from the solution of an instantaneous point heat source. The result is evaluated numerically and is compared to existing solutions for the moving point source and a semi-ellipsoidal source. Next, the result is used to demonstrate how such model can be used to study the effect of the heat source geometry. Besides, this solution reveals that a melting efficiency higher than 0.37 (=1/e, a maximum value stated by Rykalin [N. Rykalin, A. Uglov, A. Kokora, O. Glebov, Laser Machining and Welding, Mir Publishers, Moscow, 1978]) can be obtained. To investigate the effect of the temperature dependence of the material parameters, in particular the latent heat of fusion, a finite difference model is implemented. It is shown that the enthalpy method is most suited to implement the latent heat of fusion. A numerical evaluation for Ti–6Al–4V, reveals that the effect of the latent heat is rather small, except when the conductivity is very low, e.g. when scanning in a loose powder bed. The results demonstrate that analytical and numerical solutions can be effectively used to calculate the temperature distribution in a semi-infinite medium for finite 3D heat sources. In this way, a tool to investigate the importance of different processing parameters in laser manufacturing is obtained.}
+}
+@article{Chiumenti2010,
+title = {Finite element modeling of multi-pass welding and shaped metal deposition processes},
+journal = {Computer Methods in Applied Mechanics and Engineering},
+volume = {199},
+number = {37},
+pages = {2343-2359},
+year = {2010},
+issn = {0045-7825},
+doi = {https://doi.org/10.1016/j.cma.2010.02.018},
+url = {https://www.sciencedirect.com/science/article/pii/S0045782510000782},
+author = {Michele Chiumenti and Miguel Cervera and Alessandro Salmi and Carlos {Agelet de Saracibar} and Narges Dialami and Kazumi Matsui},
+keywords = {Shaped metal deposition process, Multi-pass welding, Hot-cracking, Thermo-mechanical analysis, Finite element method},
+abstract = {This paper describes the formulation adopted for the numerical simulation of the shaped metal deposition process (SMD) and the experimental work carried out at ITP Industry to calibrate and validate the proposed model. The SMD process is a novel manufacturing technology, similar to the multi-pass welding used for building features such as lugs and flanges on fabricated components (see Fig. 1a and b). A fully coupled thermo-mechanical solution is adopted including phase-change phenomena defined in terms of both latent heat release and shrinkage effects. Temperature evolution as well as residual stresses and distortions, due to the successive welding layers deposited, are accurately simulated coupling the heat transfer and the mechanical analysis. The material behavior is characterized by a thermo-elasto-viscoplastic constitutive model coupled with a metallurgical model. Nickel super-alloy 718 is the target material of this work. Both heat convection and heat radiation models are introduced to dissipate heat through the boundaries of the component. An in-house coupled FE software is used to deal with the numerical simulation and an ad-hoc activation methodology is formulated to simulate the deposition of the different layers of filler material. Difficulties and simplifying hypotheses are discussed. Thermo-mechanical results are presented in terms of both temperature evolution and distortions, and compared with the experimental data obtained at the SMD laboratory of ITP.}
+}

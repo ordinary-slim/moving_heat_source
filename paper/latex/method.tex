@@ -1,20 +1,42 @@
-\subsection{Brief description of reference method}
-For both DED and LPBF,
-posing the energy balance in the reference
-frame of the laboratory results in the following PDE
-\cite{Chiumenti2017}
+\subsection{Brief description of reference model}
+In this work, the chosen reference model is
+the following linear heat equation with convection
+boundary conditions: solve for the temperature
+field $T = f(x, t)$ such that
 
 \begin{align*}
-  \rho c_p \partial_t T + L \partial_t f
-  - \nabla \cdot (k \nabla T) = r + D_{mech}
-  \qquad x \in \Omega
+  \rho c_p \partial_t T - \nabla \cdot (k \nabla T) &= r
+  \qquad &\forall x &\in \Omega\\
+  q_{conv} &= h_{conv} ( T - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}
 \end{align*}
 
-In both DED and LPBF, it is justified to neglect
-the mechanical dissipation \cite{Chiumenti2017, Patil2021}.
+, where $\rho, \enskip c_p, \enskip k \textrm{ and } r$
+denote respectively
+the density, the specific heat, the conductivity and the volumetric
+heat source. In the boundary condition,
+$q_{conv}, \enskip h_{conv}$ denote the convective heat flux
+and coefficient.
+This is the simplest setting where
+the proposed method can be illustrated.
+Notably, the thermal dependency of the parameters
+and the latent heat are being neglected. The latent heat is
+arguably relevant in LPBF applications
+\cite{VanElsen2007, Hodge2021}.\par
 
-\subsection{Proposed method}
+The domain $\Omega$ will depend on time in the LPBF example,
+meaning that the powder is not included in the computational
+domain. The time dependency of the domain is numerically modelled
+using  the born-dead element technique \cite{Chiumenti2010}:
+elements that are \textit{inactive} are not included in the
+computational domain,
+and, at the beginning of each time step, a collision test
+is performed with the geometry of the deposition
+in order to \textit{activate} elements.
+
+\subsection{Proposed model}
+
 \todo{The model we propose is as follows}
+
 \begin{align}
   \label{eq:pdeddf}
   \rho c_p \partial_t T_f - \nabla \cdot (k \nabla T_f) &= r(x - Vt) \qquad &x &\in \Omega_f\\
