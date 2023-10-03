@@ -1,14 +1,15 @@
 \subsection{Brief description of reference model}
+
 In this work, the chosen reference model is
 the following linear heat equation with convection
 boundary conditions: solve for the temperature
-field $T = f(x, t)$ such that
+field $T = f(x,t)$ such that
 
-\begin{align*}
-  \rho c_p \partial_t T - \nabla \cdot (k \nabla T) &= r
-  \qquad &\forall x &\in \Omega\\
-  q_{conv} &= h_{conv} ( T - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}
-\end{align*}
+\begin{align}
+  \rho c_p \partial_t T{\scriptstyle(x,t)} - \nabla \cdot (k \nabla T{\scriptstyle(x,t)}) &= r{\scriptstyle(x,t)}
+  \qquad &\forall x &\in \Omega \label{eq:refheateq}\\
+  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}
+\end{align}
 
 , where $\rho, \enskip c_p, \enskip k \textrm{ and } r$
 denote respectively
@@ -23,15 +24,20 @@ and the latent heat are being neglected. The latent heat is
 arguably relevant in LPBF applications
 \cite{VanElsen2007, Hodge2021}.\par
 
-The domain $\Omega$ will depend on time in the LPBF example,
-meaning that the powder is not included in the computational
-domain. The time dependency of the domain is numerically modelled
+The time dependency of the domain means, in the particular case
+of LPBF, 
+that the powder bed is not included.
+Numerically, this is modelled
 using  the born-dead element technique \cite{Chiumenti2010}:
 elements that are \textit{inactive} are not included in the
 computational domain,
 and, at the beginning of each time step, a collision test
 is performed with the geometry of the deposition
-in order to \textit{activate} elements.
+in order to \textit{activate} elements.\par
+
+The PDE \ref{eq:refheateq} is discretized in space using P1/Q1
+finite elements and in time using Backward Euler time integration
+\cite{Puso2023}.\par
 
 \subsection{Proposed model}
 

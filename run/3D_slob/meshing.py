@@ -2,10 +2,11 @@ import meshzoo
 import numpy as np
 import MovingHeatSource as mhs
 import gmsh
+import pdb
 
 problemInput = mhs.readInput( "input.yaml" )
-partLens = problemInput["part"]
-substrateLens = problemInput["substrate"]
+partLens = np.array(problemInput["part"])
+substrateLens = np.array(problemInput["substrate"])
 radiusHs = problemInput["radius"]
 layerThickness = problemInput["layerThickness"]
 fineElSize = min(radiusHs, layerThickness)/2
@@ -69,10 +70,10 @@ def getMeshPhysical(popup=False):
     halfLensPart = np.array( partLens ) / 2
     halfLensSubstrate = np.array( substrateLens ) / 2
     # Bot surface part
-    gmsh.model.geo.addPoint( -halfLensPart[0], -halfLensPart[1], 0.0, tag=1 )
+    gmsh.model.geo.addPoint( -halfLensPart[0], 0.0, 0.0, tag=1 )
     gmsh.model.geo.addPoint( -halfLensPart[0], +halfLensPart[1], 0.0, tag=2 )
     gmsh.model.geo.addPoint( +halfLensPart[0], +halfLensPart[1], 0.0, tag=3 )
-    gmsh.model.geo.addPoint( +halfLensPart[0], -halfLensPart[1], 0.0, tag=4 )
+    gmsh.model.geo.addPoint( +halfLensPart[0], 0.0, 0.0, tag=4 )
     linesBottomSurfacePart = []
     linesBottomSurfacePart.append( gmsh.model.geo.addLine( 1, 2, tag=1 ) )
     linesBottomSurfacePart.append( gmsh.model.geo.addLine( 2, 3, tag=2 ) )
@@ -99,12 +100,13 @@ def getMeshPhysical(popup=False):
     nElements, heights = boundaryLayerProgression( lenCoarseBotExtrusion, nBounLayers, fineElSize, coarseElFactor=coarseElFactor )
     coarseBotExtrusion = gmsh.model.geo.extrude([(2, midBotSurface[1])], 0, 0, -lenCoarseBotExtrusion, numElements=nElements, heights=heights, recombine=True)
     botBotSurface, _, xSideBotBot1, ySideBotBot1, xSideBotBot2, ySideBotBot2 = coarseBotExtrusion
+
     ## Substrate extrusions Y
     ### Uniform extrusions
     uniformYExtrusions = []
     lenUniformYExtrusion = nBounLayers*fineElSize
-    for idx, surface in enumerate([ySideMidBot1, ySideMidBot2, ySideBotBot1, ySideBotBot2]):
-        uniformYExtrusions.append( gmsh.model.geo.extrude([(2, surface[1])], 0.0, np.power(-1, idx)*lenUniformYExtrusion, 0.0, numElements=[nBounLayers], recombine=True) )
+    for idx, surface in enumerate([ySideMidBot1, ySideBotBot1]):
+        uniformYExtrusions.append( gmsh.model.geo.extrude([(2, surface[1])], 0.0, lenUniformYExtrusion, 0.0, numElements=[nBounLayers], recombine=True) )
 
     ### Coarse extrusions
     coarseYExtrusions = []
@@ -112,7 +114,7 @@ def getMeshPhysical(popup=False):
     nElements, heights = boundaryLayerProgression( lenCoarseYExtrusion, nBounLayers, fineElSize, coarseElFactor=coarseElFactor )
     for idx, extrusion in enumerate( uniformYExtrusions ):
         tagSurface = extrusion[0][1]
-        coarseYExtrusions.append( gmsh.model.geo.extrude([(2, tagSurface)], 0.0, np.power(-1, idx)*lenCoarseYExtrusion, 0.0, numElements=nElements, heights=heights, recombine=True) )
+        coarseYExtrusions.append( gmsh.model.geo.extrude([(2, tagSurface)], 0.0, lenCoarseYExtrusion, 0.0, numElements=nElements, heights=heights, recombine=True) )
 
     ## Substrate extrusions X
     ### Uniform extrusions
@@ -125,12 +127,8 @@ def getMeshPhysical(popup=False):
         surfacesXMinus.append( extrusion[2][1] )
         surfacesXPlus.append( extrusion[4][1] )
     for idx, extrusion in enumerate(uniformYExtrusions + coarseYExtrusions):
-        if (idx%2 == 0):
-            surfacesXPlus.append( extrusion[3][1] )
-            surfacesXMinus.append( extrusion[5][1] )
-        else:
-            surfacesXMinus.append( extrusion[3][1] )
-            surfacesXPlus.append( extrusion[5][1] )
+        surfacesXPlus.append( extrusion[3][1] )
+        surfacesXMinus.append( extrusion[5][1] )
     extrusionLen = nBounLayers*fineElSize
     numElements = extrusionLen / fineElSize
     for surface in surfacesXPlus:

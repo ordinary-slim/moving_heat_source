@@ -5,4 +5,67 @@ is ``extremely multiscale'' \cite{Hodge2021}}\par
 \todo{Time scale of radius and constraint on timestep}\par
 \todo{Special techniques are required
 \cite{Puso2023, Viguerie2022}}\par
-\todo{Motivate new technique \cite{VanElsen2007, Mundra1996, Powar2016, Storti2022}}
+\todo{Motivate new technique \cite{VanElsen2007, Mundra1996, Powar2016, Storti2022}}\par
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|c|c|c|}
+    \hline
+    & DED & LPBF \\
+    \hline
+    $L_{print}$ & $\mathcal{O}(1 m   )$ &  $\mathcal{O}(100 mm    )$  \\
+    $L_{hs}$    & $\mathcal{O}(1 mm  )$ &  $\mathcal{O}(100 \mu m)$  \\
+    $T_{print}$ & $\mathcal{O}(1 h   )$ &  $\mathcal{O}(1 h       )$  \\
+    $T_{hs}$    & $\mathcal{O}(0.1 s )$ &  $\mathcal{O}(0.001 s  )$  \\
+    \hline
+  \end{tabular}
+  \caption{Estimates for length and time scales involved in metallic AM. The time
+  scale of the heat source is obtained by dividing its radius by its
+  speed.}
+  \label{tbl:scales}
+\end{table}
+
+Simulation is expensive due to the ``extremely multiscale'' nature
+of the problem \cite{Hodge2021}. Table \ref{tbl:scales}
+gives some magnitudes for the different scales involved in the AM process.
+The time scale of the heat source manifests at the discrete level
+as a constraint on the maximum timestep. It is useful to introduce
+as a unit of time the time it takes the heat source to travel a radius.
+
+\begin{equation}\label{eq:trad}
+\mathcal{R} = \frac{R}{V}
+\end{equation}
+
+For $\Delta t \geq 1 \mathcal{R}$, elements are skipped over resulting
+in a spotty pattern of the thermal field.
+\cite{Hodge2021} estimates that the simulation of a
+$19.2 \times 19.2 \times 19.2 mm^3$ cube LPBF print would take 
+131 million timesteps with $\Delta t = 1 \mathcal{R}$ and
+874 million timesteps with $\Delta t = 0.15 \mathcal{R}$.
+Many authors opt for
+$\Delta t = 0.5\mathcal{R}$ \cite{Patil2021, Michaleris2014, Stender2018}
+and commercial softwares like \texttt{Netfabb}
+do not allow for a time-step bigger than $1 \mathcal{R}$
+\footnote{\url{https://help.autodesk.com/view/NETF/2021/ENU/?guid=GUID-67A6D8F0-AA04-436B-9FAF-A912BE00B497}}.
+This constraint being too restrictive, two sets of solutions
+appear in the litterature:
+
+\begin{itemize}
+  \item \textit{Lumped heat source}: Averaged source terms
+    like the ones proposed in \cite{Chiumenti2017, Malmelv2019}
+    allow one to bypass the restriction of
+    the heat source's timescale and time-step hatches
+    or even layers at a time at the cost of accuracy.
+    \cite{VanElsen2007} shows that although the
+    isothermals far from the heat source coincide,
+    the HAZ volume and the peak temperature are
+    greatly mispredicted.
+  \item \textit{Spatially partitioned time evolution}: Methods
+    that allow for finer timesteps close to the heat source
+    and coarser timesteps far from it. \cite{Kopp2022} and
+    \cite{Viguerie2022} implement this for welding problems
+    through space time FEM and domain decomposition methods respectively.
+    \cite{Viguerie2022} claims a computational speedup of 2.44.
+    \cite{Puso2023} claims a speedup of at least a factor of 20
+    using the multirate time integration described in \cite{Hodge2021}.
+\end{itemize}

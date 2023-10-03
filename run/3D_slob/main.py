@@ -2,7 +2,7 @@ import MovingHeatSource as mhs
 import numpy as np
 import sys
 from meshing import getMeshPhysical, fineElSize
-from CustomStepper import CustomStepper, DriverReference
+from CustomStepper import CustomStepper, DriverReference, DriverAnalytical
 from scanningPath import writeGcode
 from MyLogger import MyLogger
 import pickle
@@ -11,6 +11,7 @@ inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
 gcodeFile = problemInput["path"]
 tol = 1e-7
+maxIter = np.inf
 
 # read input
 problemInput = mhs.readInput( inputFile )
@@ -40,8 +41,10 @@ def runReference():
 
     logger = MyLogger()
 
-    while not(driver.problem.mhs.path.isOver(pReference.time)):
+    iteration = 0
+    while not(driver.problem.mhs.path.isOver(pReference.time)) and (iteration < maxIter):
         logger.iterate( driver )
+        iteration += 1
 
     with open("reference.log", "wb") as reflog:
         pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
@@ -59,29 +62,53 @@ def runCoupled():
     for input in [fixedProblemInput]:
         input["dt"] = dt
 
-    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
+    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixedConduc12")
 
     deactivateBelowSurface( pFixed )
 
-    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize, threshold=0.15, adimMinRadius=1.25, adimZRadius=1.0 )
+    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize/2, threshold=0.2, adimMinRadius=1.25, adimZRadius=1.0 )
     
     logger = MyLogger()
-    while not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) :
+    iteration = 0
+    while (not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) and (iteration < maxIter)):
         logger.iterate( driver )
+        iteration += 1
 
     with open("coupled.log", "wb") as reflog:
         pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
+def runAnalytical():
+    mesh = getMeshPhysical()
+    p = mhs.Problem( mesh, problemInput, caseName="analytical" )
+    deactivateBelowSurface( p ) 
+
+    driver = DriverAnalytical( p )
+
+    iteration = 0
+    while not(driver.problem.mhs.path.isOver(p.time)) and (iteration < maxIter):
+        driver.iterate()
+        iteration += 1
 
 if __name__=="__main__":
+    isRunCoupled = False
+    isRunReference = False
+    isRunAnalytical = False
+
+    isRunCoupled = ("--run-coupled" in sys.argv)
     isRunReference = ("--run-reference" in sys.argv)
-    isOnlyRunReference = ("--only-reference"  in sys.argv)
+    isRunAnalytical = ("--run-analytical" in sys.argv)
+
     nLayers = None
     for arg in sys.argv:
         if "--layers" in arg:
             nLayers = int( arg.split("=")[-1] )
+        if "--maxIter" in arg:
+            maxIter = int( arg.split("=")[-1] )
     writeGcode( nLayers=nLayers )
-    if isRunReference or isOnlyRunReference:
+
+    if isRunReference:
         runReference()
-    if not(isOnlyRunReference):
+    if isRunCoupled:
         runCoupled()
+    if isRunAnalytical:
+        runAnalytical()

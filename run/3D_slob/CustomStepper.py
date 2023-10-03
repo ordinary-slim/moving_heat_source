@@ -3,6 +3,7 @@ from MovingHeatSource.adaptiveStepper import AdaptiveStepper
 import numpy as np
 import meshzoo
 import pdb
+import line_profiler
 
 #TODO: Store hatch and not adim + nonAdim
 #TODO: Build pMoving here in order to reduce risk of mistake
@@ -48,9 +49,7 @@ class CustomStepper(AdaptiveStepper):
             self.maximumTs.append( np.inf )
 
     def setBCs( self ):
-        self.pFixed.setConvection( resetBcs = False )
-        if self.isCoupled:
-            self.pMoving.setConvection( resetBcs = False )
+        pass
 
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
@@ -82,6 +81,102 @@ class CustomStepper(AdaptiveStepper):
         return (((self.valuesOfMetric[-1] < self.threshold) or (self.relChangeMetric < 0.01)) \
                 and (self.maxTChange < 0.05))
 
+    def iterate( self ):
+        # MY SCHEME ITERATE
+        # PRE-ITERATE AND DOMAIN OPERATIONS
+        self.pMoving.domain.resetActivation()
+        self.pFixed.domain.setActivation(self.physicalDomain)
+
+        self.setDt()
+        self.setCoupling()
+        if self.onNewTrack:
+            self.onNewTrackOperations()
+
+        self.shapeSubdomain()
+
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
+
+        # Motion, other operations
+        self.pMoving.preiterate(canPreassemble=False)
+        self.pFixed.preiterate(canPreassemble=False)
+
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
+
+        if self.hasPrinter:
+            self.deposit()
+
+        if self.isCoupled:
+            self.pFixed.substractExternal(self.pMoving, updateGamma=False)
+            self.pFixed.updateInterface( self.pMoving )
+            self.pMoving.updateInterface( self.pFixed )
+            # Set interface boundary conditions
+            self.pFixed.setGamma2Dirichlet()
+            self.pMoving.setGamma2Neumann()
+        self.setBCs()
+
+        self.pMoving.preAssemble(allocateLs=False)
+
+        if self.isCoupled:
+            # Pre-assembly, updating free dofs
+            self.pFixed.preAssemble(allocateLs=False)
+        
+            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+            # Assembly
+            self.pMoving.assemble( self.pFixed )
+            self.pFixed.assemble( self.pMoving )
+            # Build ls
+            ls.assemble()
+            # Solve ls
+            ls.solve()
+            # Recover solution
+            self.pFixed.gather()
+            self.pMoving.gather()
+
+            self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
+            self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
+            # Post iteration
+            self.pFixed.postIterate()
+            self.pMoving.postIterate()
+        else:
+            self.pFixed.clearGamma()
+            self.pFixed.preAssemble(allocateLs=True)
+            self.pFixed.iterate()
+            try:
+                self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
+            except ValueError:
+                self.writepos()
+                raise
+            self.pMoving.postIterate()
+
+        # Compute next dt && domain size
+        try:
+            self.update()
+        except ZeroDivisionError:
+            self.writepos()
+            raise
+        # Write vtk files
+        self.writepos()
+
+    def writepos( self ):
+        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
+        self.pFixed.writepos(
+            shift=-self.pFixed.mhs.position,
+            nodeMeshTags={
+                "gammaNodes":self.pFixed.gammaNodes,
+                "forcedDofs":self.pFixed.forcedDofs,
+                "activeInExternal":activeInExternal,
+                },
+            cellMeshTags={
+                "physicalDomain":self.physicalDomain,
+                },
+                          )
+        self.pMoving.writepos(
+            shift=-self.pFixed.mhs.position,
+            nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
+            )
+
+
+
 
 class DriverReference:
     def __init__(self, problem):
@@ -108,6 +203,13 @@ class DriverReference:
             dt = min(dt, maxDt)
         self.problem.setDt( dt )
 
+    def solve(self):
+        self.problem.iterate()
+    def writepos(self):
+        self.problem.writepos(
+                shift=-self.problem.mhs.position,
+                )
+
     def iterate( self ):
         self.setDtFromAdimR( 0.5, self.dt2trackEnd )
         tnp1 = self.problem.time + self.problem.dt
@@ -116,10 +218,55 @@ class DriverReference:
             self.printer.deposit( self.problem.mhs.position,
                                 self.problem.mhs.path.interpolatePosition(tnp1)
                                )
-        self.problem.setConvection( resetBcs = True )
-        self.problem.iterate()
+        #self.problem.setConvection( resetBcs = True )
+        self.solve()
         self.dt2trackEnd = self.problem.mhs.currentTrack.endTime - self.problem.time
         if self.dt2trackEnd < self.tol:
             self.nextTrack = self.problem.mhs.getNextTrack()
             self.dt2trackEnd = self.nextTrack.endTime - self.problem.time
-        self.problem.writepos()
+        self.writepos()
+
+class DriverAnalytical( DriverReference ):
+    def solve(self):
+        self.problem.fakeIter()
+        hs = self.problem.mhs
+        radius = hs.radius
+        rho = self.problem.material.density
+        k = self.problem.material.conductivity
+        cp = self.problem.material.specificHeat
+        Tenv = self.problem.input["environmentTemperature"]
+        speed = np.linalg.norm( hs.speed )
+        kappa = k / rho / cp
+        TRosenthal = np.zeros( self.problem.domain.mesh.nnodes )
+        TNGuyen = np.zeros( self.problem.domain.mesh.nnodes )
+        # Params NGuyen
+        time = self.problem.time
+        N = 3*np.sqrt(3) * hs.power / (rho*cp*np.power(np.pi, 1.5))
+        taoMax = time
+        taoSamples = np.linspace( 0, taoMax )
+        for inode in range(self.problem.domain.mesh.nnodes):
+            pos = self.problem.domain.mesh.pos[ inode, : ] - hs.position
+            R = np.linalg.norm( pos )
+            # Rosenthal solution
+            TRosenthal[inode] = Tenv + hs.power / 4 / np.pi / k / R * \
+                    np.exp( -speed*(R + pos[0]) / kappa )
+            # NGuyen solution
+            integrand = np.zeros( taoSamples.size )
+            for idx, tao in enumerate(taoSamples):
+                A1 = -3*((pos[0] - hs.speed[0]*(tao - time))**2 + pos[1]**2 + pos[2]**2)
+                A1 /= (12*kappa*(time-tao) + radius**2)
+                A1 = np.exp( A1 )
+                integrand[idx] = A1 / np.power( (12*kappa*(time-tao) + radius**2), 1.5)
+            integral = np.trapz( integrand, taoSamples )
+            TNGuyen[inode] = Tenv + N * integral
+
+        self.rosenthal = mhs.Function( self.problem.domain, TRosenthal )
+        self.nguyen = mhs.Function( self.problem.domain, TNGuyen )
+
+    def writepos(self):
+        self.problem.writepos(
+                functions={
+                    "TRosenthal":self.rosenthal,
+                    "TNGuyen":self.nguyen,
+                    },
+                )

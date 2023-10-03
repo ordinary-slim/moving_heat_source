@@ -49,6 +49,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_property_readonly("mhs", [](const Problem& p){ return p.mhs.get(); },
             py::return_value_policy::reference_internal)
         .def_readonly("domain", &Problem::domain)
+        .def_readonly("material", &Problem::material)
         .def_readwrite("time", &Problem::time)
         .def_readwrite("hasPreIterated", &Problem::hasPreIterated)
         .def_readonly("dt", &Problem::dt)
@@ -119,11 +120,10 @@ PYBIND11_MODULE(cpp, m) {
         .def("dim", &mesh::MeshTag<int>::dim)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
-    //DEBUG
-    py::class_<mesh::MeshTag<double>>(m, "MeshTagD")//TODO: do it in a loop
-        .def("dim", &mesh::MeshTag<double>::dim)
-        .def_readonly("x", &mesh::MeshTag<double>::x);
-    //EDEBUG
+    py::class_<ThermalMaterial>(m, "ThermalMaterial")//TODO: do it in a loop
+        .def_readonly("conductivity", &ThermalMaterial::conductivity)
+        .def_readonly("density", &ThermalMaterial::density)
+        .def_readonly("specificHeat", &ThermalMaterial::specificHeat);
     py::class_<mesh::Mesh>(m, "Mesh", py::dynamic_attr())
         //.def(py::init<const mesh::Mesh&>()) AABB_tree doesnt allow this
         .def(py::init<const py::dict&>())
