@@ -1,11 +1,10 @@
-\todo{Additive manufacturing is cool}\par
-\todo{However, simulation is slower than experiment}\par
-\todo{Simulation is difficult because
-is ``extremely multiscale'' \cite{Hodge2021}}\par
-\todo{Time scale of radius and constraint on timestep}\par
-\todo{Special techniques are required
-\cite{Puso2023, Viguerie2022}}\par
-\todo{Motivate new technique \cite{VanElsen2007, Mundra1996, Powar2016, Storti2022}}\par
+In the last 30 years, Additive Manufacturing (AM) of metals has transitioned from pro-
+totyping to a production technology. The intense and localized nature of the heat source
+generates thermal gradients which in turn produce residual stresses and part distorsion \cite{Fu2014}.
+These mechanisms may throw the product out of the threshold defined by the required geometrical
+and mechanical tolerances. The computational simulation of the process can help
+scientists, engineers and end users further understand these mechanisms and find ways to
+reduce their impact \cite{Lu2022}.\par
 
 \begin{table}[h]
   \centering
@@ -25,18 +24,22 @@ is ``extremely multiscale'' \cite{Hodge2021}}\par
   \label{tbl:scales}
 \end{table}
 
-Simulation is expensive due to the ``extremely multiscale'' nature
-of the problem \cite{Hodge2021}. Table \ref{tbl:scales}
+However, simulation of AM processes and in particular LPBF, is
+expensive due to the ``extremely multiscale'' nature
+of the problem \cite{Hodge2021}.
+Table \ref{tbl:scales}
 gives some magnitudes for the different scales involved in the AM process.
-The time scale of the heat source manifests at the discrete level
-as a constraint on the maximum timestep. It is useful to introduce
+The time scale of the heat source, obtained from its length scale and its speed,
+is prohibitively small in comparison to the total print time.
+Said scale manifests at the discrete level
+as a constraint on the maximum timestep; let us introduce
 as a unit of time the time it takes the heat source to travel a radius.
 
 \begin{equation}\label{eq:trad}
 \mathcal{R} = \frac{R}{V}
 \end{equation}
 
-For $\Delta t \geq 1 \mathcal{R}$, elements are skipped over resulting
+Then, for $\Delta t \geq 1 \mathcal{R}$, elements are skipped over resulting
 in a spotty pattern of the thermal field.
 \cite{Hodge2021} estimates that the simulation of a
 $19.2 \times 19.2 \times 19.2 mm^3$ cube LPBF print would take 
@@ -69,3 +72,5 @@ appear in the litterature:
     \cite{Puso2023} claims a speedup of at least a factor of 20
     using the multirate time integration described in \cite{Hodge2021}.
 \end{itemize}
+
+\todo{Motivate new technique \cite{VanElsen2007, Mundra1996, Powar2016, Storti2022}}\par

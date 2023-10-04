@@ -8,32 +8,41 @@ field $T = f(x,t)$ such that
 \begin{align}
   \rho c_p \partial_t T{\scriptstyle(x,t)} - \nabla \cdot (k \nabla T{\scriptstyle(x,t)}) &= r{\scriptstyle(x,t)}
   \qquad &\forall x &\in \Omega \label{eq:refheateq}\\
-  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}
+  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}\notag
 \end{align}
 
-, where $\rho, \enskip c_p, \enskip k \textrm{ and } r$
+, where $\rho, \enskip c_p, \enskip k, \enskip  r, \enskip q_{conv} \textrm{ and } h_{conv}$
 denote respectively
-the density, the specific heat, the conductivity and the volumetric
-heat source. In the boundary condition,
-$q_{conv}, \enskip h_{conv}$ denote the convective heat flux
-and coefficient.
-This is the simplest setting where
-the proposed method can be illustrated.
-Notably, the thermal dependency of the parameters
-and the latent heat are being neglected. The latent heat is
-arguably relevant in LPBF applications
-\cite{VanElsen2007, Hodge2021}.\par
+the density, the specific heat, the conductivity, volumetric
+heat source, the convection heat flux and the convection coefficient.
+The heat source adopted in this work is a standard Gaussian source:
+
+\begin{equation}\label{eq:heatsource}
+  r(x, t) = \frac{6 \sqrt{3} P}{ \pi^{3/2} R^3}
+  \exp\bigg( \frac{-3||\mathbf{x} - \mathbf{x_{hs}}||_2^2}{R^2}\bigg)
+\end{equation}
+
+, where $P, \enskip R \textrm{ and } \mathbf{x_{hs}}$
+denote respectively the power, the radius and the position
+of the heat source.\par
 
 The time dependency of the domain means, in the particular case
 of LPBF, 
 that the powder bed is not included.
-Numerically, this is modelled
-using  the born-dead element technique \cite{Chiumenti2010}:
+Numerically, the deposition of material
+is modelled using  the born-dead element
+technique \cite{Chiumenti2010}:
 elements that are \textit{inactive} are not included in the
 computational domain,
 and, at the beginning of each time step, a collision test
 is performed with the geometry of the deposition
 in order to \textit{activate} elements.\par
+
+Although missing important features like
+thermal dependency of the parameters, radiation heat loss and
+latent heat\cite{VanElsen2007, Hodge2021}, this problem
+has the advantage of being the simplest setting where
+the proposed method can be illustrated.\par
 
 The PDE \ref{eq:refheateq} is discretized in space using P1/Q1
 finite elements and in time using Backward Euler time integration
@@ -41,19 +50,55 @@ finite elements and in time using Backward Euler time integration
 
 \subsection{Proposed model}
 
-\todo{The model we propose is as follows}
+Let us denote the change of reference frame by
+
+$$
+\mathbf{\xi} = \mathbf{x} - \int_0^t \mathbf{V}(t) dt
+$$
+
+, where $\mathbf{V} = f(t)$ denotes the
+speed of the laser.
+The proposed model is as follows:
+in a \textit{moving} subdomain containing the heat source,
+$\Omega_m \subset \Omega$
+the problem is posed in its reference frame.
+In the remaining
+\textit{fixed} subdomain $\Omega_f \subset \Omega$,
+the problem is posed
+in the usual laboratory reference frame.
+The chosen domain decomposition framework is
+a standard Neumann Dirichlet non-overlapping decomposition,
+hence $\Omega_f = (\Omega \setminus \Omega_m)^{\mathrm{o}}$,
+where ${}^{\mathrm{o}}$ denotes the interior of a set. Let
+$\Gamma$ denote the interface between both subdomains,
+$\Gamma = \partial \Omega_m \cap \partial \Omega_f$. In this
+setting, the system \ref{eq:refheateq} now writes 
 
 \begin{align}
-  \label{eq:pdeddf}
-  \rho c_p \partial_t T_f - \nabla \cdot (k \nabla T_f) &= r(x - Vt) \qquad &x &\in \Omega_f\\
-  T_f &= T_m \qquad &x &\in \Gamma \notag
+  \rho c_p \Big( \partial_t T_m{\scriptstyle (\xi, t)} - \mathbf{V} \cdot \nabla T_m{\scriptstyle (\xi, t)} \Big) -
+  \nabla \cdot ( k \nabla T_m{\scriptstyle (\xi, t)}) &= r{\scriptstyle (\xi)}  &\xi &\in \Omega_m \label{eq:pdeddm} \\
+  k \partial_n T_m{\scriptstyle (\xi, t)} &= k \partial_n T_f  &\xi &\in \Gamma \notag\\
+  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_m{\scriptstyle(\xi,t)} - T_{env} ) \qquad &\xi &\in \partial \Omega_{m, \textrm{conv}}\notag\\
+  \rho c_p \partial_t T_f{\scriptstyle (x, t)} - \nabla \cdot (k \nabla T_f{\scriptstyle (x, t)}) &= r{\scriptstyle (x, t)} \qquad &x &\in \Omega_f \label{eq:pdeddf} \\
+  T_f{\scriptstyle (x, t)} &= T_m \qquad &x &\in \Gamma \notag\\
+  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_f{\scriptstyle(x,t)} - T_{env} ) \qquad &x &\in \partial \Omega_{f, \textrm{conv}}\notag
 \end{align}
+, where $\mathbf{V}$ denotes the speed of the heat source.
+
 \begin{align}
-  \label{eq:pdeddm}
-  \rho c_p \Big( \partial_t T_m - \mathbf{V} \cdot \nabla T_m \Big) -
-  \nabla \cdot ( k \nabla T_m) &= r(\xi)  &\xi &\in \Omega_m\\
-  k \partial_n T_m &= k \partial_n T_f  &\xi &\in \Gamma \notag
+  \int v_m \rho c_p \partial_t T_m 
+  - \int v_m \rho c_p \mathbf{V} \cdot \nabla T_m
+  + \int k \nabla v_m \cdot \nabla T_m
+  = \int v_m r
 \end{align}
+
+\todo{Finish weak forms}\par
+%As for the reference method, PDEs \ref{eq:pdeddm} and
+%\ref{eq:pdeddf} are discretized in space using P1/Q1 finite
+%elements and in time using Backward Euler.
+
+\todo{Talk about geometrical operations}\par
+\todo{Overview of timestep}\par
 
 \begin{figure}
   \castelincfig{nonOverlappingPartition}
