@@ -1,4 +1,4 @@
-\documentclass{elsarticle}
+\documentclass[authoryear]{elsarticle}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -24,10 +24,19 @@
 
 %TITLE
 \title{Domain Decomposition approach with moving subdomain for metallic Additive Manufacturing}
-\author[1]{Mehdi Slimani}
+\author[1]{Mehdi Slimani\corref{cor1}}
+\ead{mslimani@cimne.upc.edu}
 \author[1]{Miguel Cervera}
+\ead{miguel.cervera@cimne.upc.edu}
 \author[1]{Michele Chiumenti}
-\affiliation[1]{organization={CIMNE}}
+\ead{michele.chiumenti@cimne.upc.edu}
+\affiliation[1]{
+    organization={CIMNE},
+    adressline={UPC Campus Nord},
+    city={Barcelona},
+    country={Spain}
+}
+\cortext[cor1]{Corresponding author}
 \date{\today}
 %ETITLE
 
@@ -51,7 +60,7 @@
 \section{Conclusions}\label{sec:conclusions}
 \input{conclusions.tex}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{refs}
 
 \end{document}
