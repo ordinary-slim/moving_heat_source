@@ -1,10 +1,12 @@
-In the last 30 years, Additive Manufacturing (AM) of metals has transitioned from pro-
-totyping to a production technology. The intense and localized nature of the heat source
-generates thermal gradients which in turn produce residual stresses and part distorsion \cite{Fu2014}.
-These mechanisms may throw the product out of the threshold defined by the required geometrical
-and mechanical tolerances. The computational simulation of the process can help
-scientists, engineers and end users further understand these mechanisms and find ways to
-reduce their impact \cite{Lu2022}.\par
+In the last 30 years, Additive Manufacturing (AM) of metals has transitioned from
+prototyping to a production technology. The intense and localized nature of the
+heat source generates thermal gradients which in turn produce residual stresses
+and part distorsion \cite{Fu2014}.
+These mechanisms may throw the product out of the threshold defined by
+the required geometrical and mechanical tolerances.
+The computational simulation of the process can help
+scientists, engineers and end users further understand these mechanisms
+and find ways to reduce their impact \cite{Lu2022}.\par
 
 \begin{table}[h]
   \centering
@@ -15,7 +17,7 @@ reduce their impact \cite{Lu2022}.\par
     $L_{print}$ & $\mathcal{O}(1 m   )$ &  $\mathcal{O}(100 mm    )$  \\
     $L_{hs}$    & $\mathcal{O}(1 mm  )$ &  $\mathcal{O}(100 \mu m)$  \\
     $T_{print}$ & $\mathcal{O}(1 h   )$ &  $\mathcal{O}(1 h       )$  \\
-    $T_{hs}$    & $\mathcal{O}(0.1 s )$ &  $\mathcal{O}(0.001 s  )$  \\
+    $T_{hs}$    & $\mathcal{O}(0.1 s )$ &  $\mathcal{O}(0.0001-0.001 s  )$  \\
     \hline
   \end{tabular}
   \caption{Estimates for length and time scales involved in metallic AM. The time
@@ -24,16 +26,17 @@ reduce their impact \cite{Lu2022}.\par
   \label{tbl:scales}
 \end{table}
 
-However, simulation of AM processes and in particular LPBF, is
+However, simulation of AM processes and in particular Laser Powder Bed Fusion (LPBF), is
 expensive due to the ``extremely multiscale'' nature
 of the problem \cite{Hodge2021}.
 Table \ref{tbl:scales}
-gives some magnitudes for the different scales involved in the AM process.
+gives some estimates for the different scales involved in Directed Energy Deposition (DED) and LPBF.
 The time scale of the heat source, obtained from its length scale and its speed,
 is prohibitively small in comparison to the total print time.
 Said scale manifests at the discrete level
-as a constraint on the maximum timestep; let us introduce
-as a unit of time the time it takes the heat source to travel a radius.
+as a constraint on the maximum timestep; in this context
+it is useful to introduce as a unit
+the time it takes the heat source to travel a radius
 
 \begin{equation}\label{eq:trad}
 \mathcal{R} = \frac{R}{V}
@@ -41,22 +44,23 @@ as a unit of time the time it takes the heat source to travel a radius.
 
 Then, for $\Delta t \geq 1 \mathcal{R}$, elements are skipped over resulting
 in a spotty pattern of the thermal field.
-\cite{Hodge2021} estimates that the simulation of a
-$19.2 \times 19.2 \times 19.2 mm^3$ cube LPBF print would take 
-131 million timesteps with $\Delta t = 1 \mathcal{R}$ and
-874 million timesteps with $\Delta t = 0.15 \mathcal{R}$.
-Many authors opt for
+For this reason, many authors opt for
 $\Delta t = 0.5\mathcal{R}$ \cite{Patil2021, Michaleris2014, Stender2018}
 and commercial softwares like \texttt{Netfabb}
 do not allow for a time-step bigger than $1 \mathcal{R}$
 \footnote{\url{https://help.autodesk.com/view/NETF/2021/ENU/?guid=GUID-67A6D8F0-AA04-436B-9FAF-A912BE00B497}}.
+\cite{Hodge2021} estimates that the simulation of a
+$19.2 \times 19.2 \times 19.2 mm^3$ cube LPBF print would take 
+131 million timesteps with $\Delta t = 1 \mathcal{R}$ and
+874 million timesteps with $\Delta t = 0.15 \mathcal{R}$.
 This constraint being too restrictive, two sets of solutions
 appear in the litterature:
 
 \begin{itemize}
-  \item \textit{Lumped heat source}: Averaged source terms
+  \item \textit{Lumped heat source}: Replacing the accurate
+    heat source profile by averaged source terms
     like the ones proposed in \cite{Chiumenti2017, Malmelv2019}
-    allow one to bypass the restriction of
+    allows one to bypass the restriction of
     the heat source's timescale and time-step hatches
     or even layers at a time at the cost of accuracy.
     \cite{VanElsen2007} shows that although the
@@ -73,4 +77,20 @@ appear in the litterature:
     using the multirate time integration described in \cite{Hodge2021}.
 \end{itemize}
 
-\todo{Motivate new technique \cite{VanElsen2007, Mundra1996, Powar2016, Storti2022}}\par
+This work proposes a Domain Decomposition approach which poses the
+system in the vecinity of the Heat Affected Zone (HAZ) in the
+reference frame of the heat source, and the usual system is used
+in the rest of the domain. Since the moving heat source is the main driver
+of the process, it is plausible that most unknowns are
+better expressed and less transient in its coordinate frame in the region close to it.
+Moreover, multiple authors in the welding litterature
+have observed that steady state is reached rather quickly in the heating track
+\cite{Mundra1996, VanElsen2007, Powar2016}. In this work,
+the steadiness of the moving subproblem is taken advantage off 
+in order to take bigger and bigger timesteps.\par
+
+Although this work focuses on the benefits of this framework
+when tackling the temporal multiscale nature of AM,
+the increased accuracy of the results and benefits
+when tackling the spatial multiscale nature of AM \cite{Storti2022, carraturo2021twolevel}
+are also touched upon.\par

@@ -1,0 +1,43 @@
+In this work, the chosen reference model is
+the following linear heat equation with convection
+boundary conditions: solve for the temperature
+field $T = f(x,t)$ such that
+
+\begin{align}
+  \rho c_p \partial_t T{\scriptstyle(x,t)} - \nabla \cdot (k \nabla T{\scriptstyle(x,t)}) &= r{\scriptstyle(x,t)}
+  \qquad &\forall x &\in \Omega \label{eq:refheateq}\\
+  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}\notag
+\end{align}
+
+, where $\rho, \enskip c_p, \enskip k, \enskip  r, \enskip q_{conv} \textrm{ and } h_{conv}$
+denote respectively
+the density, the specific heat, the conductivity, volumetric
+heat source, the convection heat flux and the convection coefficient.
+The heat source adopted in this work is a standard Gaussian source:
+
+\begin{equation}\label{eq:heatsource}
+  r(\mathbf{x}, t) = \frac{6 \sqrt{3} P}{ \pi^{3/2} R^3}
+  \exp\bigg( \frac{-3||\mathbf{x} - \mathbf{x_{hs}}||_2^2}{R^2}\bigg)
+\end{equation}
+
+, where $P, \enskip R \textrm{ and } \mathbf{x_{hs}}$
+denote respectively the power, the radius and the position
+of the heat source.\par
+
+The time dependency of the domain is due to
+the deposition
+\footnote{ In the case of LPBF, this means that the powder is not modelled. }.
+Numerically, this is modelled using  the born-dead element
+technique \cite{Chiumenti2010}:
+elements that are \textit{inactive} are not included in the
+computational domain nor assembled,
+and, at the beginning of each time step, a collision test
+is performed with the geometry of the deposition
+in order to \textit{activate} elements corresponding to
+the newly deposited material.\par
+
+Although this model misses important features like
+thermal dependency of the parameters, radiation heat loss and
+latent heat\cite{VanElsen2007, Hodge2021},
+it has the advantage of being the simplest setting
+where the proposed method can be illustrated.\par
