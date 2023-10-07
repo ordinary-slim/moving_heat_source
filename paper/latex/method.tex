@@ -26,59 +26,84 @@ where ${}^{\mathrm{o}}$ denotes the interior of a set. Let
 $\Gamma$ denote the interface between both subdomains,
 $\Gamma = \partial \Omega_m \cap \partial \Omega_f$. In this
 setting, system \ref{eq:refheateq} can be rewritten as
+a coupled PDE system
 
 \begin{align}
   \rho c_p \Big( \partial_t T_m{\scriptstyle (\xi, t)} - \mathbf{V} \cdot \nabla T_m{\scriptstyle (\xi, t)} \Big) -
   \nabla \cdot ( k \nabla T_m{\scriptstyle (\xi, t)}) &= r{\scriptstyle (\xi)}  &\xi &\in \Omega_m \label{eq:pdeddm}\\
   k \partial_n T_m{\scriptstyle (\xi, t)} &= k \partial_n T_f  &\xi &\in \Gamma \notag\\
-  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_m{\scriptstyle(\xi,t)} - T_{env} ) \qquad &\xi &\in \partial \Omega_{m, \textrm{conv}}\notag\\
+  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_m{\scriptstyle(\xi,t)} - T_{\textrm{env}} ) \qquad &\xi &\in \partial \Omega_{m, \textrm{conv}}\notag\\
   \rho c_p \partial_t T_f{\scriptstyle (x, t)} - \nabla \cdot (k \nabla T_f{\scriptstyle (x, t)}) &= r{\scriptstyle (x, t)} \qquad &x &\in \Omega_f \label{eq:pdedf}\\
-  T_f{\scriptstyle (x, t)} &= T_m \qquad &x &\in \Gamma \notag\\
-  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_f{\scriptstyle(x,t)} - T_{env} ) \qquad &x &\in \partial \Omega_{f, \textrm{conv}}\notag
+  T_f{\scriptstyle (x, t)} &= T_m \qquad &x &\in \Gamma \label{eq:dirichletdf}\\
+  q_{\textrm{conv}} &= h_{\textrm{conv}} ( T_f{\scriptstyle(x,t)} - T_{\textrm{env}} ) \qquad &x &\in \partial \Omega_{f, \textrm{conv}}\notag
 \end{align}
-, where $\mathbf{V}$ denotes the speed of the heat source. Note that
+Note that
 the time dependency of heat source is absent from \ref{eq:pdeddm}
 Ideally, $\Omega_m$ is big enough
 to contain the whole support of the heat source such that
 the right hand side of \ref{eq:pdedf} is null.
-\textit{Steamline Upwind Petrov Galerkin} stabilization is chosen
-in order to take care of the newly introduced advection term
-in \ref{eq:pdeddm}. The corresponding weak forms write respectively
-
-\begin{align}
-  \label{eq:weakformdm}
-    \int_{\Omega_m} v_m \rho c_p \partial_t T_m 
-  - \int_{\Omega_m} v_m \rho c_p \mathbf{V} \cdot \nabla T_m
-  + \int_{\Omega_m} k \nabla v_m \cdot \nabla T_m&\\
-  - \int_{\partial \Omega_{m, \textrm{conv}}} \hspace{-8mm} v_m \mathbf{q_{conv}} \cdot \hat{n}
-  - \int_{\Gamma} k v_m \nabla T_f \cdot \hat{n} &\notag\\
-  + \int_{\Omega_m} \tau r_h  \rho \mathbf{V} \cdot \nabla v_m &= \int_{\Omega_m} v_m r \notag\\
-  \label{eq:weakformdf}
-    \int_{\Omega_f} v_f \rho c_p \partial_t T_f 
-  + \int_{\Omega_f} k \nabla v_f \cdot \nabla T_f
-  - \int_{\partial \Omega_{f, \textrm{conv}}} \hspace{-8mm} v_f \mathbf{q_{conv}} \cdot \hat{n} &= \int_{\Omega_f} v_f r
-\end{align}
-
-, where $r_h$ is the residual of equation \ref{eq:pdeddm}.
 For both this model and the reference, the spatial discretization
 is carried out using P1/Q1 finite elements and Backward Euler
 time integration. \citep{Puso2023} mentions that higher order
-time integrations will introduce further oscillations.\par
+time integrations will introduce further oscillations.
+\textit{Streamline Upwind Petrov-Galerkin} (SUPG) stabilization is chosen
+in order to take care of the newly introduced advection term
+in \ref{eq:pdeddm}. The corresponding semi-discrete weak forms write
+
+\begin{align}
+  \label{eq:weakformdm}
+    \int_{\Omega_m} v_m \rho c_p \partial_t \overline{T}_m 
+  - \int_{\Omega_m} v_m \rho c_p \mathbf{V} \cdot \nabla \overline{T}_m
+  + \int_{\Omega_m} k \nabla v_m \cdot \nabla \overline{T}_m&\\
+  - \int_{\partial \Omega_{m, \textrm{conv}}} \hspace{-8mm} v_m \mathbf{q_{conv}} \cdot \hat{n}
+  - \int_{\Gamma} k v_m \nabla \overline{T}_f \cdot \hat{n} &\notag\\
+  + \int_{\Omega_m} \tau R_h \rho \mathbf{V} \cdot \nabla v_m &= \int_{\Omega_m} v_m r \notag\\
+  \label{eq:weakformdf}
+    \int_{\Omega_f} v_f \rho c_p \partial_t \overline{T}_f 
+  + \int_{\Omega_f} k \nabla v_f \cdot \nabla \overline{T}_f
+  - \int_{\partial \Omega_{f, \textrm{conv}}} \hspace{-8mm} v_f \mathbf{q_{conv}} \cdot \hat{n} &= \int_{\Omega_f} v_f r
+\end{align}
+
+, where $R_h$ denotes the residual of equation \ref{eq:pdeddm}
+
+$$
+R_h = \rho c_p \partial_t \overline{T}_m + \rho c_p \mathbf{V} \cdot \nabla \overline{T}_m - \nabla \cdot ( k \nabla \overline{T}_m) - r
+$$
 
 % EXPLAIN MESHING
-After discretization, the algebraic form obtained from
-\ref{eq:weakformdm} and \ref{eq:weakformdf} writes as follows
+Both problems on $\Omega_m$ and $\Omega_f$
+are meshed separately, hence if both meshes
+have the same mesh size the interface nodes are duplicated.
+The described coupled problem is solved monolitically.
+Note that, since the Dirichlet values of boundary condition
+\ref{eq:dirichletdf} are not known before solving,
+they have to be imposed at the algebraic level.
+The resulting linear system writes
 
 \begin{equation}\label{eq:algebraic_coupled}
-  \begin{bmatrix}
-    \tilde{M} & \cdot \\
-    \cdot & \tilde{M}
-  \end{bmatrix}
+  \begin{pmatrix}
+    \frac{\tilde{M}_m}{\Delta t} + A_{m, m} & A_{m, m_\Gamma} & \cdot & \cdot \\[3mm]
+    A_{m_\Gamma, m} & \frac{\tilde{M}_{m_\Gamma}}{\Delta t} + A_{m_\Gamma, m_\Gamma} & \cdot & A_{m_\Gamma, f_\Gamma}  \\[3mm]
+    \cdot & A_{f, m_\Gamma} & \frac{\tilde{M}_{f}}{\Delta t}  + A_{f, f} & A_{f, f_\Gamma}  \\[3mm]
+    \cdot & C & \cdot & -I
+  \end{pmatrix}
+  \begin{pmatrix}
+    \overline{T}_m^{n+1}          \\[3mm]
+    \overline{T}_{m_\Gamma}^{n+1} \\[3mm]
+    \overline{T}_f^{n+1}          \\[3mm]
+    \overline{T}_{f_\Gamma}^{n+1}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    F_m          + \frac{\tilde{M}_m}{\Delta t} \overline{T}_m^{n}\\[3mm]
+    F_{m_\Gamma} + \frac{\tilde{M}_{m_\Gamma}}{\Delta t} \overline{T}_{m_\Gamma}^{n}\\[3mm]
+    F_{f}        + \frac{\tilde{M}_{f}}{\Delta t} \overline{T}_{f}^{n}\\[3mm]
+    \cdot
+  \end{pmatrix}
 \end{equation}
-
-% EXPLAIN ASSEMBLY
-\todo{Talk about geometrical operations}\par
-\todo{Overview of timestep}\par
+, where $\tilde{M}$ matrices denote modified mass matrices with an extra SUPG term,
+, the A matrices englobe advection, diffusion, Neumann and convection contributions
+where each of them apply and $C$ is a matrix whose rows add up to 1.\par
 
 \begin{figure}
   \castelincfig{nonOverlappingPartition}
@@ -86,6 +111,15 @@ After discretization, the algebraic form obtained from
   \label{fig:schematic}
 \end{figure}
 
+\todo{Talk about geometrical operations}\par
+\todo{Overview of timestep}\par
+\todo{
+  \begin{enumerate}
+    \item Why this model: more steady
+    \item Deciding $\Delta t$
+    \item Meshing of subdomain and deciding size/shape of subdomain
+  \end{enumerate}
+}
 
 \iffalse
 Show reference model

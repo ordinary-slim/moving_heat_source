@@ -6,7 +6,7 @@ field $T = f(x,t)$ such that
 \begin{align}
   \rho c_p \partial_t T{\scriptstyle(x,t)} - \nabla \cdot (k \nabla T{\scriptstyle(x,t)}) &= r{\scriptstyle(x,t)}
   \qquad &\forall x &\in \Omega \label{eq:refheateq}\\
-  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{env} ) \qquad & \forall x &\in \partial \Omega {}_{conv}\notag
+  q_{conv} &= h_{conv} ( T{\scriptstyle(x,t)} - T_{\textrm{env}} ) \qquad & \forall x &\in \partial \Omega {}_{conv}\notag
 \end{align}
 
 , where $\rho, \enskip c_p, \enskip k, \enskip  r, \enskip q_{conv} \textrm{ and } h_{conv}$
@@ -16,7 +16,7 @@ heat source, the convection heat flux and the convection coefficient.
 The heat source adopted in this work is a standard Gaussian source:
 
 \begin{equation}\label{eq:heatsource}
-  r(\mathbf{x}, t) = \frac{6 \sqrt{3} P}{ \pi^{3/2} R^3}
+  r{\scriptstyle(\mathbf{x}, t)} = \frac{6 \sqrt{3} P}{ \pi^{3/2} R^3}
   \exp\bigg( \frac{-3||\mathbf{x} - \mathbf{x_{hs}}||_2^2}{R^2}\bigg)
 \end{equation}
 
