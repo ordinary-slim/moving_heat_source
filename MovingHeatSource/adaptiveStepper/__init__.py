@@ -1,5 +1,5 @@
 import numpy as np
-import meshzoo
+import gmsh
 import MovingHeatSource as mhs
 from MovingHeatSource.gcode import gcode2laserPath
 import pdb
@@ -64,8 +64,7 @@ class AdaptiveStepper:
 
     def buildMovingProblem(self, elementSize=0.25):
         meshInputMoving = {}
-        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = self.meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
-        self.meshMoving = mhs.Mesh(meshInputMoving)
+        self.meshMoving = self.meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
         movingProblemInput = dict( self.pFixed.input )
         movingProblemInput["isStabilized"] = 1
         movingProblemInput["isAdvection"] = 1
@@ -330,33 +329,6 @@ class AdaptiveStepper:
         # Write vtk files
         self.writepos()
 
-    def meshRectangle(self, box, elementSize=0.25):
-        cell_type="quad4"
-        nelsX = round( (box[0][1]-box[0][0]) / elementSize )
-        nelsY = round( (box[1][1]-box[1][0]) / elementSize )
-        points, cells = meshzoo.rectangle_quad(
-            np.linspace(box[0][0], box[0][1], nelsX+1),
-            np.linspace(box[1][0], box[1][1], nelsY+1),
-            cell_type=cell_type
-            #variant="zigzag",  # or "up", "down", "center"
-        )
-        cells = cells.astype( int )
-        return points, cells, cell_type
-
-    def meshBox(self, box, elementSize=0.25):
-        cell_type="hexa8"
-        nelsX = round( (box[0][1]-box[0][0]) / elementSize )
-        nelsY = round( (box[1][1]-box[1][0]) / elementSize )
-        nelsZ = round( (box[2][1]-box[2][0]) / elementSize )
-
-        points, cells = meshzoo.cube_hexa(
-            np.linspace( box[0][0], box[0][1], nelsX+1),
-            np.linspace( box[1][1], box[1][0], nelsY+1),
-            np.linspace( box[2][1], box[2][0], nelsZ+1),
-        )
-        cells = cells.astype( np.uint32 )
-        return points, cells, cell_type
-
     def meshAroundHS( self, adimR, driver, elementSize=0.25 ):
         radius = driver.pFixed.mhs.radius
         minRadius = driver.adimMinRadius * radius
@@ -374,6 +346,92 @@ class AdaptiveStepper:
                [initialPosition[1] - lengths["halfLengthY"], initialPosition[1] + lengths["halfLengthY"]],
                [initialPosition[2] - lengths["halfLengthZ"], initialPosition[2] + lengths["halfLengthZ"]]] )
         if driver.pFixed.domain.dim()==2:
-            return self.meshRectangle(bounds, elementSize)
+            return meshRectangle(bounds[:2,:], elementSize)
         elif driver.pFixed.domain.dim()==3:
-            return self.meshBox(bounds, elementSize)
+            return meshBox(bounds, elementSize)
+
+def meshRectangle(box, elSize=0.25, popup=False):
+
+    gmsh.initialize()
+    box = box.reshape(4)
+    xMin, xMax, yMin, yMax = box
+    xLen  = xMax - xMin
+    yLen  = yMax - yMin
+    nelsX = np.round( xLen / elSize ).astype(int)
+    nelsY = np.round( yLen / elSize ).astype(int)
+
+    # negativeXFace 
+    gmsh.model.geo.addPoint( xMin, yMin, 0.0, tag = 1 )
+    gmsh.model.geo.addPoint( xMin, yMax, 0.0, tag = 2 )
+
+    line = gmsh.model.geo.addLine(  1, 2, tag=1 )
+
+    gmsh.model.geo.mesh.setTransfiniteCurve(line, nelsY+1)
+
+    # Extrusion
+    _, surface, _, _ = gmsh.model.geo.extrude([(1,line)], xLen, 0.0, 0.0,
+                           numElements=[nelsX], recombine=True)
+
+    gmsh.model.geo.synchronize()
+    gmsh.model.mesh.generate(2)
+
+    gmsh.model.addPhysicalGroup(2, [surface[-1]], tag=1, name="Domain")
+
+    if popup:
+        gmsh.fltk.run()
+
+    mesh = mhs.gmshModelToMesh( gmsh.model )
+    gmsh.finalize()
+    return mesh
+
+def meshBox(box, elSize=0.25, popup=False):
+
+    gmsh.initialize()
+    box = box.reshape(6)
+    xMin, xMax, yMin, yMax, zMin, zMax = box
+    xLen  = xMax - xMin
+    yLen  = yMax - yMin
+    zLen  = zMax - zMin
+    nelsX = np.round( xLen / elSize ).astype(int)
+    nelsY = np.round( yLen / elSize ).astype(int)
+    nelsZ = np.round( zLen / elSize ).astype(int)
+
+    # negativeXFace 
+    gmsh.model.geo.addPoint( xMin, yMin, zMin, tag = 1 )
+    gmsh.model.geo.addPoint( xMin, yMax, zMin, tag = 2 )
+    gmsh.model.geo.addPoint( xMin, yMax, zMax, tag = 3 )
+    gmsh.model.geo.addPoint( xMin, yMin, zMax, tag = 4 )
+
+    lines = []
+    lines.append( gmsh.model.geo.addLine(  1, 2, tag=1 ) )
+    lines.append( gmsh.model.geo.addLine(  2, 3, tag=2 ) )
+    lines.append( gmsh.model.geo.addLine(  3, 4, tag=3 ) )
+    lines.append( gmsh.model.geo.addLine(  4, 1, tag=4 ) )
+
+    for line in [1, 3]:
+        gmsh.model.geo.mesh.setTransfiniteCurve(line, nelsY+1)
+    for line in [2, 4]:
+        gmsh.model.geo.mesh.setTransfiniteCurve(line, nelsZ+1)
+
+    negativeXContour = gmsh.model.geo.addCurveLoop( lines, 1 )
+    negativeXFace = gmsh.model.geo.addPlaneSurface([negativeXContour], 1)
+
+    gmsh.model.geo.mesh.setTransfiniteSurface(negativeXFace)
+    gmsh.model.geo.mesh.setRecombine(2,negativeXFace) 
+
+    # Extrusion
+    gmsh.model.geo.extrude([(2,negativeXFace)], xLen, 0.0, 0.0,
+                           numElements=[nelsX], recombine=True)
+
+    gmsh.model.geo.synchronize()
+    gmsh.model.mesh.generate(3)
+
+    gmsh.model.addPhysicalGroup(3, [1], tag=1, name="Domain")
+
+    if popup:
+        gmsh.fltk.run()
+
+    mesh = mhs.gmshModelToMesh( gmsh.model )
+    gmsh.finalize()
+    return mesh
+

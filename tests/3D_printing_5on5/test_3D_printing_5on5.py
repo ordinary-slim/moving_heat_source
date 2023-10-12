@@ -1,22 +1,8 @@
 import MovingHeatSource as mhs
 import numpy as np
-import meshzoo
+from MovingHeatSource.adaptiveStepper import meshBox
 
 nsteps=5
-
-def mesh(box, elementSize):
-    cell_type="hexa8"
-    nelsX = int((box[1] - box[0])/elementSize)
-    nelsY = int((box[3] - box[2])/elementSize)
-    nelsZ = int((box[5] - box[4])/elementSize)
-
-    points, cells = meshzoo.cube_hexa(
-        np.linspace( box[0], box[1], nelsX+1),
-        np.linspace( box[3], box[2], nelsY+1),
-        np.linspace( box[5], box[4], nelsZ+1),
-    )
-    cells = cells.astype( np.uint32 )
-    return points, cells, cell_type
 
 def deactivateBelowSurface(p, surfaceZ = 0):
     nels = p.domain.mesh.nels
@@ -38,7 +24,7 @@ def setAdimR( adimR, input ):
 
 def run():
     inputFile = "input.yaml"
-    boxDomain = [-0.005, 0.005, -0.025, +0.025, 0.0, 0.02]
+    boxDomain = np.array([-0.005, 0.005, -0.025, +0.025, 0.0, 0.02])
 
     # read input
     problemInput = mhs.readInput( inputFile )
@@ -50,10 +36,7 @@ def run():
     fixedProblemInput = dict( problemInput )
 
     # Mesh
-    meshInputFixed = {}
-    meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, elementSize=0.01)
-
-    meshFixed  = mhs.Mesh(meshInputFixed)
+    meshFixed  = meshBox( boxDomain, elSize=0.01 )
 
     # mhs.Problem params
     # set dt

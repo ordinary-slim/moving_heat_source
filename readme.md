@@ -2,8 +2,9 @@ Moving heat sources using FEM
 
 To-do:
 ------
-- [ ] Investigate decrease / increase of dt
-- [ ] Replace meshzoo dependency by gmsh
+- [ ] Add 1d supg test case
+- [x] Investigate decrease / increase of dt
+- [x] Replace meshzoo dependency by gmsh
 - [ ] Look into why shapeSubdomain is slow (line profiling)
 - [ ] Check if point in ConstantFunction eval is in domain
 - [ ] Add interpolartion option for External methods

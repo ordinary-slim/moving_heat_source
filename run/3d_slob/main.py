@@ -62,7 +62,7 @@ def runCoupled():
     for input in [fixedProblemInput]:
         input["dt"] = dt
 
-    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixedConduc12")
+    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="new")
 
     deactivateBelowSurface( pFixed )
 
