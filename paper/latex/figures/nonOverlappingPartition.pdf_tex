@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.2.2 (1:1.2.2+202305151915+b0a8486541), www.inkscape.org
+%% Creator: Inkscape 1.3 (1:1.3+202307231459+0e150ed6c4), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'nonOverlappingPartition.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{501.91095621bp}%
+    \setlength{\unitlength}{515.90551181bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,18 +50,18 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.63606908)%
+  \begin{picture}(1,0.64285714)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{nonOverlappingPartition.pdf}}%
-    \put(0.00937207,0.00398478){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega_f (t^{n+1})$\end{tabular}}}}%
+    \put(0.01821752,0.01669831){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega_f (t^{n+1})$\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{nonOverlappingPartition.pdf}}%
-    \put(0.32319563,0.00398478){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Gamma(t^n)$\end{tabular}}}}%
-    \put(0.62205341,0.00398478){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega_m (t^{n+1})$\end{tabular}}}}%
+    \put(0.32352823,0.01669831){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Gamma(t^n)$\end{tabular}}}}%
+    \put(0.61427919,0.01669831){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega_m (t^{n+1})$\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{nonOverlappingPartition.pdf}}%
-    \put(0.47927932,0.62411474){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega$\end{tabular}}}}%
-    \put(0.85334136,0.00398478){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Gamma(t^{n+1})$\end{tabular}}}}%
+    \put(0.47537797,0.62000647){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Omega$\end{tabular}}}}%
+    \put(0.83929309,0.01669831){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Gamma(t^{n+1})$\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{nonOverlappingPartition.pdf}}%
-    \put(0.39858759,0.3222684){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$V \Delta t$\end{tabular}}}}%
+    \put(0.52261181,0.04993581){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$V\Delta t$\end{tabular}}}}%
   \end{picture}%
 \endgroup%

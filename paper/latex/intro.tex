@@ -36,13 +36,14 @@ is prohibitively small in comparison to the total print time.
 Said scale manifests at the discrete level
 as a constraint on the maximum timestep; in this context
 it is useful to introduce as a unit
-the time it takes the heat source to travel a radius
+the time it takes the heat source to travel a radius,
+$\enskip \mathcal{R} = \frac{R}{V} \enskip$. Then for
 
-\begin{equation}\label{eq:trad}
-\mathcal{R} = \frac{R}{V}
+\begin{equation}\label{eq:origconstraint}
+  \Delta t \geq 1 \mathcal{R}
 \end{equation}
 
-Then, for $\Delta t \geq 1 \mathcal{R}$, elements are skipped over resulting
+, elements are skipped over resulting
 in a spotty pattern of the thermal field.
 For this reason, many authors opt for
 $\Delta t = 0.5\mathcal{R}$ \citep{Patil2021, Michaleris2014, Stender2018}

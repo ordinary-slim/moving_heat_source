@@ -1,8 +1,11 @@
 \documentclass[authoryear]{elsarticle}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath}
+\usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{hyperref}
+
+\usepackage{cleveref}% multiple reference
 
 \graphicspath{{figures/}}
 
@@ -13,6 +16,8 @@
 \usepackage{transparent}
 % END CASTEL PACKAGES
 
+\usepackage{subcaption}
+
 \newcommand{\castelincfig}[2][1.0]{%
       \def\svgwidth{#1\columnwidth}
           \import{./figures/}{#2.pdf_tex}
@@ -21,6 +26,12 @@
 \newcommand{\todo}[1]{
   \textcolor{red}{\textbf{Todo}: #1}
 }
+\newcommand{\dependson}[1]{
+  {\scriptstyle(#1)}
+}
+
+\DeclareCaptionSubType*{figure}
+\renewcommand\thesubfigure{\Roman{subfigure}}
 
 \begin{document}
 

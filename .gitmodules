@@ -4,3 +4,7 @@
 [submodule "external/eigen"]
 	path = external/eigen
 	url = https://gitlab.com/libeigen/eigen
+[submodule "external/cgal"]
+	path = external/cgal
+	url = https://github.com/CGAL/cgal
+  branch = 5.5.x-branch

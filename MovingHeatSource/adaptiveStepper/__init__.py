@@ -13,15 +13,19 @@ class AdaptiveStepper:
 
     def __init__(self,
                  pFixed,
+                 isAdaptive=True,
                  factor=2,
                  maxAdimtDt=8,
                  threshold= 0.01,
                  elementSize=0.25,
+                 adimFineDt = 0.5,
                  adimMinRadius=2,
                  adimZRadius=None,
-                 isCoupled=True, ):
+                 isCoupled=True,
+                 ):
 
         self.pFixed = pFixed
+        self.isAdaptive = isAdaptive
         # Set up laser path
         if "path" in self.pFixed.input:
             self.pFixed.setPath( self.pFixed.input["path"] )
@@ -34,15 +38,13 @@ class AdaptiveStepper:
             self.adimZRadius = adimZRadius
         self.buildMovingProblem(elementSize=elementSize)
         # TODO: better initialization
-        self.adimFineDt = 0.5
-        self.adimFineSubdomainSize = 1
+        self.adimFineDt = adimFineDt
         self.threshold = threshold
         self.factor = factor
 
         self.dt = pFixed.dt
         tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
         self.adimDt = pFixed.dt / tscale
-        self.adimSubdomainSize = self.adimFineSubdomainSize
         self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time )
         self.update()
         self.onNewTrack = True
@@ -62,7 +64,7 @@ class AdaptiveStepper:
 
     def buildMovingProblem(self, elementSize=0.25):
         meshInputMoving = {}
-        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
+        meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = self.meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
         self.meshMoving = mhs.Mesh(meshInputMoving)
         movingProblemInput = dict( self.pFixed.input )
         movingProblemInput["isStabilized"] = 1
@@ -140,7 +142,6 @@ class AdaptiveStepper:
         if ( dt2trackEnd < 1e-7) or ( time== 0.0 ):#new track
             self.onNewTrack = True
             self.adimDt = self.adimFineDt
-            self.adimSubdomainSize = self.adimFineSubdomainSize
 
             if time != 0.0:
                 self.nextTrack = self.pFixed.mhs.getNextTrack()
@@ -320,58 +321,59 @@ class AdaptiveStepper:
             self.pMoving.postIterate()
 
         # Compute next dt && domain size
-        try:
-            self.update()
-        except ZeroDivisionError:
-            self.writepos()
-            raise
+        if self.isAdaptive:
+            try:
+                self.update()
+            except ZeroDivisionError:
+                self.writepos()
+                raise
         # Write vtk files
         self.writepos()
 
-def meshRectangle(box, elementSize=0.25):
-    cell_type="quad4"
-    nelsX = round( (box[0][1]-box[0][0]) / elementSize )
-    nelsY = round( (box[1][1]-box[1][0]) / elementSize )
-    points, cells = meshzoo.rectangle_quad(
-        np.linspace(box[0][0], box[0][1], nelsX+1),
-        np.linspace(box[1][0], box[1][1], nelsY+1),
-        cell_type=cell_type
-        #variant="zigzag",  # or "up", "down", "center"
-    )
-    cells = cells.astype( int )
-    return points, cells, cell_type
+    def meshRectangle(self, box, elementSize=0.25):
+        cell_type="quad4"
+        nelsX = round( (box[0][1]-box[0][0]) / elementSize )
+        nelsY = round( (box[1][1]-box[1][0]) / elementSize )
+        points, cells = meshzoo.rectangle_quad(
+            np.linspace(box[0][0], box[0][1], nelsX+1),
+            np.linspace(box[1][0], box[1][1], nelsY+1),
+            cell_type=cell_type
+            #variant="zigzag",  # or "up", "down", "center"
+        )
+        cells = cells.astype( int )
+        return points, cells, cell_type
 
-def meshBox(box, elementSize=0.25):
-    cell_type="hexa8"
-    nelsX = round( (box[0][1]-box[0][0]) / elementSize )
-    nelsY = round( (box[1][1]-box[1][0]) / elementSize )
-    nelsZ = round( (box[2][1]-box[2][0]) / elementSize )
+    def meshBox(self, box, elementSize=0.25):
+        cell_type="hexa8"
+        nelsX = round( (box[0][1]-box[0][0]) / elementSize )
+        nelsY = round( (box[1][1]-box[1][0]) / elementSize )
+        nelsZ = round( (box[2][1]-box[2][0]) / elementSize )
 
-    points, cells = meshzoo.cube_hexa(
-        np.linspace( box[0][0], box[0][1], nelsX+1),
-        np.linspace( box[1][1], box[1][0], nelsY+1),
-        np.linspace( box[2][1], box[2][0], nelsZ+1),
-    )
-    cells = cells.astype( np.uint32 )
-    return points, cells, cell_type
+        points, cells = meshzoo.cube_hexa(
+            np.linspace( box[0][0], box[0][1], nelsX+1),
+            np.linspace( box[1][1], box[1][0], nelsY+1),
+            np.linspace( box[2][1], box[2][0], nelsZ+1),
+        )
+        cells = cells.astype( np.uint32 )
+        return points, cells, cell_type
 
-def meshAroundHS( adimR, driver, elementSize=0.25 ):
-    radius = driver.pFixed.mhs.radius
-    minRadius = driver.adimMinRadius * radius
-    zRadius   = driver.adimZRadius * radius
-    initialPosition = driver.pFixed.mhs.position
-    lengths = {}
-    lengths["trailLength"] = adimR * radius
-    lengths["capotLength"] = min( lengths["trailLength"], minRadius )
-    lengths["halfLengthY"] = min( lengths["trailLength"], lengths["capotLength"] )
-    lengths["halfLengthZ"] = min( lengths["trailLength"], zRadius )
-    # Round to element size
-    for key in lengths.keys():
-        lengths[key] = np.ceil( lengths[key] / elementSize ) * elementSize
-    bounds = np.array( [[initialPosition[0] - lengths["trailLength"], initialPosition[0] + lengths["capotLength"]],
-           [initialPosition[1] - lengths["halfLengthY"], initialPosition[1] + lengths["halfLengthY"]],
-           [initialPosition[2] - lengths["halfLengthZ"], initialPosition[2] + lengths["halfLengthZ"]]] )
-    if driver.pFixed.domain.dim()==2:
-        return meshRectangle(bounds, elementSize)
-    elif driver.pFixed.domain.dim()==3:
-        return meshBox(bounds, elementSize)
+    def meshAroundHS( self, adimR, driver, elementSize=0.25 ):
+        radius = driver.pFixed.mhs.radius
+        minRadius = driver.adimMinRadius * radius
+        zRadius   = driver.adimZRadius * radius
+        initialPosition = driver.pFixed.mhs.position
+        lengths = {}
+        lengths["trailLength"] = adimR * radius
+        lengths["capotLength"] = min( lengths["trailLength"], minRadius )
+        lengths["halfLengthY"] = min( lengths["trailLength"], lengths["capotLength"] )
+        lengths["halfLengthZ"] = min( lengths["trailLength"], zRadius )
+        # Round to element size
+        for key in lengths.keys():
+            lengths[key] = np.ceil( lengths[key] / elementSize ) * elementSize
+        bounds = np.array( [[initialPosition[0] - lengths["trailLength"], initialPosition[0] + lengths["capotLength"]],
+               [initialPosition[1] - lengths["halfLengthY"], initialPosition[1] + lengths["halfLengthY"]],
+               [initialPosition[2] - lengths["halfLengthZ"], initialPosition[2] + lengths["halfLengthZ"]]] )
+        if driver.pFixed.domain.dim()==2:
+            return self.meshRectangle(bounds, elementSize)
+        elif driver.pFixed.domain.dim()==3:
+            return self.meshBox(bounds, elementSize)

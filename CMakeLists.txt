@@ -5,6 +5,7 @@ FILE(GLOB_RECURSE mySources cpp/*.cpp)
 
 add_subdirectory(external/pybind11)
 
+set(CGAL_DIR ${PROJECT_SOURCE_DIR}/external/cgal)
 find_package(CGAL REQUIRED)
 add_definitions(-DCGAL_USE_BASIC_VIEWER)
 

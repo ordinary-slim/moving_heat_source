@@ -11,7 +11,9 @@ void Problem::assembleNeumannGamma(const Problem *pExt) {
 
     for (int igp = 0; igp < facet.ngpoints; ++igp) {
 
+      // Position of gauss point in reference frame of external problem
       Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.translationLab - pExt->domain.translationLab;
+      // Find out which element of external mesh owns Gauss point
       int idx_el_ext = pExt->domain.findOwnerElements( xgp_ext );
       mesh::Element e_ext = pExt->domain.getElement( idx_el_ext );
 

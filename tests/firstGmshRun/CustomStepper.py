@@ -22,7 +22,6 @@ class CustomStepper(AdaptiveStepper):
         if ( dt2trackEnd < 1e-7) or ( time == 0.0 ):#new track
             self.onNewTrack = True
             self.adimDt = self.adimFineDt
-            self.adimSubdomainSize = self.adimFineSubdomainSize
         else:
             adimMaxDt = min( dt2trackEnd/tUnit, self.adimMaxDt )
             self.computeSteadinessMetric()
