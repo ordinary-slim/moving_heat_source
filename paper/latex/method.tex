@@ -253,6 +253,33 @@ with value 1 at the active nodes and 0 at the inactive nodes.
 At the receiving end of the projection, elements whom all of their nodes
 are 1-valued are declared as owned by the other mesh.\par
 
+\begin{algorithm}
+    \caption{Timestep}
+    \label{alg:timestep}
+    \begin{algorithmic} % The number tells where the line numbering should start
+        \LComment{Domains of pMoving and pFixed are $\Omega_m$ and $\Omega_f$ respectively.}
+        \State Reset activation on $\Omega_m$
+        \State Set activation of $\Omega_f$ to $\Omega$
+        \State Set $\Delta t$
+        \LComment{if on new track, settings}
+        \State Shape $\Omega_m$
+        \State $\Omega_m \cap \Omega_f$
+        \State Preiterate
+        \State $\Omega_m \cap \Omega_f$
+        \State Do deposition in $\Omega_m$
+        \State $\Omega_f \setminus \Omega_m$
+        \State Locate $\Gamma$ on both domains
+        \LComment{BCs}
+        \State Set gamma $\Omega_f$ to Dirichlet
+        \State Set gamma $\Omega_m$ to Neumann
+        \State Set BCs
+        \State Assemble pMoving and pFixed
+        \State Solve linear system
+        \State Interpolate inactive nodes of both
+        \State Compute steadiness and new $\Delta t$
+    \end{algorithmic}
+\end{algorithm}
+
 \iffalse
 Show reference model
 Go over limitations
