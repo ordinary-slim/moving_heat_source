@@ -12,7 +12,7 @@ def run2d():
     problemInput = dict( problemInput )
 
     # Mesh
-    myMesh = meshRectangle( box, elSize=0.25 )
+    myMesh = meshRectangle( box, elSize=[0.25]*2 )
 
     p = mhs.Problem(myMesh, problemInput, caseName="collisions_2d")
 
@@ -39,7 +39,7 @@ def run3d():
     problemInput = dict( problemInput )
 
     # Mesh
-    myMesh = meshBox( box, elSize=0.25 )
+    myMesh = meshBox( box, elSize=[0.25]*3 )
 
     p = mhs.Problem(myMesh, problemInput, caseName="collisions_3d")
 

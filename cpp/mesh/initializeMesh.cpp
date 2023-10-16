@@ -94,4 +94,7 @@ mesh::Mesh::Mesh(const py::dict &input) {
   // Build AABBs
   buildAABBTree();
 
+  if (input.contains("toleranceSearches")){
+    toleranceSearches = py::cast<double>( input["toleranceSearches"] );
+  }
 }

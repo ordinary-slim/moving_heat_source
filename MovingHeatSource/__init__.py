@@ -238,7 +238,7 @@ except ModuleNotFoundError:
     _has_gmsh = False
 
 if _has_gmsh:
-    def gmshModelToMesh( model: gmsh.model ):
+    def gmshModelToMesh( model: gmsh.model, tolSearch = 1e-10 ):
         '''
         gmsh model to points and cells
         Taken from Dolfinx project:
@@ -302,7 +302,9 @@ if _has_gmsh:
         return Mesh( {"points":points,
                       "cells":domainConnectivity,
                       "cell_type":gmshElType2myElType[ domainCellType ],
-                      "dimension":model.getDimension(), }
+                      "dimension":model.getDimension(),
+                      "toleranceSearches":tolSearch,
+                      }
                     )
     
 

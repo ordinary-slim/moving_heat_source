@@ -19,10 +19,9 @@ struct MyAABB {
     {1, -1}
   };
   constexpr static double stretch = 0.05;
-  constexpr static double pad = 1e-7;
 
   MyAABB() = default;
-  MyAABB( mesh::Element e );
+  MyAABB( mesh::Element e, double pad = 1e-7 );
 
 };
 

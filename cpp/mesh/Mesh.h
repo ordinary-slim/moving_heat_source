@@ -39,6 +39,7 @@ class Mesh {
     // Fast spatial search
     vector<MyAABB> elementAABBs;
     AABB_tree tree;
+    double toleranceSearches = 1e-10;
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
     Element getElement(int ielem) const;

@@ -36,7 +36,7 @@ def run():
     fixedProblemInput = dict( problemInput )
 
     # Mesh
-    meshFixed  = meshBox( boxDomain, elSize=0.01 )
+    meshFixed  = meshBox( boxDomain, elSize=[0.01]*3 )
 
     # mhs.Problem params
     # set dt

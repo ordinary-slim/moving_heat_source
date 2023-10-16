@@ -53,7 +53,6 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   Element cellEl;
   Element facetEl;
 
-  double narrowPhaseTol = 1e-10;//numerical tol
   indicesOwnerElements.reserve( potentialOwners.size() );
   for ( int ielem : potentialOwners ) {
     bool isInside = true;
@@ -65,7 +64,7 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
       facetEl = cellEl.getFacetElement( &facetLocalCon );
 
       double projection =  facetEl.normal.dot( point - facetEl.centroid );
-      if ( projection > +narrowPhaseTol ) {
+      if ( projection > +toleranceSearches ) {
         isInside = false;
         break;
       }
@@ -129,7 +128,7 @@ void Mesh::buildAABBTree() {
 void Mesh::updateAABBTree() {
   for (int ielem = 0; ielem < nels; ++ielem) {
     Element e = getElement(ielem);
-    elementAABBs[ielem] = MyAABB( e );
+    elementAABBs[ielem] = MyAABB( e, toleranceSearches );
   }
   tree.rebuild(elementAABBs.begin(), elementAABBs.end());
 }

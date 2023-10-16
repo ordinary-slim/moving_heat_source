@@ -17,7 +17,8 @@ class AdaptiveStepper:
                  factor=2,
                  maxAdimtDt=8,
                  threshold= 0.01,
-                 elementSize=0.25,
+                 elementSize=[0.25]*3,
+                 shift=None,
                  adimFineDt = 0.5,
                  adimMinRadius=2,
                  adimZRadius=None,
@@ -36,7 +37,7 @@ class AdaptiveStepper:
         self.adimZRadius = adimMinRadius
         if not(adimZRadius is None):
             self.adimZRadius = adimZRadius
-        self.buildMovingProblem(elementSize=elementSize)
+        self.buildMovingProblem(elementSize=elementSize, shift=shift)
         # TODO: better initialization
         self.adimFineDt = adimFineDt
         self.threshold = threshold
@@ -62,9 +63,13 @@ class AdaptiveStepper:
         self.metric = 1e99
 
 
-    def buildMovingProblem(self, elementSize=0.25):
+    def buildMovingProblem(self, elementSize, shift):
         meshInputMoving = {}
-        self.meshMoving = self.meshAroundHS(self.adimMaxSubdomainSize, self, elementSize=elementSize)
+        try:
+            len(elementSize)
+        except TypeError:
+            elementSize = [elementSize]*3
+        self.meshMoving = self.meshAroundHS(elementSizes=elementSize, shift=shift)
         movingProblemInput = dict( self.pFixed.input )
         movingProblemInput["isStabilized"] = 1
         movingProblemInput["isAdvection"] = 1
@@ -329,36 +334,46 @@ class AdaptiveStepper:
         # Write vtk files
         self.writepos()
 
-    def meshAroundHS( self, adimR, driver, elementSize=0.25 ):
-        radius = driver.pFixed.mhs.radius
-        minRadius = driver.adimMinRadius * radius
-        zRadius   = driver.adimZRadius * radius
-        initialPosition = driver.pFixed.mhs.position
+    def meshAroundHS( self, elementSizes, shift=None ):
+        # Compute lengths of box
+        radius = self.pFixed.mhs.radius
+        minRadius = self.adimMinRadius * radius
+        zRadius   = self.adimZRadius * radius
+        meshCenter = np.array(self.pFixed.mhs.position)
+        if not(shift is None):
+            meshCenter += shift
         lengths = {}
-        lengths["trailLength"] = adimR * radius
+        lengths["trailLength"] = self.adimMaxSubdomainSize * radius
         lengths["capotLength"] = min( lengths["trailLength"], minRadius )
         lengths["halfLengthY"] = min( lengths["trailLength"], lengths["capotLength"] )
         lengths["halfLengthZ"] = min( lengths["trailLength"], zRadius )
         # Round to element size
-        for key in lengths.keys():
-            lengths[key] = np.ceil( lengths[key] / elementSize ) * elementSize
-        bounds = np.array( [[initialPosition[0] - lengths["trailLength"], initialPosition[0] + lengths["capotLength"]],
-               [initialPosition[1] - lengths["halfLengthY"], initialPosition[1] + lengths["halfLengthY"]],
-               [initialPosition[2] - lengths["halfLengthZ"], initialPosition[2] + lengths["halfLengthZ"]]] )
-        if driver.pFixed.domain.dim()==2:
-            return meshRectangle(bounds[:2,:], elementSize)
-        elif driver.pFixed.domain.dim()==3:
-            return meshBox(bounds, elementSize)
+        for key in ["trailLength", "capotLength"]:
+            lengths[key] = np.ceil( lengths[key] / elementSizes[0] ) * elementSizes[0]
+        lengths["halfLengthY"] = np.ceil( lengths["halfLengthY"] / elementSizes[1] ) * elementSizes[1]
+        lengths["halfLengthZ"] = np.ceil( lengths["halfLengthZ"] / elementSizes[2] ) * elementSizes[2]
+        # Define box
+        bounds = np.array( [[meshCenter[0] - lengths["trailLength"], meshCenter[0] + lengths["capotLength"]],
+               [meshCenter[1] - lengths["halfLengthY"], meshCenter[1] + lengths["halfLengthY"]],
+               [meshCenter[2] - lengths["halfLengthZ"], meshCenter[2] + lengths["halfLengthZ"]]] )
+        # Mesh
+        tolSearch = 1e-10
+        if "toleranceSearches" in self.pFixed.input:
+            tolSearch = self.pFixed.input["toleranceSearches"]
+        if self.pFixed.domain.dim()==2:
+            return meshRectangle(bounds[:2,:], elementSizes, tolSearch = tolSearch)
+        elif self.pFixed.domain.dim()==3:
+            return meshBox(bounds, elementSizes, tolSearch = tolSearch)
 
-def meshRectangle(box, elSize=0.25, popup=False):
+def meshRectangle(box, elSize=[0.25]*2, tolSearch = 1e-10, popup=False):
 
     gmsh.initialize()
     box = box.reshape(4)
     xMin, xMax, yMin, yMax = box
     xLen  = xMax - xMin
     yLen  = yMax - yMin
-    nelsX = np.round( xLen / elSize ).astype(int)
-    nelsY = np.round( yLen / elSize ).astype(int)
+    nelsX = np.round( xLen / elSize[0] ).astype(int)
+    nelsY = np.round( yLen / elSize[1] ).astype(int)
 
     # negativeXFace 
     gmsh.model.geo.addPoint( xMin, yMin, 0.0, tag = 1 )
@@ -380,11 +395,11 @@ def meshRectangle(box, elSize=0.25, popup=False):
     if popup:
         gmsh.fltk.run()
 
-    mesh = mhs.gmshModelToMesh( gmsh.model )
+    mesh = mhs.gmshModelToMesh( gmsh.model, tolSearch=tolSearch )
     gmsh.finalize()
     return mesh
 
-def meshBox(box, elSize=0.25, popup=False):
+def meshBox(box, elSize=[0.25]*3, tolSearch = 1e-10, popup=False):
 
     gmsh.initialize()
     box = box.reshape(6)
@@ -392,9 +407,9 @@ def meshBox(box, elSize=0.25, popup=False):
     xLen  = xMax - xMin
     yLen  = yMax - yMin
     zLen  = zMax - zMin
-    nelsX = np.round( xLen / elSize ).astype(int)
-    nelsY = np.round( yLen / elSize ).astype(int)
-    nelsZ = np.round( zLen / elSize ).astype(int)
+    nelsX = np.round( xLen / elSize[0] ).astype(int)
+    nelsY = np.round( yLen / elSize[1] ).astype(int)
+    nelsZ = np.round( zLen / elSize[2] ).astype(int)
 
     # negativeXFace 
     gmsh.model.geo.addPoint( xMin, yMin, zMin, tag = 1 )
@@ -431,7 +446,7 @@ def meshBox(box, elSize=0.25, popup=False):
     if popup:
         gmsh.fltk.run()
 
-    mesh = mhs.gmshModelToMesh( gmsh.model )
+    mesh = mhs.gmshModelToMesh( gmsh.model, tolSearch=tolSearch )
     gmsh.finalize()
     return mesh
 
