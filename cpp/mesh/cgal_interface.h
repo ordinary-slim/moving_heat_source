@@ -8,8 +8,7 @@
 #include <algorithm>
 
 using inex_K      = CGAL::Simple_cartesian<double>;
-using ex_inex_K   = CGAL::Exact_predicates_inexact_constructions_kernel;
-using Plane3_CGAL = ex_inex_K::Plane_3;
+using Plane3_CGAL = inex_K::Plane_3;
 
 struct MyAABB {
   int ielem = -1;

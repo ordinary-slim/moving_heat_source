@@ -12,6 +12,9 @@ problemInput = mhs.readInput( inputFile )
 gcodeFile = problemInput["path"]
 tol = 1e-7
 maxIter = np.inf
+caseName="case"
+factorFineEl = problemInput["factorFineEl"]
+
 
 # read input
 problemInput = mhs.readInput( inputFile )
@@ -32,12 +35,12 @@ def setAdimR( adimR, input ):
     speed  = np.linalg.norm( input["HeatSourceSpeed"] )
     return (adimR * r / speed)
 
-def runReference():
+def runReference(caseName="reference"):
     mesh = getMeshPhysical()
-    pReference = mhs.Problem( mesh, problemInput, caseName="reference" )
+    pReference = mhs.Problem( mesh, problemInput, caseName=caseName)
     deactivateBelowSurface( pReference ) 
 
-    driver = DriverReference( pReference )
+    driver = DriverReference( pReference, adimDt=0.25 )
 
     logger = MyLogger()
 
@@ -49,7 +52,7 @@ def runReference():
     with open("reference.log", "wb") as reflog:
         pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
-def runCoupled():
+def runCoupled(caseName="coupled"):
     adimR_tstep = 2
     fixedProblemInput = dict( problemInput )
 
@@ -62,11 +65,12 @@ def runCoupled():
     for input in [fixedProblemInput]:
         input["dt"] = dt
 
-    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="new")
+    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName=caseName)
 
     deactivateBelowSurface( pFixed )
 
-    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize/2, threshold=0.2, adimMinRadius=1.25, adimZRadius=1.0 )
+    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize/4, threshold=0.2, adimMinRadius=2, adimZRadius=2,
+                           adimFineDt=2)
     
     logger = MyLogger()
     iteration = 0
@@ -104,11 +108,13 @@ if __name__=="__main__":
             nLayers = int( arg.split("=")[-1] )
         if "--maxIter" in arg:
             maxIter = int( arg.split("=")[-1] )
+        if "--case-name" in arg:
+            caseName = arg.split("=")[-1]
     writeGcode( nLayers=nLayers )
 
     if isRunReference:
-        runReference()
+        runReference(caseName=caseName)
     if isRunCoupled:
-        runCoupled()
+        runCoupled(caseName=caseName)
     if isRunAnalytical:
         runAnalytical()

@@ -14,6 +14,14 @@ class CustomStepper(AdaptiveStepper):
     lastVals4mean = 2
     maximumTs = [np.inf]*(lastVals4mean+1)
 
+    def onNewTrackOperations(self):
+        self.rotateSubdomain()
+        self.isCoupled = True
+        speed = self.nextTrack.getSpeed()
+        self.pMoving.setAdvectionSpeed( -speed )
+        self.pMoving.domain.setSpeed( speed )
+        self.pMoving.mhs.setPower( self.nextTrack.power )
+
     def shapeSubdomain( self ):
         '''
         At t^n, do things
@@ -44,7 +52,7 @@ class CustomStepper(AdaptiveStepper):
 
 
     def increaseDt( self ):
-        self.adimDt = self.adimDt + 0.5
+        self.adimDt = self.adimDt
         for _ in range( self.lastVals4mean ):
             self.maximumTs.append( np.inf )
 
@@ -54,8 +62,6 @@ class CustomStepper(AdaptiveStepper):
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        #adimSubdomainSize = max(self.adimSubdomainSize, 2.75)
-        #adimSubdomainSize = min(self.adimDt + 2.0, self.adimDt * 2 )
         return adimDt + 4
 
     def computeSteadinessMetric( self, verbose=True ):
@@ -179,12 +185,13 @@ class CustomStepper(AdaptiveStepper):
 
 
 class DriverReference:
-    def __init__(self, problem):
+    def __init__(self, problem, adimDt=0.5):
         self.problem = problem
         if "path" in self.problem.input:
             self.problem.setPath( self.problem.input["path"] )
         self.dt2trackEnd = None
         self.printer = None
+        self.adimDt  = adimDt
         if "printer" in self.problem.input:
             self.printer = mhs.Printer( self.problem,
                                      self.problem.input["printer"]["width"],
@@ -211,7 +218,7 @@ class DriverReference:
                 )
 
     def iterate( self ):
-        self.setDtFromAdimR( 0.5, self.dt2trackEnd )
+        self.setDtFromAdimR( self.adimDt, self.dt2trackEnd )
         tnp1 = self.problem.time + self.problem.dt
         track = self.problem.mhs.path.interpolateTrack( tnp1 )
         if (track.hasDeposition) and (self.printer is not None):
