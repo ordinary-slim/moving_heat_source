@@ -27,6 +27,7 @@ class AdaptiveStepper:
 
         self.pFixed = pFixed
         self.isAdaptive = isAdaptive
+        self.adimFineDt = adimFineDt
         # Set up laser path
         if "path" in self.pFixed.input:
             self.pFixed.setPath( self.pFixed.input["path"] )
@@ -39,7 +40,6 @@ class AdaptiveStepper:
             self.adimZRadius = adimZRadius
         self.buildMovingProblem(elementSize=elementSize, shift=shift)
         # TODO: better initialization
-        self.adimFineDt = adimFineDt
         self.threshold = threshold
         self.factor = factor
 
@@ -115,12 +115,12 @@ class AdaptiveStepper:
         return (self.metric < self.threshold)
 
     def increaseDt( self ):
-        self.adimDt = min( self.factor * self.adimDt, self.adimDt + 1 )
+        self.adimDt = min( self.factor * self.adimDt, self.adimDt + 2*self.adimFineDt )
 
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        return min(adimDt + 2.0, adimDt * 2 )
+        return min(adimDt + 4*self.adimFineDt, adimDt * 2 )
 
     def setSizeSubdomain( self ):
         self.adimSubdomainSize = self.computeSizeSubdomain()
@@ -158,7 +158,7 @@ class AdaptiveStepper:
             if (maxDt2TrackEnd > self.adimMinRadius + 1e-7):
                 maxDt2TrackEnd -= self.adimMinRadius
             else:
-                maxDt2TrackEnd = min( 0.5, adimDt2TrackEnd )
+                maxDt2TrackEnd = min( self.adimFineDt, adimDt2TrackEnd )
 
             adimMaxDt = min( maxDt2TrackEnd, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
@@ -179,6 +179,9 @@ class AdaptiveStepper:
             currentOrientation = self.pFixed.mhs.currentTrack.getSpeed()
         if nextOrientation is None:
             nextOrientation    = self.nextTrack.getSpeed()
+        # If z-motion, do nothing
+        if (np.linalg.norm( np.cross(nextOrientation, np.array([0.0, 0.0, 1.0])) ) < 1e-7):
+            return
         center = self.pMoving.mhs.position
         angle = np.arccos( np.dot( nextOrientation, currentOrientation ) / np.linalg.norm( nextOrientation ) / np.linalg.norm( currentOrientation ) )
         if (angle > 1e-5):
@@ -203,7 +206,7 @@ class AdaptiveStepper:
 
         #backRadiusObb = max(backRadius - radius, 0.0)
         p0 = self.pMoving.mhs.position - backRadius*xAxis
-        p1 = self.pMoving.mhs.position + self.adimMinRadius*xAxis
+        p1 = self.pMoving.mhs.position + self.adimMinRadius*radius*xAxis
         obb = mhs.MyOBB( p0, p1, 2*sideRadius, 2*zRadius )
         subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
         #collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
