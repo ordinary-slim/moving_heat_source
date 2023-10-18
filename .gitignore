@@ -13,3 +13,5 @@ dist
 *.so
 *.asv
 *.npz
+.cache
+compile_commands.json
