@@ -112,6 +112,11 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   if (input.contains("speedDomain")) {
     domain.setSpeed( CreateEigenVector(py::array_t<double>(input["speedDomain"])) );
   }
+
+  // Choose symmetric solver if applies
+  if (input.contains("isSymmetric")) {
+    isSymmetric = py::cast<bool>(input["isSymmetric"]);
+  }
 }
 
 Eigen::VectorXd CreateEigenVector(py::array_t<double> n) {

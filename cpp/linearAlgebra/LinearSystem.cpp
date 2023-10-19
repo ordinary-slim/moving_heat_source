@@ -62,10 +62,27 @@ std::shared_ptr<LinearSystem> LinearSystem::Create(Problem &p1, Problem &p2) {
 }
 
 void LinearSystem::solve() {
-  //Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double> > solver;
-  //Solve linear system
   if (not(_ndofs)) { return; }
+  externalSolve( lhs, rhs, sol );
+}
+
+void LinearSystem::assemble() {
+  lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+}
+
+void LinearSystem::setSolver(bool isSymmetric) {
+  if (isSymmetric) {
+    externalSolve = &solveEigenCG;
+  } else {
+    externalSolve = &solveEigenBiCGSTAB;
+  }
+}
+
+void solveEigenBiCGSTAB( Eigen::SparseMatrix<double> &lhs,
+                         Eigen::VectorXd &rhs,
+                         Eigen::VectorXd &sol ) {
+
+  Eigen::BiCGSTAB<Eigen::SparseMatrix<double> > solver;
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
@@ -73,7 +90,15 @@ void LinearSystem::solve() {
   }
   sol = solver.solve(rhs);
 }
+void solveEigenCG( Eigen::SparseMatrix<double> &lhs,
+                   Eigen::VectorXd &rhs,
+                   Eigen::VectorXd &sol ) {
 
-void LinearSystem::assemble() {
-  lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double> > solver;
+  solver.compute( lhs );
+  if (not(solver.info() == Eigen::Success)) {
+    std::cout << "Singular matrix!" << std::endl;
+    exit(-1);
+  }
+  sol = solver.solve(rhs);
 }

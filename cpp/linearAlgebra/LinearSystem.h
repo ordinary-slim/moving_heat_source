@@ -7,6 +7,14 @@
 #include <memory>
 
 class Problem;// Forward declaration of problem class
+              //
+void solveEigenBiCGSTAB( Eigen::SparseMatrix<double> &lhs,
+                         Eigen::VectorXd &rhs,
+                         Eigen::VectorXd &sol );
+void solveEigenCG( Eigen::SparseMatrix<double> &lhs,
+                   Eigen::VectorXd &rhs,
+                   Eigen::VectorXd &sol );
+
 
 class LinearSystem 
   : public std::enable_shared_from_this<LinearSystem>
@@ -40,5 +48,9 @@ class LinearSystem
 
     void assemble();
     void solve();
+    void (*externalSolve)( Eigen::SparseMatrix<double> &,
+                           Eigen::VectorXd &,
+                           Eigen::VectorXd &) = &solveEigenBiCGSTAB;
+    void setSolver(bool isSymmetric = false);
 };
 #endif

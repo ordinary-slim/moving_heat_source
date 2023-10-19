@@ -21,6 +21,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("assemble", &LinearSystem::assemble)
         .def("solve", &LinearSystem::solve)
         .def("cleanup", &LinearSystem::cleanup)
+        .def("setSolver", &LinearSystem::setSolver)
         .def("ndofs", &LinearSystem::getNdofs);
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         //.def(py::init<Problem>())//copy constructor

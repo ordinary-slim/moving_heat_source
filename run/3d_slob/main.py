@@ -48,9 +48,8 @@ def runReference(caseName="reference"):
     while not(driver.problem.mhs.path.isOver(pReference.time)) and (iteration < maxIter):
         logger.iterate( driver )
         iteration += 1
-
-    with open("reference.log", "wb") as reflog:
-        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
+        with open(caseName + ".log", "wb") as reflog:
+            pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 def runCoupled(caseName="coupled"):
     adimR_tstep = 2
@@ -77,9 +76,8 @@ def runCoupled(caseName="coupled"):
     while (not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) and (iteration < maxIter)):
         logger.iterate( driver )
         iteration += 1
-
-    with open("coupled.log", "wb") as reflog:
-        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
+        with open(caseName + ".log", "wb") as reflog:
+            pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 def runAnalytical():
     mesh = getMeshPhysical()

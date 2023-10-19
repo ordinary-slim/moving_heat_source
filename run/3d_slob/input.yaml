@@ -22,4 +22,5 @@ SUPG : 1
 substrate : [8, 3.2, 1.6]
 part: [6, 0.8, 0.8]
 path: "Path.gcode"
-factorFineEl: 1
+factorFineEl: 2
+isSymmetric: True

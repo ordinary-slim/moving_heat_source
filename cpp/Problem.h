@@ -40,6 +40,7 @@ class Problem {
 
     bool isAdvection = false;
     bool isSteady    = false;
+    bool isSymmetric = false;
     int stabilizationScheme = 0;// 0 is no stabilization
                                 // 1 is SUPG
     Eigen::Vector3d advectionSpeed;
