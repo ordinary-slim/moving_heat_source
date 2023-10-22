@@ -164,8 +164,8 @@ if __name__=="__main__":
 
         pMoving.intersectExternal(pFixed, updateGamma=False)
 
-        pFixed.preiterate( canPreassemble=False )
-        pMoving.preiterate( canPreassemble=False )
+        pFixed.preIterate( canPreassemble=False )
+        pMoving.preIterate( canPreassemble=False )
 
         pMoving.intersectExternal(pFixed, updateGamma=False)
         pFixed.substractExternal(pMoving, updateGamma=True)

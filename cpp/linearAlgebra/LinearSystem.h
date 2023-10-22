@@ -7,11 +7,12 @@
 #include <memory>
 
 class Problem;// Forward declaration of problem class
-              //
-void solveEigenBiCGSTAB( Eigen::SparseMatrix<double> &lhs,
+namespace mesh { class Domain; }// Forward declaration within a namespace
+
+void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &rhs,
                          Eigen::VectorXd &sol );
-void solveEigenCG( Eigen::SparseMatrix<double> &lhs,
+void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                    Eigen::VectorXd &rhs,
                    Eigen::VectorXd &sol );
 
@@ -20,7 +21,7 @@ class LinearSystem
   : public std::enable_shared_from_this<LinearSystem>
 {
   public:
-    Eigen::SparseMatrix<double> lhs;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> lhs;
     Eigen::VectorXd rhs;
     size_t _ndofs;
     std::vector<Eigen::Triplet<double>> lhsCoeffs;
@@ -29,6 +30,9 @@ class LinearSystem
     LinearSystem() = default;
     LinearSystem(Problem &p);
     LinearSystem(Problem &p1, Problem &p2);
+
+    // For solving projections
+    LinearSystem(mesh::Domain &d);
 
     static std::shared_ptr<LinearSystem> Create(Problem &p1, Problem &p2);
 
@@ -39,6 +43,7 @@ class LinearSystem
     }
 
     void concatenateProblem(Problem &p);
+    void concatenateDomain(mesh::Domain &d);
 
     int getNdofs() { return _ndofs; }
     void allocate() {
@@ -48,7 +53,7 @@ class LinearSystem
 
     void assemble();
     void solve();
-    void (*externalSolve)( Eigen::SparseMatrix<double> &,
+    void (*externalSolve)( Eigen::SparseMatrix<double, Eigen::RowMajor> &,
                            Eigen::VectorXd &,
                            Eigen::VectorXd &) = &solveEigenBiCGSTAB;
     void setSolver(bool isSymmetric = false);

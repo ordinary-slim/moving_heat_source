@@ -19,8 +19,7 @@ isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
 SUPG : 1
-substrate : [8, 3.2, 1.6]
-part: [6, 0.8, 0.8]
+substrate : [6, 3.2, 1.6]
+part: [4, 0.8, 0.8]
 path: "Path.gcode"
-factorFineEl: 2
-isSymmetric: True
+factorFineEl: 4

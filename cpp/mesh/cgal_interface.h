@@ -17,10 +17,14 @@ struct MyAABB {
     {1, -1},
     {1, -1}
   };
-  constexpr static double stretch = 0.05;
 
+  MyAABB( Eigen::Vector3d position, Eigen::Vector3d halfSizes, bool shrink = true );
   MyAABB() = default;
-  MyAABB( mesh::Element e, double pad = 1e-7 );
+  MyAABB( mesh::Element e, double pad = 1e-7, double stretch = 0.05 );
+
+  explicit operator inex_K::Iso_cuboid_3() const {
+      return inex_K::Iso_cuboid_3( bounds[0][0], bounds[1][0], bounds[2][0], bounds[0][1], bounds[1][1], bounds[2][1] );
+  }
 
 };
 

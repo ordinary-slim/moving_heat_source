@@ -6,6 +6,8 @@ from CustomStepper import CustomStepper, DriverReference, DriverAnalytical
 from scanningPath import writeGcode
 from MyLogger import MyLogger
 import pickle
+from line_profiler import LineProfiler
+import yep
 
 inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
@@ -42,7 +44,7 @@ def runReference(caseName="reference"):
 
     adimDtRef=0.5
     factorTStep = 1
-    driver = DriverReference( pReference, adimDt=adimDtRef/factorTStep )
+    driver = DriverReference( pReference, adimDt=adimDtRef/2 )
 
     logger = MyLogger()
 
@@ -100,6 +102,7 @@ if __name__=="__main__":
     isRunAnalytical = False
 
     isRunCoupled = ("--run-coupled" in sys.argv)
+    isRunCoupledCppProfiling = ("--run-coupled-cpp-profiling" in sys.argv)
     isRunReference = ("--run-reference" in sys.argv)
     isRunAnalytical = ("--run-analytical" in sys.argv)
 
@@ -114,8 +117,22 @@ if __name__=="__main__":
     writeGcode( nLayers=nLayers )
 
     if isRunReference:
-        runReference(caseName=caseName)
+        lp = LineProfiler()
+        lp.add_module(mhs)
+        lp.add_module(DriverReference)
+        lp_wrapper = lp(runReference)
+        lp_wrapper(caseName=caseName)
+        lp.print_stats()
     if isRunCoupled:
+        lp = LineProfiler()
+        lp.add_module(mhs)
+        lp.add_module(CustomStepper)
+        lp_wrapper = lp(runCoupled)
+        lp_wrapper(caseName=caseName)
+        lp.print_stats()
+    if isRunCoupledCppProfiling:
+        yep.start("cpp.prof")
         runCoupled(caseName=caseName)
+        yep.stop()
     if isRunAnalytical:
         runAnalytical()

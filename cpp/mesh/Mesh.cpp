@@ -47,7 +47,7 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   //Broad  Phase Search
   //Convert to CGAL point and use bounding boxes tree
   CGAL::Simple_cartesian<double>::Point_3 cgalPoint( point[0], point[1], point[2] );
-  tree.all_intersected_primitives( cgalPoint, std::back_inserter( potentialOwners ) );
+  looseTree.all_intersected_primitives( cgalPoint, std::back_inserter( potentialOwners ) );
 
   //Narrow Phase
   Element cellEl;
@@ -81,7 +81,7 @@ vector<int> Mesh::findCollidingElements( const MyOBB &obb ) const {
   //Broad  Phase Search
   //Convert to CGAL aabb and use bounding boxes tree
   auto cgal_aabb = static_cast<inex_K::Iso_cuboid_3>( obb );
-  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
+  looseTree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
 
   //Narrow Phase
   indicesCollidingEls.reserve( potentialCollidingEls.size() );
@@ -94,6 +94,15 @@ vector<int> Mesh::findCollidingElements( const MyOBB &obb ) const {
   return indicesCollidingEls;
 }
 
+vector<int> Mesh::findCollidingElements( const MyAABB &aabb ) const {
+  vector<int> indicesCollidingEls;
+  //Single search against tight AABBs
+  auto cgal_aabb = static_cast<inex_K::Iso_cuboid_3>( aabb );
+  tightTree.all_intersected_primitives( cgal_aabb, std::back_inserter( indicesCollidingEls ) );
+  return indicesCollidingEls;
+}
+
+
 vector<int> Mesh::findCollidingElements( const Eigen::Vector3d &center, const double R) const {
   vector<int> indicesCollidingEls;
   vector<int> potentialCollidingEls;
@@ -103,7 +112,7 @@ vector<int> Mesh::findCollidingElements( const Eigen::Vector3d &center, const do
          minY = center[1] - R, maxY = center[1] + R,
          minZ = center[2] - R, maxZ = center[2] + R;
   auto cgal_aabb = inex_K::Iso_cuboid_3( minX, minY, minZ, maxX, maxY, maxZ );
-  tree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
+  looseTree.all_intersected_primitives( cgal_aabb, std::back_inserter( potentialCollidingEls ) );
 
   // Narrow phase
   indicesCollidingEls.reserve( potentialCollidingEls.size() );
@@ -119,18 +128,21 @@ vector<int> Mesh::findCollidingElements( const Eigen::Vector3d &center, const do
   return indicesCollidingEls;
 }
 
-void Mesh::buildAABBTree() {
+void Mesh::buildAABBTrees() {
   // CGAL AABB tree
-  elementAABBs.resize( nels );
-  updateAABBTree();
+  looseElementAABBs.resize( nels );
+  tightElementAABBs.resize( nels );
+  updateAABBTrees();
 }
 
-void Mesh::updateAABBTree() {
+void Mesh::updateAABBTrees() {
   for (int ielem = 0; ielem < nels; ++ielem) {
     Element e = getElement(ielem);
-    elementAABBs[ielem] = MyAABB( e, toleranceSearches );
+    looseElementAABBs[ielem] = MyAABB( e, toleranceSearches, 0.05 );
+    tightElementAABBs[ielem] = MyAABB( e, 0.0, 0.0 );
   }
-  tree.rebuild(elementAABBs.begin(), elementAABBs.end());
+  looseTree.rebuild(looseElementAABBs.begin(), looseElementAABBs.end());
+  tightTree.rebuild(tightElementAABBs.begin(), tightElementAABBs.end());
 }
 
 

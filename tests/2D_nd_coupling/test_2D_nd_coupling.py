@@ -128,9 +128,9 @@ def run():
                         )
 def test():
     run()
-    leftNew = "post_left/left_0.vtu"
+    leftNew = "post_left/left_1.vtu"
     leftReference = "post_left_reference.vtu"
-    rightNew = "post_right/right_0.vtu"
+    rightNew = "post_right/right_1.vtu"
     rightReference = "post_right_reference.vtu"
     assert mhs.meshio_comparison(leftNew, leftReference) and \
             mhs.meshio_comparison(rightNew, rightReference)

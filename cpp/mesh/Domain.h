@@ -5,6 +5,7 @@
 #include "MeshTag.h"
 #include "MeshTagImpl.h"
 #include "Element.h"
+#include "../linearAlgebra/LinearSystem.h"
 #include <Eigen/Sparse>
 
 class Problem;
@@ -30,7 +31,10 @@ class Domain {
                                       //respect to Fixed / Lab reference frame
 
     // Mass matrix
-    Eigen::SparseMatrix<double> massMat;
+    // For solving projections
+    std::shared_ptr<LinearSystem> ls = NULL;
+    vector<int> dofNumbering;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> *massMat = NULL;// Pointer to lhs of member ls
                      
     bool hasInactive;
     mesh::MeshTag<int> activeNodes, activeElements;
@@ -40,7 +44,7 @@ class Domain {
     Domain(Mesh *m, Problem *p);
 
     void preIterate();
-    void computeMassMatrix();
+    void assembleMassMatrix();
     void setSpeed(Eigen::Vector3d speedDomain);
 
 
@@ -71,6 +75,7 @@ class Domain {
     void updateAfterActivation();
     void intersect( const MeshTag<int> subdomain);
     void inPlaneRotate( Eigen::Vector3d &center, double angle );
+    void invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection );
   private:
     int _dim;
 };

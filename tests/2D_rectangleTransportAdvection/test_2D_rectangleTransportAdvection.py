@@ -72,7 +72,7 @@ def run():
     maxIter = 2
     # FORWARD
     for iteration in range(maxIter):
-        pTransportedMRF.preiterate( canPreassemble=False )#motion
+        pTransportedMRF.preIterate( canPreassemble=False )#motion
         pMRFTransporter.fakeIter()
 
         activeElements = isInsideBox( pTransportedMRF.domain, boxPhys )

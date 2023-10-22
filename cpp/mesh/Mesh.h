@@ -37,8 +37,10 @@ class Mesh {
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     // Fast spatial search
-    vector<MyAABB> elementAABBs;
-    AABB_tree tree;
+    vector<MyAABB> looseElementAABBs;
+    vector<MyAABB> tightElementAABBs;
+    AABB_tree looseTree;
+    AABB_tree tightTree;
     double toleranceSearches = 1e-10;
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
@@ -55,9 +57,10 @@ class Mesh {
         throw std::invalid_argument("Not ready yet.");
       }
     }
-    void buildAABBTree();
-    void updateAABBTree();
+    void buildAABBTrees();
+    void updateAABBTrees();
     vector<int> findOwnerElements( const Eigen::Vector3d &point ) const;
+    vector<int> findCollidingElements( const MyAABB &aabb ) const;
     vector<int> findCollidingElements( const MyOBB &obb ) const;
     vector<int> findCollidingElements( const Eigen::Vector3d &center, const double R) const;
 };

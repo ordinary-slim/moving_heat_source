@@ -38,7 +38,7 @@ void Problem::preAssemble(bool allocateLs) {
   */
   updateForcedDofs();
 
-  domain.computeMassMatrix();
+  domain.assembleMassMatrix();
 
   // If problem is not coupled, get its own Linear System
   if (allocateLs) {
@@ -62,14 +62,7 @@ void Problem::gather() {
 void Problem::postIterate() {
   /* End iteration operations */
 
-  // POST OF PULSE
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  //Solve linear system
-  solver.compute( domain.massMat );
-  if (not(solver.info() == Eigen::Success)) {
-    std::cout << "Singular matrix!" << std::endl;
-  }
-  mhs->pulse = solver.solve(mhs->pulse);
+  domain.invertProjection( mhs->pulse, mhs->pulse );
 
   //mhs->postIterate();
 
@@ -376,15 +369,9 @@ fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
       rhsProjection[(*e.con)[inode]] += rhs_i;
     }
   }
-  // Solve
-  Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-  //Solve linear system
-  solver.compute( domain.massMat );//TODO: Make sure mass matrix is ready
-  if (not(solver.info() == Eigen::Success)) {
-    std::cout << "Mass matrix not ready yet. Projection skipped." << std::endl;
-  } else {
-    fh.values = solver.solve(rhsProjection);
-  }
+  // Solve projection
+  domain.invertProjection( fh.values, rhsProjection );
+
   return fh;
 }
 

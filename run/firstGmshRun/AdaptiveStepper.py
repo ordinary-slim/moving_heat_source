@@ -185,8 +185,8 @@ class AdaptiveStepper:
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
-        self.pMoving.preiterate(canPreassemble=False)
-        self.pFixed.preiterate(canPreassemble=False)
+        self.pMoving.preIterate(canPreassemble=False)
+        self.pFixed.preIterate(canPreassemble=False)
 
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
 

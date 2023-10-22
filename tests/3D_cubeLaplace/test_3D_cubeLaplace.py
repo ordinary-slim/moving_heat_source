@@ -68,8 +68,8 @@ def run():
             )
 def test():
     run()
-    reference = "post_case_reference/case_0.vtu"
-    new = "post_case/case_0.vtu"
+    reference = "post_case_reference/case_1.vtu"
+    new = "post_case/case_1.vtu"
     assert mhs.meshio_comparison(reference, new)
 
 if __name__=="__main__":

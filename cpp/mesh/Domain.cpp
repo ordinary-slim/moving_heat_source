@@ -195,7 +195,33 @@ void Domain::setSpeed(Eigen::Vector3d speedDomain){
 void Domain::inPlaneRotate( Eigen::Vector3d &center, double angle ) {
   mesh::inPlaneRotate( this->mesh->pos, center, angle );
   mesh::inPlaneRotate( this->posLab, center+translationLab, angle );
-  mesh->updateAABBTree();
+  mesh->updateAABBTrees();
+}
+
+void Domain::invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection ) {
+  //TODO: Give possibility to move projection to rhs?
+  //Projection is mesh-big
+  //Sol is mesh-big
+
+  // Cp projection to rhs
+  for (int inode = 0; inode < mesh->nnodes; ++inode) {
+    int idof = dofNumbering[inode];
+    if (idof < 0) {
+      continue;
+    }
+    ls->rhs[idof] = projection[inode];
+  }
+
+  ls->solve();
+
+  // Gather to solution
+  for (int inode = 0; inode < mesh->nnodes; ++inode) {
+    int inodeDof = dofNumbering[inode] ;
+    if ( inodeDof < 0 ) {
+        continue;
+    }
+    sol[inode] = ls->sol(inodeDof);
+  }
 }
 
 }

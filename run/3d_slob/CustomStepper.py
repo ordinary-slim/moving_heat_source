@@ -38,12 +38,17 @@ class CustomStepper(AdaptiveStepper):
         zRadius    = self.adimZRadius * radius
         xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
 
-        backRadiusObb = max(backRadius - radius, 0.0)
-        p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
-        p1 = self.pMoving.mhs.position + self.adimMinRadius*xAxis
-        obb = mhs.MyOBB( p0, p1, 2*sideRadius, 2*zRadius )
-        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
-        collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
+        backRadiusAabb = max(backRadius - radius, 0.0)
+        frontRadiusAabb = self.adimMinRadius*radius
+        pback = self.pMoving.mhs.position - backRadiusAabb*xAxis
+        pfront = self.pMoving.mhs.position + self.adimMinRadius*xAxis
+        paabb  = self.pMoving.mhs.position + (frontRadiusAabb - backRadiusAabb)*xAxis/2
+        hLens = np.array( [ (frontRadiusAabb + backRadiusAabb)/2.0,
+                            sideRadius,
+                            zRadius,] )
+        aabb = mhs.MyAABB( paabb, hLens, True )
+        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( aabb )
+        collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( pback, self.adimMinRadius*radius )
         #collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
         subdomainEls += collidingElsBackSphere
         #subdomainEls += collidingElsFrontSphere
@@ -103,8 +108,8 @@ class CustomStepper(AdaptiveStepper):
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
-        self.pMoving.preiterate(canPreassemble=False)
-        self.pFixed.preiterate(canPreassemble=False)
+        self.pMoving.preIterate(canPreassemble=False)
+        self.pFixed.preIterate(canPreassemble=False)
 
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
 
@@ -164,13 +169,11 @@ class CustomStepper(AdaptiveStepper):
         self.writepos()
 
     def writepos( self ):
-        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
         self.pFixed.writepos(
             shift=-self.pFixed.mhs.position,
             nodeMeshTags={
                 "gammaNodes":self.pFixed.gammaNodes,
                 "forcedDofs":self.pFixed.forcedDofs,
-                "activeInExternal":activeInExternal,
                 },
             cellMeshTags={
                 "physicalDomain":self.physicalDomain,

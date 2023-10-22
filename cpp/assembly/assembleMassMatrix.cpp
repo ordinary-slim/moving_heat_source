@@ -3,13 +3,15 @@
 
 typedef Eigen::Triplet<double> T;
 
-void mesh::Domain::computeMassMatrix() {
-  massMat.resize(mesh->nnodes, mesh->nnodes);
-  vector<T> massCoeffs;
-  massCoeffs.reserve( 3*mesh->nnodes );
+void mesh::Domain::assembleMassMatrix() {
+
+  // Allocate Linear System
+  this->ls = std::make_shared<LinearSystem>(*this);
 
   MassForm massForm = MassForm();
+
   mesh::Element e;
+
   vector<int> activeElementsIndices = activeElements.getIndices();
   for (int ielem : activeElementsIndices) {
     e = getElement( ielem );
@@ -24,23 +26,19 @@ void mesh::Domain::computeMassMatrix() {
 
     // Assemble to global coeffs
     for (int inode = 0; inode < e.nnodes; ++inode) {
-      int inodeGlobal =  (*e.con)[inode] ;
+      int inodeDof =  dofNumbering[(*e.con)[inode]] ;
+      if (inodeDof < 0) { continue; }// if node is inactive skip it
       for (int jnode = 0; jnode < e.nnodes; ++jnode) {
-        int jnodeGlobal = (*e.con)[jnode];
-        massCoeffs.push_back( T(
-              inodeGlobal,
-              jnodeGlobal,
+        int jnodeDof = dofNumbering[(*e.con)[jnode]];
+        if (jnodeDof < 0) { continue; }// if node is inactive skip it
+        ls->lhsCoeffs.push_back( T(
+              inodeDof,
+              jnodeDof,
               mass_loc(inode, jnode) ) );
       }
     }
   }
 
-  // TODO: Remove this
-  // Fill mass matrix: Add 1s at inactive nodes
-  vector<int> inactiveNodes = activeNodes.filterIndices( [](int activeness){ return not(activeness); });
-  for (int inode : inactiveNodes) {
-    massCoeffs.push_back( Eigen::Triplet<double>(inode, inode, 1) );
-  }
-
-  massMat.setFromTriplets( massCoeffs.begin(), massCoeffs.end() );
+  ls->assemble();
+  massMat = &ls->lhs;
 }

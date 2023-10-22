@@ -1,4 +1,5 @@
 #include "../Problem.h"
+#include "../mesh/Domain.h"
 #include "LinearSystem.h"
 
 void LinearSystem::concatenateProblem(Problem &p) {
@@ -27,9 +28,33 @@ void LinearSystem::concatenateProblem(Problem &p) {
   }
 }
 
+void LinearSystem::concatenateDomain(mesh::Domain &d) {
+  /*
+   * Add domain to numbering
+   */
+  d.dofNumbering.clear();
+  d.dofNumbering.reserve(d.mesh->nnodes);
+
+  for (int inode = 0; inode < d.mesh->nnodes; inode++){
+    if (not(d.activeNodes[inode])) {
+      d.dofNumbering.push_back( -1 );
+    } else {
+      d.dofNumbering.push_back( _ndofs );
+      ++_ndofs;
+    }
+  }
+}
+
 LinearSystem::LinearSystem(Problem &p) {
   _ndofs = 0;
   concatenateProblem( p );
+  allocate();
+  cleanup();
+}
+
+LinearSystem::LinearSystem(mesh::Domain &d) {
+  _ndofs = 0;
+  concatenateDomain( d );
   allocate();
   cleanup();
 }
@@ -78,11 +103,11 @@ void LinearSystem::setSolver(bool isSymmetric) {
   }
 }
 
-void solveEigenBiCGSTAB( Eigen::SparseMatrix<double> &lhs,
+void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &rhs,
                          Eigen::VectorXd &sol ) {
 
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double> > solver;
+  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
@@ -90,11 +115,11 @@ void solveEigenBiCGSTAB( Eigen::SparseMatrix<double> &lhs,
   }
   sol = solver.solve(rhs);
 }
-void solveEigenCG( Eigen::SparseMatrix<double> &lhs,
+void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                    Eigen::VectorXd &rhs,
                    Eigen::VectorXd &sol ) {
 
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double> > solver;
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;

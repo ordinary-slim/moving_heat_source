@@ -81,7 +81,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("clearBCs", &Problem::clearBCs)
         .def("clearGamma", &Problem::clearGamma)
         .def("project", &Problem::project)
-        .def("getActiveInExternal", &Problem::getActiveInExternal)
+        .def("getActiveInExternal", &Problem::getActiveInExternal, py::return_value_policy::take_ownership)
         .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
             "Find interface between two problems")
         .def("updateInterface", static_cast<void (Problem::*)( mesh::MeshTag<int>& )>(&Problem::updateInterface),
@@ -106,7 +106,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("justActivatedBoundary", &mesh::Domain::justActivatedBoundary)
         .def_readonly("boundaryFacets", &mesh::Domain::boundaryFacets)
         .def_readonly("mesh", &mesh::Domain::mesh)
-        .def_readonly("mass", &mesh::Domain::massMat)//DEBUGGING
+        .def("assembleMassMatrix", &mesh::Domain::assembleMassMatrix)
         .def("setActivation", &mesh::Domain::setActivation)
         .def("resetActivation", &mesh::Domain::resetActivation)
         .def("deactivate", &mesh::Domain::deactivate)
@@ -118,6 +118,9 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::init<const mesh::Mesh*>())
         .def(py::init<const mesh::Mesh*, int>())
         .def(py::init<const mesh::Mesh*, int, vector<int>>())
+        .def("__not__", [](const mesh::MeshTag<int> &mt) {
+            return !mt;
+        }, py::is_operator())
         .def("dim", &mesh::MeshTag<int>::dim)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
@@ -138,6 +141,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("dim", &mesh::Mesh::dim)
         .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
         .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
+        .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const MyAABB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const MyOBB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
         .def("getElement", &mesh::Mesh::getElement);
@@ -188,6 +192,8 @@ PYBIND11_MODULE(cpp, m) {
         .value("triangle3", ElementType::triangle3)
         .value("quad4", ElementType::quad4)
         .value("hexa8", ElementType::hexa8);
+    py::class_<MyAABB>(m, "MyAABB")
+        .def(py::init<Eigen::Vector3d, Eigen::Vector3d, bool>());
     py::class_<MyOBB>(m, "MyOBB")
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
     py::class_<heat::HeatSource>(m, "HeatSource")

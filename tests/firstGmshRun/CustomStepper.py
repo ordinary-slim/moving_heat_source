@@ -64,3 +64,18 @@ class CustomStepper(AdaptiveStepper):
         subdomain = mhs.MeshTag( self.pMoving.domain.mesh, self.pMoving.domain.mesh.dim, subdomainEls )
         self.pMoving.domain.intersect( subdomain )
 
+    def writepos( self ):
+        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
+        self.pFixed.writepos(
+            nodeMeshTags={
+                "gammaNodes":self.pFixed.gammaNodes,
+                "forcedDofs":self.pFixed.forcedDofs,
+                "activeInExternal":activeInExternal,
+                },
+            cellMeshTags={
+                "physicalDomain":self.physicalDomain,
+                },
+                          )
+        self.pMoving.writepos(
+            nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
+            )

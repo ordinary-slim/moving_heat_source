@@ -85,8 +85,8 @@ if __name__=="__main__":
             pLeft.time) )
 
 
-        pLeft.preiterate( canPreassemble=False )
-        pRight.preiterate( canPreassemble=False )
+        pLeft.preIterate( canPreassemble=False )
+        pRight.preIterate( canPreassemble=False )
 
         pLeft.updateInterface( pRight )
         pRight.updateInterface( pLeft )

@@ -85,15 +85,15 @@ void Function::interpolateInactive( const AbstractFunction &extFEMFunc, bool ign
 }
 
 double Function::getL2Norm() const {
-  // TODO: cleanup when mass mat refactored
-  // Workaround mass matrix not being accurate
-  // Works for closed integration...
-  double l2norm = 0.0;
-  Eigen::VectorXd tmp =  domain->massMat * values;
-  for (int inode : domain->activeNodes.getIndices() ) {
-    l2norm += values[inode] * tmp[inode];
+  Eigen::VectorXd valuesAtActiveNodes(domain->ls->getNdofs());
+  for (int inode = 0; inode < domain->mesh->nnodes; ++inode) {
+    int idof = domain->dofNumbering[inode];
+    if (idof < 0) {
+      continue;
+    }
+    valuesAtActiveNodes[idof] = values[inode];
   }
-  return sqrt( l2norm );
+  return sqrt( valuesAtActiveNodes.dot( (*domain->massMat) * valuesAtActiveNodes ) );
 }
 
 fem::Function interpolate( const AbstractFunction &extFEMFunc,

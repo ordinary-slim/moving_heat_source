@@ -91,10 +91,14 @@ mesh::Mesh::Mesh(const py::dict &input) {
 
   con_FacetCell = mesh::transpose(con_CellFacet);
 
-  // Build AABBs
-  buildAABBTree();
-
+  // SPATIAL SEARCH
   if (input.contains("toleranceSearches")){
     toleranceSearches = py::cast<double>( input["toleranceSearches"] );
   }
+  // Build AABBs
+  printf("Build AABB trees\n");
+  begin = std::chrono::steady_clock::now();
+  buildAABBTrees();
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time elapsed= = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl << std::endl;;
 }

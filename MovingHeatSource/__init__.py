@@ -57,14 +57,17 @@ class Problem(Problem):
         except FileNotFoundError:
             pass
 
-    def preiterate(self, canPreassemble=True):
+    def preIterate(self, canPreassemble=True):
         self.iter += 1
         super(Problem, self).preIterate(canPreassemble)
 
     def iterate(self):
         if not(self.hasPreIterated):
-            self.preiterate(True)
-        super(Problem, self).iterate()
+            self.preIterate(True)
+        self.assemble()
+        self.ls.solve()
+        self.gather()
+        self.postIterate()
         print( "{} iter# {}, time={}".format(
             self.caseName,
             self.iter,

@@ -1,7 +1,15 @@
 #include "cgal_interface.h"
 #include <CGAL/Convex_hull_3/dual/halfspace_intersection_interior_point_3.h>
 
-MyAABB::MyAABB( mesh::Element e, double pad ) {
+MyAABB::MyAABB( Eigen::Vector3d position, Eigen::Vector3d halfSizes, bool shrink ) {
+  if (shrink) { halfSizes *= 0.999; }
+  for (int idim = 0; idim < 3; ++idim) {
+    bounds[idim][0] = position[idim] - halfSizes[idim];
+    bounds[idim][1] = position[idim] + halfSizes[idim];
+  }
+}
+
+MyAABB::MyAABB( mesh::Element e, double pad, double stretch ) {
   for (int idim = 0; idim < 3; ++idim) {
     double min = e.pos.col(idim).minCoeff();
     double max = e.pos.col(idim).maxCoeff();

@@ -200,15 +200,20 @@ class AdaptiveStepper:
         # compute front and sides
         sideRadius = self.adimMinRadius * radius
         adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
-        backRadius = max( adimBackRadius, self.adimMinRadius ) * radius
+        backRadiusAabb = max( adimBackRadius, self.adimMinRadius ) * radius
+        frontRadiusAabb = self.adimMinRadius*radius
         zRadius    = self.adimZRadius * radius
         xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
 
         #backRadiusObb = max(backRadius - radius, 0.0)
-        p0 = self.pMoving.mhs.position - backRadius*xAxis
-        p1 = self.pMoving.mhs.position + self.adimMinRadius*radius*xAxis
-        obb = mhs.MyOBB( p0, p1, 2*sideRadius, 2*zRadius )
-        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
+        pback  = self.pMoving.mhs.position - backRadiusAabb*xAxis
+        pfront = self.pMoving.mhs.position + frontRadiusAabb*xAxis
+        paabb  = self.pMoving.mhs.position + (frontRadiusAabb - backRadiusAabb)*xAxis/2
+        hLensAabb = np.array( [ (frontRadiusAabb + backRadiusAabb)/2.0,
+                            sideRadius,
+                            zRadius,] )
+        aabb = mhs.MyAABB( paabb, hLensAabb, True )
+        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( aabb )
         #collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
         #collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
         #subdomainEls += collidingElsBackSphere
@@ -232,12 +237,10 @@ class AdaptiveStepper:
             self.isCoupled = True
 
     def writepos( self ):
-        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
         self.pFixed.writepos(
             nodeMeshTags={
                 "gammaNodes":self.pFixed.gammaNodes,
                 "forcedDofs":self.pFixed.forcedDofs,
-                "activeInExternal":activeInExternal,
                 },
             cellMeshTags={
                 "physicalDomain":self.physicalDomain,
@@ -276,8 +279,8 @@ class AdaptiveStepper:
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
 
         # Motion, other operations
-        self.pMoving.preiterate(canPreassemble=False)
-        self.pFixed.preiterate(canPreassemble=False)
+        self.pMoving.preIterate(canPreassemble=False)
+        self.pFixed.preIterate(canPreassemble=False)
 
         self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
 
