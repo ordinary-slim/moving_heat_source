@@ -8,8 +8,8 @@ partLens = problemInput["part"]
 substrateLens = problemInput["substrate"]
 radiusHs = problemInput["radius"]
 layerThickness = problemInput["layerThickness"]
-fineElSize = min(radiusHs, layerThickness)
-nelsPerLayer = 1
+fineElFactor = problemInput["fineElFactor"]
+fineElSize = min(radiusHs, layerThickness) / fineElFactor
 nBounLayers = 2
 coarseElFactor = 4
 
@@ -89,7 +89,7 @@ def getMeshPhysical(popup=False):
     gmsh.model.geo.mesh.setTransfiniteSurface(botSurfacePart)
     gmsh.model.geo.mesh.setRecombine(2,botSurfacePart) 
     # Part extrusion
-    nelsPartZ = partLens[2] / (layerThickness / nelsPerLayer) # 2 el / layer
+    nelsPartZ = partLens[2] / fineElSize
     topExtrusion = gmsh.model.geo.extrude([(2, botSurfacePart)], 0, 0, +partLens[2], numElements=[nelsPartZ], recombine=True)
     # Substrate extrusions
     ## Substrate extrusions Z

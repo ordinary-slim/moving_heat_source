@@ -11,6 +11,7 @@ inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
 gcodeFile = problemInput["path"]
 tol = 1e-7
+fineElSizeMoving = fineElSize/problemInput["fineElFactorMovingSubdomain"]
 
 # read input
 problemInput = mhs.readInput( inputFile )
@@ -43,7 +44,7 @@ def runReference(caseName="reference"):
     while not(driver.problem.mhs.path.isOver(pReference.time)):
         logger.iterate( driver )
 
-    with open("reference.log", "wb") as reflog:
+    with open("{}.log".format(caseName), "wb") as reflog:
         pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 def runCoupled(caseName="fixed"):
@@ -59,37 +60,40 @@ def runCoupled(caseName="fixed"):
     for input in [fixedProblemInput]:
         input["dt"] = dt
 
-    pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName=caseName)
+    pFixed = mhs.Problem(meshFixed, fixedProblemInput, caseName=caseName)
 
     deactivateBelowSurface( pFixed )
 
-    driver = CustomStepper( pFixed, maxAdimtDt=3.5, elementSize=fineElSize, threshold=0.4, adimMinRadius=1.5, adimZRadius=1.0 )
+    driver = CustomStepper( pFixed,
+                           adimFineDt=0.5 / problemInput["fineTStepFactor"],
+                           maxAdimtDt=1,
+                           elementSize=fineElSizeMoving,
+                           threshold=0.3,
+                           adimMinRadius=2,
+                           #adimZRadius=1.0,
+                           )
     
     logger = MyLogger()
     while not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) :
         logger.iterate( driver )
 
-    with open("coupled.log", "wb") as reflog:
+    with open("{}.log".format(caseName), "wb") as reflog:
         pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__=="__main__":
     isRunReference = ("--run-reference" in sys.argv)
-    isOnlyRunReference = ("--only-reference"  in sys.argv)
+    isRunCoupled = ("--run-coupled" in sys.argv)
     nLayers = None
     for arg in sys.argv:
         if "--layers" in arg:
             nLayers = int( arg.split("=")[-1] )
-    caseNameReference = "reference"
-    caseNameCoupled = "coupled"
+    caseName = "case"
     for arg in sys.argv:
-        if "--caseNameReference" in arg:
-            caseNameReference = str( arg.split("=")[-1] )
-    for arg in sys.argv:
-        if "--caseNameCoupled" in arg:
-            caseNameCoupled = str( arg.split("=")[-1] )
+        if "--case-name" in arg:
+            caseName = str( arg.split("=")[-1] )
     writeGcode( nLayers=nLayers )
-    if isRunReference or isOnlyRunReference:
-        runReference(caseNameReference)
-    if not(isOnlyRunReference):
-        runCoupled(caseNameCoupled)
+    if isRunReference:
+        runReference(caseName=caseName)
+    if isRunCoupled:
+        runCoupled(caseName=caseName)

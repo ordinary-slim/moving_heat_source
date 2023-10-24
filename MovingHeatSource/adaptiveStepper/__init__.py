@@ -230,7 +230,7 @@ class AdaptiveStepper:
 
     def setCoupling( self ):
         # Set coupling
-        if ( ((self.adimDt <= 0.5+1e-7) and not(self.isCoupled)) \
+        if ( ((self.adimDt <= self.adimFineDt+1e-7) and not(self.isCoupled)) \
             or not(self.nextTrack.hasDeposition) ):
             self.isCoupled = False
         else:
