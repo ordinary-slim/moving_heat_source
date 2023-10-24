@@ -5,20 +5,16 @@ with open("input.yaml", 'r') as paramsFile:
     params = yaml.safe_load(paramsFile)
 
 partLen = params["part"]
-layerThickness = params["layerThickness"]
 speed = max(params["HeatSourceSpeed"])
 gcodeFile = params["path"]
 
-def writeGcode(nLayers=None):
+def writeGcode():
     gcodeLines = []
     # Start in -X
     X = - partLen[0] / 2
     Y = 0.0
     Z = 0.0
     E = 0.0
-    numLayers = int(partLen[2] / layerThickness)
-    if nLayers is not None:
-        numLayers = min( numLayers, nLayers )
     
     gcodeLines.append( "G0 F{}".format(speed, X, Y, Z) )
     E += 0.1

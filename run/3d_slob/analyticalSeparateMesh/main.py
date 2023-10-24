@@ -32,7 +32,7 @@ def solveNguyen(points, time):
     T = np.zeros( points.shape[0] )
     N = 6*np.sqrt(3) * power / (rho*cp*np.power(np.pi, 1.5))
     taoMax = time
-    taoSamples = np.linspace( 0, taoMax, num=500 )
+    taoSamples = np.linspace( 0, taoMax, num=1000 )
     for inode, pos in enumerate(points):
         # NGuyen solution
         integrand = np.zeros( taoSamples.size )
@@ -47,13 +47,12 @@ def solveNguyen(points, time):
 
 def main(time=0.2):
     # Mesh
-    box = [-6*radius, +1*radius, 0.0, +2.5*radius, -0.5*radius, 0.0]
-    points, cells = meshBox( box, radius/8 )
+    box = [-6*radius, +1*radius, 0.0, +2.5*radius, -radius/16, 0.0]
+    points, cells = meshBox( box, radius/16 )
     # Solve
     T = solveNguyen( points, time )
     # Post
-    #fileName = "nguyen_{:.4f}.vtk".format( time )
-    fileName = "nguyen.vtk".format()
+    fileName = "nguyen.vtk"
     dataSet = meshio.Mesh(
             points,
             [("hexahedron", cells)],

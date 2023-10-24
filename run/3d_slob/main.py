@@ -13,8 +13,6 @@ gcodeFile = problemInput["path"]
 tol = 1e-7
 maxIter = np.inf
 caseName="case"
-factorFineEl = problemInput["factorFineEl"]
-
 
 # read input
 problemInput = mhs.readInput( inputFile )
@@ -40,9 +38,8 @@ def runReference(caseName="reference"):
     pReference = mhs.Problem( mesh, problemInput, caseName=caseName)
     deactivateBelowSurface( pReference ) 
 
-    adimDtRef=0.5
-    factorTStep = 1
-    driver = DriverReference( pReference, adimDt=adimDtRef/factorTStep )
+    adimDt = 1 / problemInput["tstepsPerRadius"]
+    driver = DriverReference( pReference, adimDt=adimDt )
 
     logger = MyLogger()
 
@@ -70,9 +67,15 @@ def runCoupled(caseName="coupled"):
 
     deactivateBelowSurface( pFixed )
 
-    fineElFactor = 1
-    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize/fineElFactor, threshold=0.2, adimMinRadius=2, adimZRadius=2,
-                           adimFineDt=2)
+    fineElFactor = problemInput["factorFineElMoving"]
+    driver = CustomStepper( pFixed,
+                           elementSize=fineElSize/fineElFactor,
+                           threshold=0.2,
+                           adimMinRadius=2,
+                           adimZRadius=2,
+                           maxAdimtDt=problemInput["adimFixedDtCoupled"],
+                           adimFineDt=problemInput["adimFixedDtCoupled"],
+                           )
     
     logger = MyLogger()
     iteration = 0
@@ -95,12 +98,12 @@ def runAnalytical():
         iteration += 1
 
 if __name__=="__main__":
-    isRunCoupled = False
-    isRunReference = False
+    isRunCoupled    = False
+    isRunReference  = False
     isRunAnalytical = False
 
-    isRunCoupled = ("--run-coupled" in sys.argv)
-    isRunReference = ("--run-reference" in sys.argv)
+    isRunCoupled    = ("--run-coupled" in sys.argv)
+    isRunReference  = ("--run-reference" in sys.argv)
     isRunAnalytical = ("--run-analytical" in sys.argv)
 
     nLayers = None
@@ -111,7 +114,7 @@ if __name__=="__main__":
             maxIter = int( arg.split("=")[-1] )
         if "--case-name" in arg:
             caseName = arg.split("=")[-1]
-    writeGcode( nLayers=nLayers )
+    writeGcode()
 
     if isRunReference:
         runReference(caseName=caseName)

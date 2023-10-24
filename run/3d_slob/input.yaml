@@ -5,13 +5,11 @@ power : 25
 initialPosition : [-10.0, 0.0, 1]
 HeatSourceSpeed : [50, 0, 0]
 dt : 0.1
-t : 0.0
-maxIter : 20
-# From Van Elsen 2007
+# Properties from Van Elsen 2007
 rho : 4.45E-06 # kg / mm3
 conductivity : 6.0E-03 # W / mm / K
 specific_heat : 564 # J / kg / K
-convectionCoeff : 1.0E-05
+convectionCoeff : 0.0
 environmentTemperature : 25
 timeIntegration : 1
 sourceTerm : 0
@@ -19,7 +17,10 @@ isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
 SUPG : 1
-substrate : [6, 3.2, 1.6]
-part: [4, 0.8, 0.8]
+substrate : [8, 3.2, 1.6]
+part: [6, 0.8, 0.8]
 path: "Path.gcode"
-factorFineEl: 4
+elsPerRadius : 3
+tstepsPerRadius : 4
+factorFineElMoving : 1
+adimFixedDtCoupled : 2

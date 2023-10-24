@@ -8,9 +8,8 @@ problemInput = mhs.readInput( "input.yaml" )
 partLens = np.array(problemInput["part"])
 substrateLens = np.array(problemInput["substrate"])
 radiusHs = problemInput["radius"]
-layerThickness = problemInput["layerThickness"]
-factorFineEl = problemInput["factorFineEl"]
-fineElSize = min(radiusHs, layerThickness)/factorFineEl
+elsPerRadius = problemInput["elsPerRadius"]
+fineElSize = radiusHs / elsPerRadius
 nBounLayers = 4
 coarseElFactor = 4
 
@@ -122,4 +121,4 @@ def getMeshPhysical(popup=False):
         return mesh
 
 if __name__=="__main__":
-    getMeshPhysical(factorFineEl=2, popup = True)
+    getMeshPhysical(popup = True)
