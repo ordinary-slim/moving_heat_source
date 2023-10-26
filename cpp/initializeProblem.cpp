@@ -37,9 +37,6 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
     case 11: { 
         double heatSouceWidth  = py::cast<double>(input["heatSourceWidth"]);
         double heatSouceHeight = py::cast<double>(input["heatSourceHeight"]);
-        //( double radius, double power, Problem *problem,
-        //                            Eigen::Vector3d initialPosition, Eigen::Vector3d speed,
-        //                                                        double efficiency = 1.0 )
         mhs = std::make_unique<heat::LumpedHeatSource>( heatSouceWidth, heatSouceHeight, input, this);
         break; }
     case 86: {

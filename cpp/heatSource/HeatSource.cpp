@@ -8,8 +8,10 @@ namespace heat
 HeatSource::HeatSource( pybind11::dict &input, Problem *problem ) {
   this->radius = py::cast<double>(input["radius"]);
   this->power = py::cast<double>(input["power"]);
-  this->speed = CreateEigenVector(py::array_t<double>(input["HeatSourceSpeed"]));
-  this->position = CreateEigenVector(py::array_t<double>(input["initialPosition"]));
+  if (not(input.contains("path"))) {
+    this->position = CreateEigenVector(py::array_t<double>(input["initialPosition"]));
+    this->speed = CreateEigenVector(py::array_t<double>(input["HeatSourceSpeed"]));
+  }
 
   if (input.contains("efficiency")) this->efficiency = py::cast<double>(input["efficiency"]);
 

@@ -27,10 +27,10 @@ class HeatSource {
       const Problem *problem;//observer
   public:
       std::unique_ptr<Path> path = NULL;
-      Eigen::Vector3d position;
-      Eigen::Vector3d speed;
+      Eigen::Vector3d position = Eigen::Vector3d::Zero();
+      Eigen::Vector3d speed = Eigen::Vector3d::Zero();;
       Eigen::VectorXd pulse; // source term
-      double power;
+      double power = 0.0;
       double efficiency = 1.0;
       double radius = 2.0;
       HeatSourceType type = none;
