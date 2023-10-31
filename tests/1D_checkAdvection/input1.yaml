@@ -5,9 +5,6 @@ dt : 1
 t : 0.0
 Tfinal : 5
 maxIter : 100
-rho : 1
-conductivity : 0.0
-specific_heat : 1
 environmentTemperature : 25
 plot : 1
 timeIntegration : 1
@@ -18,3 +15,8 @@ speedDomain : [0.0, 0.0, 0.0]
 SUPG: 1
 nels: 100
 L: 100
+material : {
+  rho : 1,
+  conductivity : 0.0,
+  specific_heat : 1,
+}

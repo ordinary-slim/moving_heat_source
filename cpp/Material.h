@@ -9,6 +9,8 @@ struct ThermalMaterial {
   double specificHeat = 1.0;
   double convectionCoeff = 0.0;
 
+  ThermalMaterial() = default;
+
   ThermalMaterial( py::dict &input ) {
     density = py::cast<double>(input["rho"]);
     conductivity = py::cast<double>(input["conductivity"]);

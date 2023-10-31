@@ -4,10 +4,6 @@ initialPosition : [0.0, 0.0, 0.0]
 HeatSourceSpeed : [0, 0, 0]
 dt : 1
 t : 0.0
-rho : 1
-conductivity : 2
-specific_heat : 1
-convectionCoeff : 1
 timeIntegration : 1
 sourceTerm : 1
 isAdvection : 0
@@ -16,3 +12,9 @@ speedDomain : [0.0, 0.0, 0.0]
 SUPG : 0
 convectionCoeff : 1
 environmentTemperature : 0
+material : {
+  rho : 1,
+  conductivity : 2,
+  specific_heat : 1,
+  convectionCoeff : 1,
+}

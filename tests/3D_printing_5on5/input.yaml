@@ -6,9 +6,6 @@ HeatSourceSpeed : [0, 10.0e-3, 0]
 dt : 1
 t : 0.0
 maxIter : 20
-rho : 4400
-conductivity : 30
-specific_heat : 500
 environmentTemperature : 20
 depositionTemperature : 800
 plot : 1
@@ -18,4 +15,9 @@ advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
 SUPG : 0
 sourceTerm : 11
-convectionCoeff : 10
+material : {
+  rho : 4400,
+  conductivity : 30,
+  specific_heat : 500,
+  convectionCoeff : 10,
+}

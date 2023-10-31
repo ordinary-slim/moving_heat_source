@@ -366,10 +366,40 @@ class AdaptiveStepper:
         tolSearch = 1e-10
         if "toleranceSearches" in self.pFixed.input:
             tolSearch = self.pFixed.input["toleranceSearches"]
-        if self.pFixed.domain.dim()==2:
+        if self.pFixed.domain.dim()==1:
+            return meshLine(bounds[:1,:], elementSizes, tolSearch = tolSearch)
+        elif self.pFixed.domain.dim()==2:
             return meshRectangle(bounds[:2,:], elementSizes, tolSearch = tolSearch)
         elif self.pFixed.domain.dim()==3:
             return meshBox(bounds, elementSizes, tolSearch = tolSearch)
+
+def meshLine(box, elSize=[0.25]*1, tolSearch = 1e-10, popup=False):
+
+    gmsh.initialize()
+    box = box.reshape(2)
+    xMin, xMax = box
+    xLen  = xMax - xMin
+    nelsX = np.round( xLen / elSize[0] ).astype(int)
+
+    # negativeXFace 
+    gmsh.model.geo.addPoint( xMin, 0.0, 0.0, tag = 1 )
+    gmsh.model.geo.addPoint( xMax, 0.0, 0.0, tag = 2 )
+
+    line = gmsh.model.geo.addLine(  1, 2, tag=1 )
+
+    gmsh.model.geo.mesh.setTransfiniteCurve(line, nelsX+1)
+
+    gmsh.model.geo.synchronize()
+    gmsh.model.mesh.generate(1)
+
+    gmsh.model.addPhysicalGroup(1, [line], tag=1, name="Domain")
+
+    if popup:
+        gmsh.fltk.run()
+
+    mesh = mhs.gmshModelToMesh( gmsh.model, tolSearch=tolSearch )
+    gmsh.finalize()
+    return mesh
 
 def meshRectangle(box, elSize=[0.25]*2, tolSearch = 1e-10, popup=False):
 

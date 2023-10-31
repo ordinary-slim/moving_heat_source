@@ -4,6 +4,7 @@
 
 namespace mesh {
 Domain::Domain(Mesh *m, Problem *p) :
+  materialTag( mesh::MeshTag<int>( m, m->dim, 0)),
   activeNodes(mesh::MeshTag<int>(m, 0, 1)),
   activeElements(mesh::MeshTag<int>(m, m->dim, 1)),
   justDeactivatedElements(mesh::MeshTag<int>(m, m->dim, 0)),
@@ -132,6 +133,18 @@ void Domain::updateBeforeActivation() {
 void Domain::updateAfterActivation() {
   hasInactive = (std::find( activeElements.x.begin(), activeElements.x.end(), false) != activeElements.x.end() );
   computeBoundary();
+}
+
+void Domain::setMaterialSets(const MeshTag<int> &materialTag) {
+  if (materialTag.dim()!=_dim) {
+    throw std::invalid_argument("Material tags must be element tag.");
+  }
+  // Check tags are in valid range
+  auto minmax = std::minmax_element( begin( materialTag.x ), end( materialTag.x ) );
+  if ((*minmax.first < 0) || (*minmax.second > problem->materials.size()-1) ) {
+    throw std::invalid_argument("Material tags not in valid range.");
+  }
+  this->materialTag = materialTag;
 }
 
 void Domain::setActivation(const MeshTag<int> &activationCriterion) {

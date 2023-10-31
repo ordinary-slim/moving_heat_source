@@ -112,4 +112,9 @@ Function operator-(const Function& f1, const Function& f2) {
   return Function( f1.domain, values );
 }
 
+Function operator/(const Function& f, const double c) {
+  Eigen::VectorXd values = f.values / c;
+  return Function( f.domain, values );
+}
+
 }

@@ -55,7 +55,7 @@ class TimeMassForm : public BilinearForm {
       }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return 
-        p->material.density*p->material.specificHeat*
+        p->materials[e->imat].density*p->materials[e->imat].specificHeat*
         e->BaseGpVals[inode][igp]*e->BaseGpVals[jnode][igp]*
         e->gpweight[igp]  * e->vol;
     }
@@ -68,7 +68,7 @@ class DiffusionForm : public BilinearForm {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       double ip = e->GradBaseGpVals[inode][igp].dot( e->GradBaseGpVals[jnode][igp] );
-      return p->material.conductivity * e->gpweight[igp] * ip * e->vol;
+      return p->materials[e->imat].conductivity * e->gpweight[igp] * ip * e->vol;
     }
 };
 
@@ -79,7 +79,7 @@ class AdvectionForm : public BilinearForm {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       double ip = e->GradBaseGpVals[jnode][igp].dot(p->advectionSpeed);
-      return p->material.density * p->material.specificHeat * e->gpweight[igp] * (ip * e->BaseGpVals[inode][igp]) * e->vol;
+      return p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->gpweight[igp] * (ip * e->BaseGpVals[inode][igp]) * e->vol;
     }
 };
 
@@ -139,8 +139,8 @@ class SUPG {
        * (Codina, 2000)
        */
       h = e->getSizeAlongVector( p->advectionSpeed );
-      tau = pow(h, 2) / (2 * h * p->material.density * p->material.specificHeat * norm_advectionSpeed +
-          4 * p->material.conductivity);
+      tau = pow(h, 2) / (2 * h * p->materials[e->imat].density * p->materials[e->imat].specificHeat * norm_advectionSpeed +
+          4 * p->materials[e->imat].conductivity);
     }
 };
 
@@ -157,8 +157,8 @@ class SUPGTimeBilinearForm : public BilinearForm, public SUPG {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return (e->gpweight[igp] * e->vol)*tau*
-        p->material.density * p->material.specificHeat * e->BaseGpVals[jnode][igp] *
-        p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
+        p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->BaseGpVals[jnode][igp] *
+        p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
@@ -174,8 +174,8 @@ class SUPGBilinearForm : public BilinearForm, public SUPG {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return (e->gpweight[igp] * e->vol)*tau*
-        p->material.density * p->material.specificHeat * e->GradBaseGpVals[jnode][igp].dot( advectionSpeed ) *
-        p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
+        p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->GradBaseGpVals[jnode][igp].dot( advectionSpeed ) *
+        p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
@@ -199,7 +199,7 @@ class SUPGLinearForm : public LinearForm, public SUPG {
         double f_xgp = p->mhs->operator()(xgp, p->time);
         return (e->gpweight[igp] * e->vol)*tau*
           f_xgp *
-          p->material.density * p->material.specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
+          p->materials[e->imat].density * p->materials[e->imat].specificHeat * e->GradBaseGpVals[inode][igp].dot( advectionSpeed );
     }
 };
 
@@ -210,7 +210,7 @@ class ConvectionBilinearForm : public BilinearForm {
     }
     double contribute( int igp, int inode, int jnode, const mesh::Element *e ) {
       return e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * e->BaseGpVals[jnode][igp] *
-        p->material.convectionCoeff;
+        p->materials[e->imat].convectionCoeff;
     }
 };
 
@@ -221,7 +221,7 @@ class ConvectionLinearForm : public LinearForm {
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
         return  e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * p->Tenv *
-        p->material.convectionCoeff;
+        p->materials[e->imat].convectionCoeff;
     }
 };
 
@@ -231,7 +231,7 @@ class NeumannLinearForm : public LinearForm {
       : LinearForm( problem ) {
     }
     void inGauss(int igp, const mesh::Element *e) {
-      normalDerivative = p->neumannFluxes[e->ient][igp] / p->material.conductivity;
+      normalDerivative = p->neumannFluxes[e->ient][igp] / p->materials[e->imat].conductivity;
     }
     double contribute( int igp, int inode, const mesh::Element *e ) {
         return e->gpweight[igp] * e->vol * e->BaseGpVals[inode][igp] * normalDerivative;

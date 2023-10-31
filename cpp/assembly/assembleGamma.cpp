@@ -16,6 +16,7 @@ void Problem::assembleNeumannGamma(const Problem *pExt) {
       // Find out which element of external mesh owns Gauss point
       int idx_el_ext = pExt->domain.findOwnerElements( xgp_ext );
       mesh::Element e_ext = pExt->domain.getElement( idx_el_ext );
+      const ThermalMaterial* ext_mat = &pExt->materials[ e_ext.imat ];
 
       Dense3ColMat gradShaFuns = e_ext.evaluateGradShaFuns( xgp_ext );
 
@@ -27,7 +28,7 @@ void Problem::assembleNeumannGamma(const Problem *pExt) {
 
         for (int inode = 0; inode < facet.nnodes; ++inode) {
 
-          lhs_loc(inode, jnode) += -pExt->material.conductivity * 
+          lhs_loc(inode, jnode) += -ext_mat->conductivity * 
                           facet.BaseGpVals[inode][igp] * gradj_n *
                           facet.gpweight[igp] * facet.vol;
         }

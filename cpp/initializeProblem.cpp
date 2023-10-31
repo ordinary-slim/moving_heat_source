@@ -11,7 +11,6 @@ namespace py = pybind11;
 
 Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   domain( mesh::Domain( &mesh , this ) ),
-  material( input ),
   unknown( fem::Function( &domain ) ),
   forcedDofs( mesh::MeshTag<int>( &mesh, 0, 0)),
   dirichletNodes( mesh::MeshTag<int>( &mesh ) ),
@@ -21,6 +20,18 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   gammaNodes( mesh::MeshTag<int>( &mesh, 0 ) ),
   gammaFacets( mesh::MeshTag<int>( &mesh, mesh.dim-1 ) )
 {
+
+  // MATERIALS
+  for (auto item : input) {
+    std::string key = std::string(py::str(item.first));
+    if (key.find("material") == 0) {
+      py::dict matProperties = py::cast<py::dict>( item.second );
+      materials.push_back( ThermalMaterial( matProperties ) );
+    }
+  }
+  if (materials.size() == 0) {
+    throw std::invalid_argument("No materials found in input."); 
+  }
 
   // HEAT SOURCE
   // set type of source term
@@ -89,7 +100,8 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
   // TODO: Think about how to eat this
 
   // CONVECTION BC
-  if (material.convectionCoeff > 0.0) {
+  // TODO: Bug prone
+  if (materials[0].convectionCoeff > 0.0) {
     for (int ifacet : domain.boundaryFacets.getIndices() ) {
       weakBcFacets[ifacet] = 2;
     }

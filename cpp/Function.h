@@ -65,6 +65,7 @@ class Function : public AbstractFunction {
     void interpolateInactive( const AbstractFunction &extFEMFunc, bool ignoreOutside );
     double getL2Norm() const;
     friend Function operator-(const Function& f1, const Function& f2);
+    friend Function operator/(const Function& f, const double c);
 };
 
 Function interpolate( const AbstractFunction &extFEMFunc, const mesh::Domain *domain,

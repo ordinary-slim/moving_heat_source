@@ -37,6 +37,7 @@ class Domain {
     Eigen::SparseMatrix<double, Eigen::RowMajor> *massMat = NULL;// Pointer to lhs of member ls
                      
     bool hasInactive;
+    mesh::MeshTag<int> materialTag;// tags each cell with index of its material
     mesh::MeshTag<int> activeNodes, activeElements;
     mesh::MeshTag<int> justDeactivatedElements, justActivatedBoundary;//Are these useful?
     MeshTag<int> boundaryFacets, boundaryFacetsParentEls;
@@ -52,13 +53,17 @@ class Domain {
       return mesh->getEntity(ient, connectivity, &refEl);
     }
     Element getElement(int ielem) const {
-      return mesh->getElement(ielem);
+      Element e = mesh->getElement(ielem);
+      e.imat = materialTag[ ielem ];
+      return e;
     }
     Element getBoundaryFacet(int ifacet) {
       // Assumed that ifacet is a boundary facet
       Element e = getEntity( ifacet, mesh->con_FacetPoint, mesh->refFacetEl );
-      Element parentEl = getElement( boundaryFacetsParentEls[ifacet] );
+      int iParentElement = boundaryFacetsParentEls[ifacet];
+      Element parentEl = getElement(iParentElement);
       e.computeNormal( parentEl.getCentroid() );
+      e.imat = materialTag[iParentElement];
       return e;
     }
 
@@ -66,6 +71,7 @@ class Domain {
 
     void computeBoundary();
     int findOwnerElements( const Eigen::Vector3d &point ) const;
+    void setMaterialSets(const MeshTag<int> &materialTag);
     void setActivation(const MeshTag<int> &activation);
     void resetActivation();
     void deactivate();

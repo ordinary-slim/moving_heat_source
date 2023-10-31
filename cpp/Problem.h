@@ -32,7 +32,7 @@ class Problem {
     vector<Eigen::Triplet<double>> timeDerivCoeffs;
 
     bool hasPreIterated = false;
-    ThermalMaterial material;
+    vector<ThermalMaterial> materials;
     double time = 0.0;
     double dt = 0.0;
 

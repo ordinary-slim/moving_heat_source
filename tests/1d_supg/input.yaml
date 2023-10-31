@@ -3,9 +3,6 @@ power : 1000
 initialPosition : [0.0, 0.0, 0.0]
 HeatSourceSpeed : [0, 0, 0]
 #MATERIAL
-rho : 1.0E-03
-conductivity : 1.0E-06
-specific_heat : 1.0E+02
 #
 environmentTemperature : 25
 timeIntegration : 1
@@ -20,3 +17,8 @@ L : 6
 nels : 120
 Tfinal : 0.001
 maxIter : 20
+material : {
+  rho : 1.0E-03,
+  conductivity : 1.0E-06,
+  specific_heat : 1.0E+02,
+}
