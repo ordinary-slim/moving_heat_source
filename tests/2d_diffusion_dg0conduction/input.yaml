@@ -1,0 +1,24 @@
+steadyState : 1
+sourceTerm : 86
+radius : 10.0
+power : 1
+dt : 0.1
+# PROPS
+initialPosition : [0.0, 0.0, 0.0]
+HeatSourceSpeed : [0.0, 0.0, 0.0]
+material_1 : {
+  rho : 1,
+  conductivity : 1,
+  specific_heat : 1,
+}
+material_2 : {
+  rho : 1,
+  conductivity : 0.1,
+  specific_heat : 1,
+}
+environmentTemperature : 25
+depositionTemperature : 25
+# EPROPS
+timeIntegration : 1
+speedDomain : [0.0, 0.0, 0.0]
+advectionSpeed : [0.0, 0.0, 0.0]

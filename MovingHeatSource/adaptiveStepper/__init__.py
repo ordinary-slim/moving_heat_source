@@ -401,7 +401,7 @@ def meshLine(box, elSize=[0.25]*1, tolSearch = 1e-10, popup=False):
     gmsh.finalize()
     return mesh
 
-def meshRectangle(box, elSize=[0.25]*2, tolSearch = 1e-10, popup=False):
+def meshRectangle(box, elSize=[0.25]*2, recombine = True, tolSearch = 1e-10, popup=False):
 
     gmsh.initialize()
     box = box.reshape(4)
@@ -421,7 +421,7 @@ def meshRectangle(box, elSize=[0.25]*2, tolSearch = 1e-10, popup=False):
 
     # Extrusion
     _, surface, _, _ = gmsh.model.geo.extrude([(1,line)], xLen, 0.0, 0.0,
-                           numElements=[nelsX], recombine=True)
+                           numElements=[nelsX], recombine=recombine)
 
     gmsh.model.geo.synchronize()
     gmsh.model.mesh.generate(2)
@@ -435,7 +435,7 @@ def meshRectangle(box, elSize=[0.25]*2, tolSearch = 1e-10, popup=False):
     gmsh.finalize()
     return mesh
 
-def meshBox(box, elSize=[0.25]*3, tolSearch = 1e-10, popup=False):
+def meshBox(box, elSize=[0.25]*3, recombine = True, tolSearch = 1e-10, popup=False):
 
     gmsh.initialize()
     box = box.reshape(6)
@@ -472,7 +472,7 @@ def meshBox(box, elSize=[0.25]*3, tolSearch = 1e-10, popup=False):
 
     # Extrusion
     gmsh.model.geo.extrude([(2,negativeXFace)], xLen, 0.0, 0.0,
-                           numElements=[nelsX], recombine=True)
+                           numElements=[nelsX], recombine=recombine)
 
     gmsh.model.geo.synchronize()
     gmsh.model.mesh.generate(3)
