@@ -237,4 +237,22 @@ void Domain::invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection
   }
 }
 
+MeshTag<int> Domain::projectCellTag( const MeshTag<int> &cellTag, const Domain &extDomain ) {
+  const Mesh *ext_mesh = extDomain.mesh;
+  if (cellTag.dim() != ext_mesh->dim) {
+    throw std::invalid_argument("Not a cell tag.");
+  }
+  // External DG0Function
+  Eigen::VectorXd values( ext_mesh->nels );
+  for (int ielem = 0; ielem < values.size(); ielem++) {
+    values(ielem) = double( cellTag.x[ielem] );
+  }
+  fem::DG0Function ext_indicator_fun = fem::DG0Function( &extDomain, values );
+  // Project DG0Function
+  fem::DG0Function indicator_fun = fem::DG0Function( this );
+  indicator_fun.interpolate( ext_indicator_fun, this->activeElements, nullptr, false );
+  // Cell tag
+  return MeshTag<int>( mesh, mesh->dim, indicator_fun.values );
+}
+
 }

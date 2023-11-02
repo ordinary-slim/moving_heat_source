@@ -67,7 +67,7 @@ class Domain {
       return e;
     }
 
-    int dim() { return _dim; }
+    int dim() const { return _dim; }
 
     void computeBoundary();
     int findOwnerElements( const Eigen::Vector3d &point ) const;
@@ -82,6 +82,7 @@ class Domain {
     void intersect( const MeshTag<int> subdomain);
     void inPlaneRotate( Eigen::Vector3d &center, double angle );
     void invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection );
+    MeshTag<int> projectCellTag( const MeshTag<int> &cellTag, const Domain &extDomain );
   private:
     int _dim;
 };

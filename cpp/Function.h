@@ -8,49 +8,62 @@
 
 class AbstractFunction {
   public:
-    const mesh::Domain* domain;
+    const mesh::Domain* domain;//This line should stay at the top
+    Eigen::VectorXd values;
     virtual double evaluate( Eigen::Vector3d &point ) const = 0;
+    AbstractFunction(size_t ndofs, const mesh::Domain* dom) {
+      _ndofs = ndofs;
+      domain = dom;
+      values = Eigen::VectorXd::Zero( _ndofs );
+    }
+    AbstractFunction(size_t ndofs, const mesh::Domain* dom, const Eigen::VectorXd &values) {
+      _ndofs = ndofs;
+      domain = dom;
+      if (values.size() != _ndofs ) {
+        throw std::invalid_argument("Provided values size is not compatible.");
+      }
+      this->values = values;
+    }
+    AbstractFunction(size_t ndofs, const mesh::Domain* dom, Eigen::VectorXd &values) {
+      domain = dom;
+      _ndofs = ndofs;
+      if (values.size() != _ndofs ) {
+        throw std::invalid_argument("Provided values size is not compatible.");
+      }
+      this->values = move(values);
+    }
+    template<typename T>
+    AbstractFunction(size_t ndofs, const mesh::Domain* dom, const mesh::MeshTag<T> &tag) {
+      domain = dom;
+      _ndofs = ndofs;
+      if (tag.size()!=_ndofs) {
+        throw std::invalid_argument("Tag is not compatible with Function.");
+      }
+      Eigen::VectorXd convertedVals(_ndofs);
+      // Convert to double
+      for (int idof = 0; idof < _ndofs; ++idof) {
+        convertedVals[idof] = double(tag[idof]);
+      }
+      values = move(convertedVals);
+    }
+
+  protected:
+    size_t _ndofs;
 };
 
 namespace fem
 {
 class Function : public AbstractFunction {
+  /*
+   * FEM function
+   */
   public:
-    Eigen::VectorXd values;// value at each node
-                           // mesh is accessed through the domain
 
-    Function(const mesh::Domain* dom) {
-      domain = dom;
-      values = Eigen::VectorXd::Zero( domain->mesh->nnodes );
-    }
-    Function(const mesh::Domain* dom, const Eigen::VectorXd &values) {
-      domain = dom;
-      if (values.size() != domain->mesh->nnodes) {
-        throw std::invalid_argument("Provided values size is not nnodes.");
-      }
-      this->values = values;
-    }
-    Function(const mesh::Domain* dom, Eigen::VectorXd &values) {
-      domain = dom;
-      if (values.size() != domain->mesh->nnodes) {
-        throw std::invalid_argument("Provided values size is not nnodes.");
-      }
-      this->values = move(values);
-    }
+    Function(const mesh::Domain* dom) : AbstractFunction( dom->mesh->nnodes, dom ) {}
+    Function(const mesh::Domain* dom, const Eigen::VectorXd &values) : AbstractFunction( dom->mesh->nnodes, dom, values) {}
+    Function(const mesh::Domain* dom, Eigen::VectorXd &values) : AbstractFunction( dom->mesh->nnodes, dom, values) {}
     template<typename T>
-    Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) {
-      if (tag.dim()!=0) {
-        throw std::invalid_argument("Expected nodal MeshTag in Function constructor.");
-      }
-      domain = dom;
-      Eigen::VectorXd convertedVals(domain->mesh->nnodes);
-      // Convert to double
-      for (int inode = 0; inode < domain->mesh->nnodes; ++inode) {
-        convertedVals[inode] = double(tag[inode]);
-      }
-      values = move(convertedVals);
-    }
-    Function(const Function&) = default;
+    Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) : AbstractFunction( dom->mesh->nnodes, dom, tag) {}
 
     double evaluate( Eigen::Vector3d &point ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d &point );
@@ -70,18 +83,33 @@ class Function : public AbstractFunction {
 
 Function interpolate( const AbstractFunction &extFEMFunc, const mesh::Domain *domain,
                            bool ignoreOutside = false );
+
+class DG0Function : public AbstractFunction {
+  public:
+    DG0Function(const mesh::Domain* dom) : AbstractFunction( dom->mesh->nels, dom ) {}
+    DG0Function(const mesh::Domain* dom, const Eigen::VectorXd &values) : AbstractFunction( dom->mesh->nels, dom, values) {}
+    DG0Function(const mesh::Domain* dom, Eigen::VectorXd &values) : AbstractFunction( dom->mesh->nels, dom, values) {}
+    template<typename T>
+    DG0Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) : AbstractFunction( dom->mesh->nels, dom, tag) {}
+
+    double evaluate( Eigen::Vector3d &point ) const;
+    void interpolate(const AbstractFunction &extFEMFunc,
+        const mesh::MeshTag<int> &cellTag,
+        std::function<bool(int)> filter = nullptr,
+        bool ignoreOutside=false );
+};
+
 }
 
 class ConstantFunction : public AbstractFunction {
   public:
-    double constant = 0.0;
-    ConstantFunction( const mesh::Domain* dom, double c ) {
-      domain = dom;
-      constant = c;
+    ConstantFunction( const mesh::Domain* dom, double c ) :
+        AbstractFunction(1, dom) {
+          values(0) = c;
     }
     double evaluate( Eigen::Vector3d &point ) const {
       //TODO: Check if point is in domain (?)
-      return constant;
+      return values(0);
     }
 };
 

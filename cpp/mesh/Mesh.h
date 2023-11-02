@@ -8,7 +8,6 @@
 #include "RefElement.h"
 #include "ElementTypes.h"
 #include <pybind11/pybind11.h>
-#include "MeshTag.h"
 #include "cgal_interface.h"
 
 using namespace std;

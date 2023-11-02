@@ -114,6 +114,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("deactivate", &mesh::Domain::deactivate)
         .def("intersect", &mesh::Domain::intersect)
         .def("inPlaneRotate", &mesh::Domain::inPlaneRotate)
+        .def("projectCellTag", &mesh::Domain::projectCellTag)
         .def("findOwnerElements", &mesh::Domain::findOwnerElements);
     py::class_<mesh::MeshTag<int>>(m, "MeshTag")//TODO: do it in a loop
         .def(py::init<const mesh::MeshTag<int>&>())
@@ -223,6 +224,9 @@ PYBIND11_MODULE(cpp, m) {
         .def( py::init<Problem*, double, double, double>(),
             py::arg("problem"), py::arg("width"), py::arg("height"), py::arg("depth")=0.0 )
         .def("collide", &Printer::collide)
+        .def("melt", &Printer::melt,
+            py::arg("p1"), py::arg("p2"), py::arg("materialTag") = static_cast<mesh::MeshTag<int> *>(nullptr),
+            py::arg("idxTargetSet") = 0)
         .def("deposit", &Printer::deposit,
             py::arg("p1"), py::arg("p2"), py::arg("activeEls") = static_cast<mesh::MeshTag<int> *>(nullptr),
             py::arg("modifyValues") = true);

@@ -117,4 +117,40 @@ Function operator/(const Function& f, const double c) {
   return Function( f.domain, values );
 }
 
+double DG0Function::evaluate(Eigen::Vector3d &point) const {
+  int idxOwnerEl = domain->findOwnerElements( point );
+  return values[idxOwnerEl];
+}
+
+void DG0Function::interpolate(const AbstractFunction &extFEMFunc,
+    const mesh::MeshTag<int> &cellTag, std::function<bool(int)> filter,
+    bool ignoreOutside) {
+
+  if (cellTag.dim() != domain->mesh->dim ) { throw std::invalid_argument("Interpolate requires cell mesh tag."); }
+
+  vector<int> cellsOfInterest;
+  if (filter == nullptr) {
+     cellsOfInterest = cellTag.getIndices();
+  } else {
+     cellsOfInterest = cellTag.filterIndices( filter );
+  }
+
+  for (int ielem : cellsOfInterest) {
+    // Move to reference frame of external
+    mesh::Element e = domain->getElement( ielem );
+    Eigen::Vector3d posExt = e.centroid + domain->translationLab - extFEMFunc.domain->translationLab;
+    try {
+      values[ielem] = extFEMFunc.evaluate( posExt );
+    } catch ( const std::invalid_argument &e ) {
+      // Point outside of domain
+      if (domain->activeElements[ielem] && not(ignoreOutside)) {
+        throw;
+      } else {
+        values[ielem] = -1;// sentinel value, if it shows up in active
+                           // elements of simulation something went wrong
+      }
+    }
+  }
+}
+
 }

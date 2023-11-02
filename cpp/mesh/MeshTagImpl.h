@@ -15,6 +15,19 @@ MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, const T &cte) {
 }
 
 template<typename T>
+MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, Eigen::VectorXd &values) {
+  _mesh = mesh;
+  _dim = dim;
+  if (values.size() != mesh->getNumEntities( dim ) ) {
+    throw std::invalid_argument("Incompatible sizes.");
+  }
+  x = vector<T>(  mesh->getNumEntities( dim ) , T(0) );
+  for (int ient = 0; ient < values.size(); ++ient) {
+    x[ient] = T( values(ient) );
+  }
+}
+
+template<typename T>
 MeshTag<T>::MeshTag(const mesh::Mesh *mesh, int dim, const std::vector<int> &indices){
   _mesh = mesh;
   _dim  = dim;

@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <Eigen/Core>
 
 namespace mesh {
 
@@ -15,6 +16,8 @@ class MeshTag {
     int size() const { return x.size(); }
 
     MeshTag(const mesh::Mesh *mesh, int dim = 0, const T &cte = 0);
+
+    MeshTag(const mesh::Mesh *mesh, int dim, Eigen::VectorXd &values);
 
     MeshTag(const mesh::Mesh *mesh, int dim, const std::vector<int> &indices);
 
