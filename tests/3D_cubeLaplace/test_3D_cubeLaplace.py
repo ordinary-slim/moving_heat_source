@@ -60,7 +60,7 @@ def run():
 
     p.postIterate()
 
-    fexact = p.project( exactSol )
+    fexact = p.domain.project( exactSol )
     p.writepos(
             functions={
                 "fexact":fexact,

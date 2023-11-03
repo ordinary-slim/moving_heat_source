@@ -10,7 +10,7 @@ def test():
     problem = mhs.Problem( mesh, problem_params, caseName="l2Norm_4els" )
     problem.domain.assembleMassMatrix()
 
-    f = problem.project( lambda x : np.linalg.norm( x )**2 )
+    f = problem.domain.project( lambda x : np.linalg.norm( x )**2 )
 
     l2normBeforeDeactivating = f.getL2Norm()
     print("L2 norm before deactivation = {}".format( l2normBeforeDeactivating ) )

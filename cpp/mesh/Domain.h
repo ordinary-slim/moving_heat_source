@@ -9,6 +9,9 @@
 #include <Eigen/Sparse>
 
 class Problem;
+namespace fem {
+  class Function;
+}
 
 namespace mesh {
 /*
@@ -82,6 +85,7 @@ class Domain {
     void intersect( const MeshTag<int> subdomain);
     void inPlaneRotate( Eigen::Vector3d &center, double angle );
     void invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection );
+    fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
     MeshTag<int> projectCellTag( const MeshTag<int> &cellTag, const Domain &extDomain );
   private:
     int _dim;

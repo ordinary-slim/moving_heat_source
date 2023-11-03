@@ -71,17 +71,38 @@ class Problem {
     TimeIntegratorHandler timeIntegrator;
 
     void setDt( double dt ) {
-      /* Should only be used before first time-step
-       * Not ready yet for change of DeltaT between time iterations */
+      /* Change dt on the fly
+       * Not ready yet for BDF2 and higher */
       this->dt = dt;
     }
     void setPointers(){
+      /* Useful for copy constructor */
       unknown.domain = &domain;
     }
 
     void setAdvectionSpeed(Eigen::Vector3d inputAdvectionSpeed){
       advectionSpeed = inputAdvectionSpeed;
       if (advectionSpeed.norm() > 1e-10) isAdvection = true;
+    }
+
+    void clearBCs() {
+      dirichletNodes.setCteValue( 0 );
+      dirichletValues.setCteValue( 0 );
+      weakBcFacets.setCteValue( 0 );
+      neumannFluxes.setCteValue( vector<double>() );
+    }
+    void clearGamma() {
+      /* Clear boundary conditions at interfacet
+       * and interface itself
+       */
+      // Clear Dirichlet BCs at Gamma
+      weakBcFacets.tag( [](int tag){ return tag==3; }, 0 );
+      dirichletNodes.tag( [](int tag){ return tag==2; }, 0 );
+      // Clear Gamma
+      gammaNodes.setCteValue( 0 );
+      gammaFacets.setCteValue( 0 );
+
+      isCoupled = false;
     }
 
     void initializeIntegrator(Eigen::MatrixXd pSols);
@@ -113,27 +134,6 @@ class Problem {
     void substractExternal( const Problem &pExt, bool updateGamma = true);
     void intersectExternal( const Problem &pExt, bool updateGamma = true, bool interpolateIntersected = false );
     void interpolate2dirichlet( fem::Function &extFEMFunc);
-
-    void clearBCs() {
-      dirichletNodes.setCteValue( 0 );
-      dirichletValues.setCteValue( 0 );
-      weakBcFacets.setCteValue( 0 );
-      neumannFluxes.setCteValue( vector<double>() );
-    }
-    void clearGamma() {
-      /* Clear boundary conditions at interfacet
-       * and interface itself
-       */
-      // Clear Dirichlet BCs at Gamma
-      weakBcFacets.tag( [](int tag){ return tag==3; }, 0 );
-      dirichletNodes.tag( [](int tag){ return tag==2; }, 0 );
-      // Clear Gamma
-      gammaNodes.setCteValue( 0 );
-      gammaFacets.setCteValue( 0 );
-
-      isCoupled = false;
-    }
-    fem::Function project( std::function<double(Eigen::Vector3d)> func );//L2 projection onto domain attribute
 };
 
 Eigen::VectorXd CreateEigenVector(py::array_t<double> n); // Helper function initialization. Where should I put this?

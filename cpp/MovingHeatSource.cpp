@@ -80,7 +80,6 @@ PYBIND11_MODULE(cpp, m) {
         .def("setGamma2Dirichlet", &Problem::setGamma2Dirichlet)
         .def("clearBCs", &Problem::clearBCs)
         .def("clearGamma", &Problem::clearGamma)
-        .def("project", &Problem::project)
         .def("getActiveInExternal", &Problem::getActiveInExternal, py::return_value_policy::take_ownership)
         .def("updateInterface", static_cast<void (Problem::*)( const Problem &)>(&Problem::updateInterface),
             "Find interface between two problems")
@@ -108,6 +107,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("boundaryFacets", &mesh::Domain::boundaryFacets)
         .def_readonly("mesh", &mesh::Domain::mesh)
         .def("assembleMassMatrix", &mesh::Domain::assembleMassMatrix)
+        .def("project", &mesh::Domain::project)
         .def("setMaterialSets", &mesh::Domain::setMaterialSets)
         .def("setActivation", &mesh::Domain::setActivation)
         .def("resetActivation", &mesh::Domain::resetActivation)

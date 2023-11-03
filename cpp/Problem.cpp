@@ -341,40 +341,6 @@ void Problem::interpolate2dirichlet( fem::Function &extFEMFunc) {
   }
 }
 
-fem::Function Problem::project( std::function<double(Eigen::Vector3d)> func ) {
-  /*
-   * L2 projection onto domain
-   * TODO: Move from method to separate function
-   */
-  // Initialize null function
-  fem::Function fh = fem::Function( &domain );
-  // Assemble RHS
-  Eigen::VectorXd rhsProjection = Eigen::VectorXd::Zero( domain.mesh->nnodes );
-  vector<int> indicesActiveElements = domain.activeElements.getIndices();
-  double fx, rhs_i;
-  Eigen::Vector3d x_gp;
-  mesh::Element e;
-  for (int ielem : indicesActiveElements ) {
-
-    e = domain.getElement( ielem );
-
-    for (int inode = 0; inode < e.nnodes; ++inode) {
-      rhs_i = 0.0;
-      for (int igp = 0; igp < e.ngpoints; ++igp ) {
-        x_gp = e.gpos.row( igp );
-        fx = func(x_gp);
-        rhs_i +=  fx * e.BaseGpVals[inode][igp] *
-          e.gpweight[igp] * e.vol;
-      }
-      rhsProjection[(*e.con)[inode]] += rhs_i;
-    }
-  }
-  // Solve projection
-  domain.invertProjection( fh.values, rhsProjection );
-
-  return fh;
-}
-
 void Problem::setGamma2Neumann() {
   vector<int> gammaFacetIndices = gammaFacets.getIndices();
   for (int ifacet : gammaFacetIndices) {
