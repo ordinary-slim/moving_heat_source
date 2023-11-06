@@ -20,11 +20,12 @@ HeatSource::HeatSource( pybind11::dict &input, Problem *problem ) {
 }
 
 void HeatSource::setPath( std::vector<Eigen::Vector3d> &coordinates,
+      std::vector<double> &times,
       std::vector<double> &speeds,
       std::vector<double> &powers,
-      std::vector<int> &arePrinting ) {
+      std::vector<TrackType> &trackTypes ) {
 
-    path = std::make_unique<heat::Path>( coordinates, speeds, powers, arePrinting );
+    path = std::make_unique<heat::Path>( coordinates, times, speeds, powers, trackTypes );
     currentTrack = &path->tracks[0];
     position = path->interpolatePosition( problem->time );
 }

@@ -31,40 +31,6 @@ def boundaryLayerProgression( extrusionSize, nBounLayers, fineElSize, coarseElFa
 
     return numElementsPerLayer, heights
 
-def meshBox(box, elementSize=0.25):
-    cell_type="hexa8"
-    nelsX = int((box[1] - box[0])/elementSize)
-    nelsY = int((box[3] - box[2])/elementSize)
-    nelsZ = int((box[5] - box[4])/elementSize)
-
-    points, cells = meshzoo.cube_hexa(
-        np.linspace( box[0], box[1], nelsX+1),
-        np.linspace( box[3], box[2], nelsY+1),
-        np.linspace( box[5], box[4], nelsZ+1),
-    )
-    cells = cells.astype( np.uint32 )
-    meshDict = {}
-    meshDict["points"], meshDict["cells"], meshDict["cell_type"] = points, cells, cell_type
-    meshDict["dimension"] = 3
-    return mhs.Mesh( meshDict )
-
-def meshAroundHS( adimR, problemInput, elementSize=0.25 ):
-    radius = problemInput["radius"]
-    initialPosition = problemInput["initialPosition"]
-    trailLength = adimR * radius
-    capotLength = min( trailLength, 2*radius )
-    halfLengthY = min( trailLength, capotLength )
-    halfLengthZ = halfLengthY
-    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
-           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY,
-           initialPosition[2] - halfLengthZ, initialPosition[2] + halfLengthZ,
-           ]
-
-    return meshBox( box, elementSize = elementSize )
-
-def getMeshPhysicaMeshzoo():
-    return meshBox( [-25, 25, -5, 5, -5, 1], elementSize=1 )
-
 def getMeshPhysical(popup=False):
     gmsh.initialize()
     halfLensPart = np.array( partLens ) / 2
@@ -88,9 +54,7 @@ def getMeshPhysical(popup=False):
     botSurfacePart = gmsh.model.geo.addPlaneSurface([curveLoopBotSurfacePart], 1)
     gmsh.model.geo.mesh.setTransfiniteSurface(botSurfacePart)
     gmsh.model.geo.mesh.setRecombine(2,botSurfacePart) 
-    # Part extrusion
-    nelsPartZ = partLens[2] / fineElSize
-    topExtrusion = gmsh.model.geo.extrude([(2, botSurfacePart)], 0, 0, +partLens[2], numElements=[nelsPartZ], recombine=True)
+
     # Substrate extrusions
     ## Substrate extrusions Z
     ## Uniform extrusion
@@ -143,10 +107,45 @@ def getMeshPhysical(popup=False):
     ### Coarse extrusions
     extrusionLen = (substrateLens[0] - partLens[0])/2 - nBounLayers*fineElSize
     nElements, heights = boundaryLayerProgression( extrusionLen, nBounLayers, fineElSize, coarseElFactor=coarseElFactor )
+    positiveCoarseExtrusionsX = []
+    negativeCoarseExtrusionsX = []
     for extrusion in positiveUniformExtrusionsX:
-        gmsh.model.geo.extrude([extrusion[0]], +extrusionLen, 0.0, 0.0, numElements=nElements, heights = heights,  recombine = True )
+        positiveCoarseExtrusionsX.append ( gmsh.model.geo.extrude([extrusion[0]], +extrusionLen, 0.0, 0.0, numElements=nElements, heights = heights,  recombine = True ) )
     for extrusion in negativeUniformExtrusionsX:
-        gmsh.model.geo.extrude([extrusion[0]], -extrusionLen, 0.0, 0.0, numElements=nElements, heights = heights, recombine = True )
+        negativeCoarseExtrusionsX.append( gmsh.model.geo.extrude([extrusion[0]], -extrusionLen, 0.0, 0.0, numElements=nElements, heights = heights, recombine = True ) )
+
+    # Top extrusion
+    nelsPartZ = partLens[2] / fineElSize
+    substrateTopSurfaces = []
+    substrateTopSurfaces.append( (2, botSurfacePart) )
+    substrateTopSurfaces.append( uniformYExtrusions[0][2] )
+    substrateTopSurfaces.append( uniformYExtrusions[1][2] )
+    substrateTopSurfaces.append( coarseYExtrusions[0][2] )
+    substrateTopSurfaces.append( coarseYExtrusions[1][2] )
+    substrateTopSurfaces.append( positiveUniformExtrusionsX[0][2] )
+    substrateTopSurfaces.append( positiveUniformExtrusionsX[2][-1] )
+    substrateTopSurfaces.append( positiveUniformExtrusionsX[3][3] )
+    substrateTopSurfaces.append( positiveUniformExtrusionsX[6][-1] )
+    substrateTopSurfaces.append( positiveUniformExtrusionsX[7][3] )
+    substrateTopSurfaces.append( positiveCoarseExtrusionsX[0][2] )
+    substrateTopSurfaces.append( positiveCoarseExtrusionsX[2][-1] )
+    substrateTopSurfaces.append( positiveCoarseExtrusionsX[3][3] )
+    substrateTopSurfaces.append( positiveCoarseExtrusionsX[6][-1] )
+    substrateTopSurfaces.append( positiveCoarseExtrusionsX[7][3] )
+    #
+    substrateTopSurfaces.append( negativeUniformExtrusionsX[0][2] )
+    substrateTopSurfaces.append( negativeUniformExtrusionsX[2][3] )
+    substrateTopSurfaces.append( negativeUniformExtrusionsX[3][-1] )
+    substrateTopSurfaces.append( negativeUniformExtrusionsX[6][3] )
+    substrateTopSurfaces.append( negativeUniformExtrusionsX[7][-1] )
+    substrateTopSurfaces.append( negativeCoarseExtrusionsX[0][2] )
+    substrateTopSurfaces.append( negativeCoarseExtrusionsX[2][3] )
+    substrateTopSurfaces.append( negativeCoarseExtrusionsX[3][-1] )
+    substrateTopSurfaces.append( negativeCoarseExtrusionsX[6][3] )
+    substrateTopSurfaces.append( negativeCoarseExtrusionsX[7][-1] )
+    topExtrusions = []
+    for surface in substrateTopSurfaces:
+        topExtrusions.append( gmsh.model.geo.extrude([surface], 0, 0, +partLens[2], numElements=[nelsPartZ], recombine=True) )
 
 
     gmsh.model.geo.synchronize()

@@ -23,13 +23,17 @@ class Printer : public HatchCollider {
       }
       p->domain.setActivation((*activeEls));
       if (modifyValues) {
-        // Set deposition temperature at just activated nodes
-        // TODO: Maybe compute MeshTag only once to avoid filtering it
-        ConstantFunction depositionTemperature = ConstantFunction( &p->domain, p->Tdeposition );
-        p->unknown.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
-        for (fem::Function& prevVal : p->previousValues) {
-          prevVal.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
-        }
+        setDepositionTemperature();
+      }
+    }
+
+    void setDepositionTemperature() {
+      // Set deposition temperature at just activated nodes
+      // TODO: Maybe compute MeshTag only once to avoid filtering it
+      ConstantFunction depositionTemperature = ConstantFunction( &p->domain, p->Tdeposition );
+      p->unknown.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
+      for (fem::Function& prevVal : p->previousValues) {
+        prevVal.interpolate( depositionTemperature, p->domain.activeNodes,  [](int inode){return (inode==2);}, false );
       }
     }
 

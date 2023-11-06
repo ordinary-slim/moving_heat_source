@@ -5,12 +5,23 @@
 #include <Eigen/Core>
 
 namespace heat {
+
+enum TrackType {
+  printing,
+  cooling,
+  dwelling,
+  recoating,
+};
+
 class Track {
   public:
     Eigen::Vector3d *p0;//origin
     Eigen::Vector3d *p1;//destination
                         //these pointers are not ours
-    bool hasDeposition = false;
+    TrackType type = cooling;
+    bool isNewX = false;
+    bool isNewY = false;
+    bool isNewZ = false;
     double speed = 10;// mm/s
     double power = 100;// W
     double length = -1;
@@ -18,15 +29,20 @@ class Track {
     int index = -1;
 
     Track(Eigen::Vector3d *p0, Eigen::Vector3d *p1,
-        double startTime, double speed, double power, bool hasDeposition, int index = -1 ) {
+        double startTime, double endTime,
+        double speed, double power, TrackType trackType, bool isNewX, bool isNewY, bool isNewZ, int index = -1 ) {
       this->p0 = p0;
       this->p1 = p1;
       this->startTime = startTime;
+      this->endTime = endTime;
+      //this->endTime = this->startTime + this->length / this->speed;
       this->speed = speed;
       this->power = power;
-      this->hasDeposition = hasDeposition;
+      this->type  = trackType;
+      this->isNewX = isNewX;
+      this->isNewY = isNewY;
+      this->isNewZ = isNewZ;
       this->length = (*p1-*p0).norm();
-      this->endTime = this->startTime + this->length / this->speed;
       this->index = index;
     }
 
@@ -39,22 +55,45 @@ class Path {
     std::vector<Track> tracks;
     std::vector<Eigen::Vector3d> coordinates;
     std::vector<double> times;
-    double endTime;
 
     Path( std::vector<Eigen::Vector3d> &coordinates,
+          std::vector<double> &times,
           std::vector<double> &speeds,
           std::vector<double> &powers,
-          std::vector<int> &arePrinting ) {
+          std::vector<TrackType> &trackTypes ) {
+      /*
+       * Receiving coordinates, times and speeds makes system
+       * overdetermined. Responsability of consistency is on gcode reader
+       */
       this->coordinates = std::move( coordinates );
-      this->times.resize( this->coordinates.size() );
-      this->times[0] = 0.0;
+      this->times = std::move( times );
       tracks.reserve( this->coordinates.size()-1 );
+
+      double currentX = -1e9;
+      double currentY = -1e9;
+      double currentZ = -1e9;
       for (int itrack = 0; itrack < this->coordinates.size() -1; ++itrack) {
-        tracks.push_back( Track( &this->coordinates[ itrack ], &this->coordinates[ itrack+1 ], times[itrack],
-              speeds[ itrack + 1], powers[ itrack + 1], bool(arePrinting[ itrack+1 ]), itrack ) );
-        times[itrack+1] = tracks[itrack].endTime;
+        bool isNewX = false;
+        bool isNewY = false;
+        bool isNewZ = false;
+        if (currentX /= this->coordinates[ itrack ][0]) {
+          isNewX = true;
+        }
+        if (currentY /= this->coordinates[ itrack ][1]) {
+          isNewY = true;
+        }
+        if (currentZ /= this->coordinates[ itrack ][2]) {
+          isNewZ = true;
+        }
+        currentX = this->coordinates[ itrack ][0];
+        currentY = this->coordinates[ itrack ][1];
+        currentZ = this->coordinates[ itrack ][2];
+
+        tracks.push_back( Track( &this->coordinates[ itrack ], &this->coordinates[ itrack+1 ],
+              this->times[itrack], this->times[itrack+1],
+              speeds[ itrack + 1], powers[ itrack + 1],
+              trackTypes[ itrack+1 ], isNewX, isNewY, isNewZ, itrack ) );
       }
-      endTime = times.back();
     }
 
     const Track* interpolateTrack(double t) const {
@@ -80,7 +119,7 @@ class Path {
       }
     }
 
-    bool isOver(double t) { return (t + 1e-7 >= endTime); }
+    bool isOver(double t) { return (t + 1e-7 >= this->times.back() ); }
 };
 }
 #endif

@@ -6,9 +6,11 @@ dt : 0.05
 t : 0.0
 Tfinal : 20.0
 maxIter : 5
-rho : 1
-conductivity : 1
-specific_heat : 1
+material : {
+  rho : 1,
+  conductivity : 1,
+  specific_heat : 1,
+}
 environmentTemperature : 25
 plot : 1
 timeIntegration : 1

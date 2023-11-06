@@ -4,12 +4,20 @@ initialPosition : [-10.0, 0.0, 1]
 HeatSourceSpeed : [1000, 0, 0]
 dt : 0.1
 # PROPS
-rho : 4.3E-06 # kg / mm3
-conductivity : 10.0E-03 # W / mm / K
-specific_heat : 700 # J / kg / K
-convectionCoeff : 2.0E-05
+material_metal : {
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-03, # W / mm / K
+  specific_heat : 700, # J / kg / K
+  convectionCoeff : 2.0E-05,
+}
+material_powder : {
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-05, # W / mm / K
+  specific_heat : 700, # J / kg / K
+  convectionCoeff : 2.0E-05,
+}
 environmentTemperature : 25
-depositionTemperature : 800
+depositionTemperature : 25
 timeIntegration : 1
 sourceTerm : 0
 isAdvection : 0
@@ -28,6 +36,8 @@ printer: {
   "depth" : 0.0,
 }
 path: "Path.gcode"
-fineElFactor: 2
-fineTStepFactor: 2
+interLayerDelay : 2
+cooling_dt: 0.5
+fineElFactor: 1
+fineTStepFactor: 1
 fineElFactorMovingSubdomain: 1

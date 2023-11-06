@@ -6,6 +6,7 @@ from CustomStepper import CustomStepper, DriverReference
 from scanningPath import writeGcode
 from MyLogger import MyLogger
 import pickle
+import argparse
 
 inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
@@ -82,18 +83,15 @@ def runCoupled(caseName="fixed"):
 
 
 if __name__=="__main__":
-    isRunReference = ("--run-reference" in sys.argv)
-    isRunCoupled = ("--run-coupled" in sys.argv)
-    nLayers = None
-    for arg in sys.argv:
-        if "--layers" in arg:
-            nLayers = int( arg.split("=")[-1] )
-    caseName = "case"
-    for arg in sys.argv:
-        if "--case-name" in arg:
-            caseName = str( arg.split("=")[-1] )
-    writeGcode( nLayers=nLayers )
-    if isRunReference:
-        runReference(caseName=caseName)
-    if isRunCoupled:
-        runCoupled(caseName=caseName)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--run-reference', action='store_true')
+    parser.add_argument('-c', '--run-coupled', action='store_true')
+    parser.add_argument('--layers', default=-1, type=int)
+    parser.add_argument('--case-name', default='case')
+    parser.add_argument('--plot', action='store_true')
+    args = parser.parse_args()
+    writeGcode( nLayers=args.layers )
+    if args.run_reference:
+        runReference(caseName=args.case_name)
+    if args.run_coupled:
+        runCoupled(caseName=args.case_name)

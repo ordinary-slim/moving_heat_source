@@ -25,6 +25,10 @@ def writeGcode(nLayers=None):
         Z = layerThickness * (ilayer)
         E += 0.1
         gcodeLines.append( "G0 X{} Y{} Z{:.2f}".format(X, Y, Z) )
+
+        gcodeLines.append( "G4 P{}".format( params["interLayerDelay"] / 2 ) )
+        gcodeLines.append( "G4 P{} R1".format( params["interLayerDelay"] / 2 ) )
+
         X = -X
         gcodeLines.append( "G1 X{} E{:.2f}".format(X, E) )
 

@@ -1,7 +1,7 @@
 import numpy as np
 import gmsh
 import MovingHeatSource as mhs
-from MovingHeatSource.gcode import gcode2laserPath
+from MovingHeatSource.gcode import TrackType
 import pdb
 
 #TODO: Store hatch and not adim + nonAdim
@@ -23,6 +23,7 @@ class AdaptiveStepper:
                  adimMinRadius=2,
                  adimZRadius=None,
                  isCoupled=True,
+                 slowDown=True,
                  ):
 
         self.pFixed = pFixed
@@ -31,7 +32,12 @@ class AdaptiveStepper:
         # Set up laser path
         if "path" in self.pFixed.input:
             self.pFixed.setPath( self.pFixed.input["path"] )
+        else:
+            raise Exception("AdapativeStepper requires gcode.")
+        self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time )
+
         self.isCoupled = isCoupled
+        self.slowDown = slowDown
         self.adimMaxDt = maxAdimtDt
         self.adimMaxSubdomainSize = self.computeSizeSubdomain(self.adimMaxDt)
         self.adimMinRadius = adimMinRadius
@@ -43,10 +49,10 @@ class AdaptiveStepper:
         self.threshold = threshold
         self.factor = factor
 
-        self.dt = pFixed.dt
-        tscale = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
-        self.adimDt = pFixed.dt / tscale
-        self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time )
+        # Cooling
+        self.cooling_dt = self.adimFineDt
+        if "cooling_dt" in self.pFixed.input:
+            self.cooling_dt = self.pFixed.input["cooling_dt"]
         self.update()
         self.onNewTrack = True
         self.hasPrinter = False
@@ -70,6 +76,7 @@ class AdaptiveStepper:
         except TypeError:
             elementSize = [elementSize]*3
         self.meshMoving = self.meshAroundHS(elementSizes=elementSize, shift=shift)
+        self.currentOrientation = np.array([1.0, 0.0, 0.0])
         movingProblemInput = dict( self.pFixed.input )
         movingProblemInput["isStabilized"] = 1
         movingProblemInput["isAdvection"] = 1
@@ -79,8 +86,8 @@ class AdaptiveStepper:
         movingProblemInput["initialPosition"] = self.pFixed.mhs.position
         self.pMoving  = mhs.Problem(self.meshMoving, movingProblemInput, caseName=self.pFixed.caseName + "_moving")
         # Quick-fix: Mesh is built oriented around X
-        self.rotateSubdomain( currentOrientation=np.array([1.0, 0.0, 0.0]),
-                               nextOrientation=self.pFixed.mhs.currentTrack.getSpeed() )
+        if (self.nextTrack.type == TrackType.printing):
+            self.rotateSubdomain()
 
     def getTime(self):
         return self.pFixed.time
@@ -94,7 +101,7 @@ class AdaptiveStepper:
         '''
         Do deposition for interval [tn, tn1] at tn+1
         '''
-        if (self.pFixed.mhs.currentTrack.hasDeposition):
+        if (self.pFixed.mhs.currentTrack.type == TrackType.printing):
             origin = self.pFixed.mhs.path.interpolatePosition( self.getTime() - self.dt )
             destination = self.pFixed.mhs.position
 
@@ -122,77 +129,84 @@ class AdaptiveStepper:
             adimDt = self.adimDt
         return min(adimDt + 4*self.adimFineDt, adimDt * 2 )
 
-    def setSizeSubdomain( self ):
-        self.adimSubdomainSize = self.computeSizeSubdomain()
+    def setSizeSubdomain( self, adimDt = None ):
+        self.adimSubdomainSize = self.computeSizeSubdomain( adimDt = adimDt )
 
     def update(self):
         '''
         Called at end of iteration
         Computes size of subdomain and dt
         '''
-        # TODO: fix this for when track changes from t to tnp1
-        
-        time = self.pFixed.time
+        # If path is over
+        if (self.pFixed.mhs.path.isOver(self.getTime())):
+            return
+
         self.onNewTrack = False
 
-        # If path is over
-        if (self.pFixed.mhs.path.isOver(time)):
-            return
-        tUnit = self.pFixed.mhs.radius / self.pFixed.mhs.currentTrack.speed
+        self.dt2trackEnd = self.pFixed.mhs.currentTrack.endTime - self.getTime()
 
-        dt2trackEnd = self.pFixed.mhs.currentTrack.endTime - time
-        adimMaxDt = self.adimMaxDt
-
-        if ( dt2trackEnd < 1e-7) or ( time== 0.0 ):#new track
+        # Check if next step starts new track
+        if ( self.dt2trackEnd < 1e-7) or ( self.getTime()== 0.0 ):#new track
             self.onNewTrack = True
-            self.adimDt = self.adimFineDt
-
-            if time != 0.0:
+            if self.getTime() != 0.0:
                 self.nextTrack = self.pFixed.mhs.getNextTrack()
+            # Store next dt 2 track end
+            self.dt2trackEnd = (self.nextTrack.endTime - self.getTime())
 
-            # Make sure we don't skip over new track
-            adimMaxDt = min( (self.nextTrack.endTime - time)/ tUnit, adimMaxDt )
+        if   self.nextTrack.type == TrackType.printing:
+            self.printingUpdate()
         else:
-            adimDt2TrackEnd = dt2trackEnd/tUnit
-            maxDt2TrackEnd = adimDt2TrackEnd
-            if (maxDt2TrackEnd > self.adimMinRadius + 1e-7):
-                maxDt2TrackEnd -= self.adimMinRadius
-            else:
-                maxDt2TrackEnd = min( self.adimFineDt, adimDt2TrackEnd )
+            self.coolingUpdate()
 
-            adimMaxDt = min( maxDt2TrackEnd, self.adimMaxDt )
+    def printingUpdate( self ):
+        speed = np.linalg.norm( self.nextTrack.getSpeed() )
+        tUnit = self.pFixed.mhs.radius / speed
+        self.maxAdimDtPrinting = self.adimMaxDt
+        if (self.onNewTrack):
+            self.adimDt = self.adimFineDt
+            # Make sure we don't skip over new track
+            self.maxAdimDtPrinting = min( self.dt2trackEnd / tUnit, self.maxAdimDtPrinting )
+        else:
+            adimDt2TrackEnd = self.dt2trackEnd/tUnit
+            maxDt2TrackEnd = adimDt2TrackEnd
+            if self.slowDown:
+                if (maxDt2TrackEnd > self.adimMinRadius + 1e-7):
+                    maxDt2TrackEnd -= self.adimMinRadius
+                else:
+                    maxDt2TrackEnd = min( self.adimFineDt, adimDt2TrackEnd )
+
+            self.maxAdimDtPrinting = min( maxDt2TrackEnd, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
             if (self.checkSteadinessCriterion()):
                 self.increaseDt()
 
         # Cap dt
-        self.adimDt = min( adimMaxDt, self.adimDt )
+        self.adimDt = min( self.maxAdimDtPrinting, self.adimDt )
         self.setSizeSubdomain()
         self.dt = tUnit * self.adimDt
 
-    def rotateSubdomain( self, currentOrientation=None, nextOrientation=None ):
+    def coolingUpdate(self):
+        self.dt = min( self.cooling_dt, self.dt2trackEnd )
+        self.setSizeSubdomain( adimDt=self.adimFineDt )
+
+    def rotateSubdomain( self ):
         '''
         Align mesh of moving subproblem with track
         Called at tn
         '''
-        if currentOrientation is None:
-            currentOrientation = self.pFixed.mhs.currentTrack.getSpeed()
-        if nextOrientation is None:
-            nextOrientation    = self.nextTrack.getSpeed()
-        # If z-motion, do nothing
-        if (np.linalg.norm( np.cross(nextOrientation, np.array([0.0, 0.0, 1.0])) ) < 1e-7):
-            return
+        nextOrientation    = self.nextTrack.getSpeed() / np.linalg.norm( self.nextTrack.getSpeed() )
         center = self.pMoving.mhs.position
-        angle = np.arccos( np.dot( nextOrientation, currentOrientation ) / np.linalg.norm( nextOrientation ) / np.linalg.norm( currentOrientation ) )
+        angle = np.arccos( np.dot( nextOrientation, self.currentOrientation ) / np.linalg.norm( nextOrientation ) / np.linalg.norm( self.currentOrientation ) )
         if (angle > 1e-5):
             self.pMoving.domain.inPlaneRotate( center, angle )
             self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = True )
+            self.currentOrientation = nextOrientation
 
     def shapeSubdomain( self ):
         '''
         At t^n, do things
         '''
-        if not(self.nextTrack.hasDeposition):
+        if not(self.nextTrack.type == TrackType.printing):
             return
         # OBB
         radius = self.pFixed.mhs.radius
@@ -223,15 +237,13 @@ class AdaptiveStepper:
 
 
     def setDt( self ):
-        # Called at tn
-        print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
 
     def setCoupling( self ):
         # Set coupling
-        if ( ((self.adimDt <= self.adimFineDt+1e-7) and not(self.isCoupled)) \
-            or not(self.nextTrack.hasDeposition) ):
+        if (not(self.nextTrack.type == TrackType.printing) or \
+            ((self.adimDt <= self.adimFineDt+1e-7) and not(self.isCoupled))):
             self.isCoupled = False
         else:
             self.isCoupled = True
@@ -259,9 +271,25 @@ class AdaptiveStepper:
         self.pMoving.domain.setSpeed( speed )
         self.pMoving.mhs.setPower( self.nextTrack.power )
 
+    def onNewLayerOperations(self):
+        pass
 
     def setBCs(self):
         pass
+
+    def isNewLayer( self ):
+        isNewLayer = (self.nextTrack.isNewY) and ((self.onNewTrack) and self.nextTrack.type == TrackType.printing)
+        return isNewLayer
+
+    def prettyPrintIteration( self ):
+        if self.isCoupled:
+            print( "{} iter# {}, time={}".format(
+                self.pFixed.caseName,
+                self.pFixed.iter,
+                self.pFixed.time) )
+        # Called at tn
+        if self.pFixed.mhs.currentTrack.type == TrackType.printing :
+            print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
 
     def iterate( self ):
         # MY SCHEME ITERATE
@@ -271,6 +299,9 @@ class AdaptiveStepper:
 
         self.setDt()
         self.setCoupling()
+
+        if self.isNewLayer():
+            self.onNewLayerOperations()
         if self.onNewTrack:
             self.onNewTrackOperations()
 
@@ -329,6 +360,8 @@ class AdaptiveStepper:
                 self.writepos()
                 raise
             self.pMoving.postIterate()
+
+        self.prettyPrintIteration()
 
         # Compute next dt && domain size
         if self.isAdaptive:

@@ -45,9 +45,10 @@ class HeatSource {
       void setSpeed( Eigen::Vector3d speed ) { this->speed = speed; }
       void setPower( double power ) { this->power = power; }
       void setPath( std::vector<Eigen::Vector3d> &coordinates,
+            std::vector<double> &times,
             std::vector<double> &speeds,
             std::vector<double> &powers,
-            std::vector<int> &arePrinting );
+            std::vector<TrackType> &trackTypes );
 
       void preIterate();
       void postIterate();

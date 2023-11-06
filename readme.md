@@ -13,6 +13,7 @@ To-do:
 Ideas:
 ------
 - Timer object
+- Encapsulate Eigen to reduce compilation time
 
 Dependencies:
 

@@ -3,7 +3,7 @@ from MovingHeatSource.gcode import gcode2laserPath
 import numpy as np
 import meshio
 import meshzoo
-from AdaptiveStepper import AdaptiveStepper
+from CustomStepper import CustomStepper
 
 inputFile = "input.yaml"
 problemInput = mhs.readInput( inputFile )
@@ -49,27 +49,10 @@ if __name__=="__main__":
         p.mhs.setPath( *gcode2laserPath( "Path.gcode" ) )
         deactivateBelowSurface( p )
 
-    myDriver = AdaptiveStepper( pFixed,
-                               adimMaxSubdomainSize=10,
-                               threshold=0.025,
+    myDriver = CustomStepper( pFixed,
+                              threshold=0.025,
                                )
 
 
-    # Set up printer
-    y_width = 0.99
-    myDriver.setupPrinter( y_width, 1 )
-
     while not(pFixed.mhs.path.isOver(pFixed.time)):
         myDriver.iterate()
-
-
-    printerFRF = mhs.Printer( pFRF, y_width, 1 )
-    while not(pFRF.mhs.path.isOver(pFRF.time)):
-        # Setup print
-        p1 = pFRF.mhs.position
-        p2 = pFRF.mhs.path.interpolatePosition( pFRF.time + pFRF.dt )
-        # Print
-        printerFRF.deposit( p1, p2, pFRF.domain.activeElements )
-        pFRF.iterate()
-        pFRF.writepos()
-

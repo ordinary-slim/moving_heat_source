@@ -124,7 +124,9 @@ PYBIND11_MODULE(cpp, m) {
         .def("__not__", [](const mesh::MeshTag<int> &mt) {
             return !mt;
         }, py::is_operator())
+        .def("__getitem__", [](mesh::MeshTag<int>& t, size_t index) { return &t[index];})
         .def("dim", &mesh::MeshTag<int>::dim)
+        .def("setIndices", &mesh::MeshTag<int>::setIndices)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)
         .def_readonly("x", &mesh::MeshTag<int>::x);
     py::class_<ThermalMaterial>(m, "ThermalMaterial")//TODO: do it in a loop
@@ -200,6 +202,13 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, bool>());
     py::class_<MyOBB>(m, "MyOBB")
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d, double, double>());
+    py::enum_<heat::HeatSourceType>(m, "HeatSourceType")
+        .value("none", heat::HeatSourceType::none)
+        .value("gaussian1d", heat::HeatSourceType::gaussian1d)
+        .value("gaussian2d", heat::HeatSourceType::gaussian2d)
+        .value("gaussian3d", heat::HeatSourceType::gaussian3d)
+        .value("constant", heat::HeatSourceType::constant)
+        .value("lumped", heat::HeatSourceType::lumped);
     py::class_<heat::HeatSource>(m, "HeatSource")
         .def_readonly("position", &heat::HeatSource::position)
         .def_readonly("pulse", &heat::HeatSource::pulse)
@@ -207,6 +216,7 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("speed", &heat::HeatSource::speed)
         .def_readonly("radius", &heat::HeatSource::radius)
         .def_readonly("currentTrack", &heat::HeatSource::currentTrack)
+        .def_readonly("type", &heat::HeatSource::type)
         .def_property_readonly("path", [](const heat::HeatSource& h){ return h.path.get(); },
             py::return_value_policy::reference_internal)
         .def("__call__", &heat::HeatSource::operator())
@@ -224,12 +234,18 @@ PYBIND11_MODULE(cpp, m) {
         .def( py::init<Problem*, double, double, double>(),
             py::arg("problem"), py::arg("width"), py::arg("height"), py::arg("depth")=0.0 )
         .def("collide", &Printer::collide)
+        .def("setDepositionTemperature", &Printer::setDepositionTemperature)
         .def("melt", &Printer::melt,
             py::arg("p1"), py::arg("p2"), py::arg("materialTag") = static_cast<mesh::MeshTag<int> *>(nullptr),
             py::arg("idxTargetSet") = 0)
         .def("deposit", &Printer::deposit,
             py::arg("p1"), py::arg("p2"), py::arg("activeEls") = static_cast<mesh::MeshTag<int> *>(nullptr),
             py::arg("modifyValues") = true);
+    py::enum_<heat::TrackType>(m, "TrackType")
+        .value("printing", heat::TrackType::printing)
+        .value("cooling", heat::TrackType::cooling)
+        .value("dwelling", heat::TrackType::dwelling)
+        .value("recoating", heat::TrackType::recoating);
     py::class_<heat::Track>(m, "Track")
         .def_readonly("p0", &heat::Track::p0)
         .def_readonly("p1", &heat::Track::p1)
@@ -237,12 +253,14 @@ PYBIND11_MODULE(cpp, m) {
         .def("isOver", &heat::Track::isOver)
         .def_readonly("speed", &heat::Track::speed)
         .def_readonly("power", &heat::Track::power)
-        .def_readonly("hasDeposition", &heat::Track::hasDeposition)
+        .def_readonly("type", &heat::Track::type)
+        .def_readonly("isNewX", &heat::Track::isNewX)
+        .def_readonly("isNewY", &heat::Track::isNewY)
+        .def_readonly("isNewZ", &heat::Track::isNewZ)
         .def_readonly("startTime", &heat::Track::startTime)
         .def_readonly("endTime", &heat::Track::endTime);
     py::class_<heat::Path>(m, "Path")
         .def("interpolateTrack", &heat::Path::interpolateTrack, pybind11::return_value_policy::reference)
         .def("interpolatePosition", &heat::Path::interpolatePosition)
-        .def_readonly("endTime", &heat::Path::endTime)
         .def("isOver", &heat::Path::isOver);
 }
