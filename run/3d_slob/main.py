@@ -72,7 +72,7 @@ def runCoupled(caseName="coupled"):
                            elementSize=fineElSize/fineElFactor,
                            threshold=0.2,
                            adimMinRadius=2,
-                           adimZRadius=2,
+                           adimNegZLen=2,
                            maxAdimtDt=problemInput["adimFixedDtCoupled"],
                            adimFineDt=problemInput["adimFixedDtCoupled"],
                            )

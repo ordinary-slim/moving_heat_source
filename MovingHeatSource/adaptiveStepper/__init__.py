@@ -21,9 +21,11 @@ class AdaptiveStepper:
                  shift=None,
                  adimFineDt = 0.5,
                  adimMinRadius=2,
-                 adimZRadius=None,
+                 adimPosZLen=None,
+                 adimNegZLen=None,
                  isCoupled=True,
                  slowDown=True,
+                 slowAdimDt=None,
                  ):
 
         self.pFixed = pFixed
@@ -41,9 +43,15 @@ class AdaptiveStepper:
         self.adimMaxDt = maxAdimtDt
         self.adimMaxSubdomainSize = self.computeSizeSubdomain(self.adimMaxDt)
         self.adimMinRadius = adimMinRadius
-        self.adimZRadius = adimMinRadius
-        if not(adimZRadius is None):
-            self.adimZRadius = adimZRadius
+        self.adimNegZLen = adimMinRadius
+        if not(adimNegZLen is None):
+            self.adimNegZLen = adimNegZLen
+        self.adimPosZLen = self.adimNegZLen
+        if not(adimPosZLen is None):
+            self.adimPosZLen = adimPosZLen
+        self.slowAdimDt  = adimFineDt
+        if not(slowAdimDt is None):
+            self.slowAdimDt = slowAdimDt
         self.buildMovingProblem(elementSize=elementSize, shift=shift)
         # TODO: better initialization
         self.threshold = threshold
@@ -173,7 +181,7 @@ class AdaptiveStepper:
                 if (maxDt2TrackEnd > self.adimMinRadius + 1e-7):
                     maxDt2TrackEnd -= self.adimMinRadius
                 else:
-                    maxDt2TrackEnd = min( self.adimFineDt, adimDt2TrackEnd )
+                    maxDt2TrackEnd = min( self.slowAdimDt, adimDt2TrackEnd )
 
             self.maxAdimDtPrinting = min( maxDt2TrackEnd, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
@@ -216,7 +224,7 @@ class AdaptiveStepper:
         adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
         backRadiusAabb = max( adimBackRadius, self.adimMinRadius ) * radius
         frontRadiusAabb = self.adimMinRadius*radius
-        zRadius    = self.adimZRadius * radius
+        zRadius    = max(self.adimNegZLen, self.adimPosZLen) * radius
         xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
 
         #backRadiusObb = max(backRadius - radius, 0.0)
@@ -264,12 +272,17 @@ class AdaptiveStepper:
 
 
     def onNewTrackOperations(self):
-        self.rotateSubdomain()
         self.isCoupled = False
         speed = self.nextTrack.getSpeed()
         self.pMoving.setAdvectionSpeed( -speed )
         self.pMoving.domain.setSpeed( speed )
         self.pMoving.mhs.setPower( self.nextTrack.power )
+
+        if self.nextTrack.type == TrackType.printing:
+            self.rotateSubdomain()
+        if (self.nextTrack.type == TrackType.recoating):
+            activatePowderLayer( self.pFixed, self.printerFixed )
+            activatePowderLayer( self.pMoving, self.printerMoving )
 
     def onNewLayerOperations(self):
         pass
@@ -289,7 +302,9 @@ class AdaptiveStepper:
                 self.pFixed.time) )
         # Called at tn
         if self.pFixed.mhs.currentTrack.type == TrackType.printing :
-            print(" dt = {}R, domainSize = {}R".format( self.adimDt, self.adimSubdomainSize ) )
+            print(" dt = {}R, domainSize = {}R, is coupled = {}".format( self.adimDt,
+                                                                        self.adimSubdomainSize,
+                                                                        self.isCoupled ) )
 
     def iterate( self ):
         # MY SCHEME ITERATE
@@ -377,24 +392,30 @@ class AdaptiveStepper:
         # Compute lengths of box
         radius = self.pFixed.mhs.radius
         minRadius = self.adimMinRadius * radius
-        zRadius   = self.adimZRadius * radius
+        YRadius   = self.adimMinRadius * radius
+        negZRadius   = self.adimNegZLen * radius
+        posZRadius   = self.adimPosZLen * radius
         meshCenter = np.array(self.pFixed.mhs.position)
         if not(shift is None):
             meshCenter += shift
         lengths = {}
         lengths["trailLength"] = self.adimMaxSubdomainSize * radius
         lengths["capotLength"] = min( lengths["trailLength"], minRadius )
-        lengths["halfLengthY"] = min( lengths["trailLength"], lengths["capotLength"] )
-        lengths["halfLengthZ"] = min( lengths["trailLength"], zRadius )
+        lengths["halfLengthYMinus"] = min( lengths["trailLength"], lengths["capotLength"], YRadius )
+        lengths["halfLengthYPlus"] = min( lengths["trailLength"], lengths["capotLength"], YRadius )
+        lengths["halfLengthZMinus"] = min( lengths["trailLength"], negZRadius )
+        lengths["halfLengthZPlus"] = min( lengths["trailLength"], posZRadius )
         # Round to element size
         for key in ["trailLength", "capotLength"]:
             lengths[key] = np.ceil( lengths[key] / elementSizes[0] ) * elementSizes[0]
-        lengths["halfLengthY"] = np.ceil( lengths["halfLengthY"] / elementSizes[1] ) * elementSizes[1]
-        lengths["halfLengthZ"] = np.ceil( lengths["halfLengthZ"] / elementSizes[2] ) * elementSizes[2]
+        for key in ["halfLengthYMinus", "halfLengthYPlus"]:
+            lengths[key] = np.ceil( lengths[key] / elementSizes[1] ) * elementSizes[1]
+        for key in ["halfLengthZMinus", "halfLengthZPlus"]:
+            lengths[key] = np.ceil( lengths[key] / elementSizes[2] ) * elementSizes[2]
         # Define box
         bounds = np.array( [[meshCenter[0] - lengths["trailLength"], meshCenter[0] + lengths["capotLength"]],
-               [meshCenter[1] - lengths["halfLengthY"], meshCenter[1] + lengths["halfLengthY"]],
-               [meshCenter[2] - lengths["halfLengthZ"], meshCenter[2] + lengths["halfLengthZ"]]] )
+               [meshCenter[1] - lengths["halfLengthYMinus"], meshCenter[1] + lengths["halfLengthYPlus"]],
+               [meshCenter[2] - lengths["halfLengthZMinus"], meshCenter[2] + lengths["halfLengthZPlus"]]] )
         # Mesh
         tolSearch = 1e-10
         if "toleranceSearches" in self.pFixed.input:
@@ -405,6 +426,138 @@ class AdaptiveStepper:
             return meshRectangle(bounds[:2,:], elementSizes, tolSearch = tolSearch)
         elif self.pFixed.domain.dim()==3:
             return meshBox(bounds, elementSizes, tolSearch = tolSearch)
+
+class LpbfAdaptiveStepper(AdaptiveStepper):
+    def deposit( self ):
+        '''
+        Do deposition for interval [tn, tn1] at tn+1
+        '''
+        if (self.pFixed.mhs.currentTrack.type == TrackType.printing):
+            origin = self.pFixed.mhs.path.interpolatePosition( self.getTime() - self.dt )
+            destination = self.pFixed.mhs.position
+
+            self.printerFixed.melt( origin, destination,
+                                    idxTargetSet = 0,
+                                )
+            self.printerMoving.melt( origin, destination,
+                                    idxTargetSet = 0,
+                                )
+
+    def writepos( self ):
+        self.pFixed.writepos(
+            nodeMeshTags={
+                "gammaNodes":self.pFixed.gammaNodes,
+                "forcedDofs":self.pFixed.forcedDofs,
+                },
+            cellMeshTags={
+                "material":self.pFixed.domain.materialTag,
+                "physicalDomain":self.physicalDomain,
+                },
+                          )
+        self.pMoving.writepos(
+            cellMeshTags={
+                "material":self.pMoving.domain.materialTag,
+                },
+            nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
+            )
+
+    def iterate( self ):
+        # MY SCHEME ITERATE
+        # PRE-ITERATE AND DOMAIN OPERATIONS
+        self.pMoving.domain.resetActivation()
+        self.pFixed.domain.setActivation(self.physicalDomain)
+
+        self.setDt()
+        self.setCoupling()
+
+        # RECOAT
+        if self.isNewLayer():
+            self.onNewLayerOperations()
+        # SET ADVECTION IN MOVING SUBDOMAIN
+        if self.onNewTrack:
+            self.onNewTrackOperations()
+
+
+        self.shapeSubdomain()
+
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
+
+        # Motion, other operations
+        self.pMoving.preIterate(canPreassemble=False)
+        self.pFixed.preIterate(canPreassemble=False)
+
+        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
+
+        self.pMoving.domain.setMaterialSets(
+                self.pMoving.domain.projectCellTag(
+                    self.pFixed.domain.materialTag,
+                    self.pFixed.domain,
+                    )
+                )
+
+        if self.hasPrinter:
+            self.deposit()
+
+        # At this point, activation in fixed problem corresponds
+        # to physical domain
+        self.physicalDomain = mhs.MeshTag( self.pFixed.domain.activeElements )
+
+        if self.isCoupled:
+            self.pFixed.substractExternal(self.pMoving, updateGamma=False)
+            self.pFixed.updateInterface( self.pMoving )
+            self.pMoving.updateInterface( self.pFixed )
+            # Set interface boundary conditions
+            self.pFixed.setGamma2Dirichlet()
+            self.pMoving.setGamma2Neumann()
+        self.setBCs()
+
+        self.pMoving.preAssemble(allocateLs=False)
+
+        if self.isCoupled:
+            # Pre-assembly, updating free dofs
+            self.pFixed.preAssemble(allocateLs=False)
+        
+            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+            # Assembly
+            self.pMoving.assemble( self.pFixed )
+            self.pFixed.assemble( self.pMoving )
+            # Build ls
+            ls.assemble()
+            # Solve ls
+            ls.solve()
+            # Recover solution
+            self.pFixed.gather()
+            self.pMoving.gather()
+
+            self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
+            self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
+            # Post iteration
+            self.pFixed.postIterate()
+            self.pMoving.postIterate()
+        else:
+            self.pFixed.clearGamma()
+            self.pFixed.preAssemble(allocateLs=True)
+            self.pFixed.iterate()
+            try:
+                self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
+            except ValueError:
+                self.writepos()
+                raise
+            self.pMoving.postIterate()
+
+        self.prettyPrintIteration()
+
+        # Compute next dt && domain size
+        if self.isAdaptive:
+            try:
+                self.update()
+            except ZeroDivisionError:
+                self.writepos()
+                raise
+        # Write vtk files
+        self.writepos()
+
+
 
 def meshLine(box, elSize=[0.25]*1, tolSearch = 1e-10, popup=False):
 
@@ -519,3 +672,40 @@ def meshBox(box, elSize=[0.25]*3, recombine = True, tolSearch = 1e-10, popup=Fal
     gmsh.finalize()
     return mesh
 
+def deactivateBelowSurface(p, heightOSurface = 0):
+    idxHeight = p.domain.dim() - 1
+    nels = p.domain.mesh.nels
+    activeEls = []
+    powderEls = []
+    for ielem in range( nels ):
+        e = p.domain.mesh.getElement( ielem )
+        if (e.getCentroid()[idxHeight] < heightOSurface):
+            activeEls.append( ielem )
+        else:
+            powderEls.append( ielem )
+    # DEACTIVE
+    substrateEls = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeEls )
+    p.domain.setActivation( substrateEls )
+    # SET 2 POWDER
+    powderEls = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, powderEls )
+    p.domain.setMaterialSets( powderEls )
+
+def activatePowderLayer( p, printer, powderSet = 1 ):
+    '''
+    If new layer of problem, activate powder layer
+    '''
+    idxHeight = p.domain.dim() - 1
+    currentHeight = p.mhs.position[idxHeight]
+    thresholdHeight = currentHeight + p.input["printer"]["height"]
+
+    nels = p.domain.mesh.nels
+    newPowderEls = []
+    for ielem in range( nels ):
+        e = p.domain.mesh.getElement( ielem )
+        if (e.getCentroid()[idxHeight] < thresholdHeight) and \
+        not(p.domain.activeElements[ielem]):
+            newPowderEls.append( ielem )
+    p.domain.activeElements.setIndices( newPowderEls, 1 )
+    p.domain.setActivation( p.domain.activeElements )
+    printer.setDepositionTemperature()
+    p.domain.materialTag.setIndices( newPowderEls, powderSet )

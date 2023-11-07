@@ -40,4 +40,5 @@ interLayerDelay : 2
 cooling_dt: 0.5
 fineElFactor: 1
 fineTStepFactor: 1
+fineTStepFactorMoving: 1
 fineElFactorMovingSubdomain: 1

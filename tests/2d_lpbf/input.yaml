@@ -1,0 +1,40 @@
+radius : 0.5
+power : 300
+initialPosition : [-10.0, 0.0, 1]
+HeatSourceSpeed : [200, 0, 0]
+dt : 0.1
+t : 0.0
+maxIter : 20
+material1 : {
+  rho : 4.43E-06, # kg / mm3
+  conductivity : 8.0E-03, # W / mm / K
+  specific_heat : 500, # J / kg / K
+  convectionCoeff : 1.0E-05,
+}
+material2 : {
+  rho : 4.43E-06, # kg / mm3
+  conductivity : 8.0E-05, # W / mm / K
+  specific_heat : 500, # J / kg / K
+  convectionCoeff : 1.0E-05,
+}
+interLayerDt : 0.5
+environmentTemperature : 25
+depositionTemperature : 25
+timeIntegration : 1
+sourceTerm : 0
+isAdvection : 0
+advectionSpeed : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
+SUPG : 1
+layerThickness : &id001
+  0.1
+substrate : [6, 0.5]
+part: [4, 0.3]
+printer: {
+  "width" : 1.0E-06,
+  "height" : 0.0,
+  "depth" : *id001,
+}
+path: "Path.gcode"
+interLayerDelay : 1
+cooling_dt: 0.5

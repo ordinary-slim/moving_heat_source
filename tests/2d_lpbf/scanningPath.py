@@ -1,4 +1,5 @@
 import yaml
+from numpy import round
 
 params = {}
 with open("input.yaml", 'r') as paramsFile:
@@ -7,24 +8,23 @@ with open("input.yaml", 'r') as paramsFile:
 partLen = params["part"]
 layerThickness = params["layerThickness"]
 speed = max(params["HeatSourceSpeed"])
-gcodeFile = params["path"]
 
-def writeGcode(nLayers=None):
+def writeGcode(gcodeFile="Path.gcode", nLayers=-1):
     gcodeLines = []
-    # Start in -X
+    # Start in -Y
     X = - partLen[0] / 2
     Y = 0.0
     Z = 0.0
     E = 0.0
-    numLayers = int(partLen[2] / layerThickness)
-    if nLayers is not None:
+    numLayers = round(partLen[1] / layerThickness).astype(int)
+    if nLayers > 0:
         numLayers = min( numLayers, nLayers )
     
     gcodeLines.append( "G0 F{}".format(speed, X, Y, Z) )
     for ilayer in range(numLayers):
-        Z = layerThickness * (ilayer)
+        Y = layerThickness * (ilayer + 1)
         E += 0.1
-        gcodeLines.append( "G0 X{} Y{} Z{:.3f}".format(X, Y, Z) )
+        gcodeLines.append( "G0 X{} Y{:.2f}".format(X, Y) )
 
         gcodeLines.append( "G4 P{}".format( params["interLayerDelay"] / 2 ) )
         gcodeLines.append( "G4 P{} R1".format( params["interLayerDelay"] / 2 ) )
@@ -36,4 +36,4 @@ def writeGcode(nLayers=None):
         gfile.writelines( [line+"\n" for line in gcodeLines] )
 
 if __name__=="__main__":
-    writeGcode()
+    writeGcode("Path.gcode")

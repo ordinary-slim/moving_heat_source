@@ -63,7 +63,7 @@ def runCoupled():
 
     deactivateBelowSurface( pFixed )
 
-    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize, threshold=0.15, adimMinRadius=1.25, adimZRadius=1.0 )
+    driver = CustomStepper( pFixed, maxAdimtDt=3, elementSize=fineElSize, threshold=0.15, adimMinRadius=1.25, adimNegZLen=1.0 )
     
     logger = MyLogger()
     while not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) :

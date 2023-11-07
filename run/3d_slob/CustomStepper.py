@@ -1,5 +1,6 @@
 import MovingHeatSource as mhs
 from MovingHeatSource.adaptiveStepper import AdaptiveStepper
+from MovingHeatSource.cpp import TrackType
 import numpy as np
 import meshzoo
 import pdb
@@ -26,7 +27,7 @@ class CustomStepper(AdaptiveStepper):
         '''
         At t^n, do things
         '''
-        if not(self.nextTrack.hasDeposition):
+        if not(self.nextTrack.type != TrackType.printing):
             return
         # OBB
         radius = self.pFixed.mhs.radius

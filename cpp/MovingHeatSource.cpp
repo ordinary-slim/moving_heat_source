@@ -125,6 +125,7 @@ PYBIND11_MODULE(cpp, m) {
             return !mt;
         }, py::is_operator())
         .def("__getitem__", [](mesh::MeshTag<int>& t, size_t index) { return &t[index];})
+        .def("__len__", [](mesh::MeshTag<int>& t) { return t.size();})
         .def("dim", &mesh::MeshTag<int>::dim)
         .def("setIndices", &mesh::MeshTag<int>::setIndices)
         .def("getIndices", &mesh::MeshTag<int>::getIndices)

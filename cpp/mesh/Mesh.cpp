@@ -59,7 +59,7 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
 
     std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( cellEl.refEl->elementType );
 
-    for ( std::vector<unsigned int> facetLocalCon : setsFacetLocalCons ) {
+    for ( std::vector<unsigned int>& facetLocalCon : setsFacetLocalCons ) {
       facetEl = cellEl.getFacetElement( &facetLocalCon );
 
       double projection =  facetEl.normal.dot( point - facetEl.centroid );
