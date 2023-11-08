@@ -1,5 +1,5 @@
 import MovingHeatSource as mhs
-from MovingHeatSource.adaptiveStepper import LpbfAdaptiveStepper, TrackType
+from MovingHeatSource.adaptiveStepper import LpbfAdaptiveStepper, TrackType, activatePowderLayer, deactivateBelowSurface
 import numpy as np
 import meshzoo
 import pdb

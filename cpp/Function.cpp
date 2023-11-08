@@ -7,16 +7,12 @@ double Function::evaluate( Eigen::Vector3d &point ) const {
   /*
   Output val of Function at input point
   */
-  double val = 0;
-
   // GET VALS OF SHAPE FUNCS AT POINT
   int idxOwnerEl = domain->findOwnerElements( point );
   mesh::Element e = domain->mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
 
-  val = values( *e.con ).dot( shaFunVals );
-
-  return val;
+  return  values( *e.con ).dot( shaFunVals );
 }
 
 Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d &point ) {

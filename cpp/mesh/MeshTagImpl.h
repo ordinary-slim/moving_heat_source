@@ -42,7 +42,7 @@ MeshTag<T>::MeshTag(const mesh::Mesh *mesh, std::vector<std::pair<int, T>> idxNv
   _mesh = mesh;
   _dim  = dim;
   x = vector<T>(  mesh->getNumEntities( dim ) , T(0) );
-  for (std::pair<int, T> pair : idxNvals) {
+  for (std::pair<int, T>& pair : idxNvals) {
     x[ pair.first ] = pair.second;
   }
 }

@@ -28,8 +28,8 @@ layerThickness : &layer_thickness
   0.025
 partWidth : &part_width
   0.1
-part: [2, *part_width, 1]
-substrate : [4, 2, 1]
+part: [4, *part_width, 1]
+substrate : [6, 2, 1]
 printer: {
   "width" : *part_width,
   "height" : *layer_thickness,

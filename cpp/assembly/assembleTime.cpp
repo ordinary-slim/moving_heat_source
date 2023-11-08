@@ -40,7 +40,7 @@ void Problem::assembleTime() {
 
     //RHS
     int prevValCounter = 0;
-    for (fem::Function prevFun: previousValues) {
+    for (fem::Function& prevFun: previousValues) {
       Eigen::VectorXd rhsContrib = timeDerivMat *
           (prevFun.values * timeIntegrator.rhsCoeff[prevValCounter] ) / dt;
       for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {

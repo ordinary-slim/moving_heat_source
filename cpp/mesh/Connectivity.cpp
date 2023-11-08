@@ -96,7 +96,7 @@ std::tuple<Connectivity, Connectivity> buildBoundaryConnectivities( Connectivity
         vector<unsigned int> sorted_vi(vi.size());
         partial_sort_copy(begin(vi), end(vi),
             begin(sorted_vi), end(sorted_vi));
-        for (vector<unsigned int> vj : Vj ) {
+        for (vector<unsigned int>& vj : Vj ) {
           vector<unsigned int> sorted_vj(vj.size());
           partial_sort_copy(begin(vj), end(vj),
               begin(sorted_vj), end(sorted_vj));

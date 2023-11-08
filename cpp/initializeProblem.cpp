@@ -22,7 +22,7 @@ Problem::Problem(mesh::Mesh &mesh, py::dict &input) :
 {
 
   // MATERIALS
-  for (auto item : input) {
+  for (auto& item : input) {
     std::string key = std::string(py::str(item.first));
     if (key.find("material") == 0) {
       py::dict matProperties = py::cast<py::dict>( item.second );

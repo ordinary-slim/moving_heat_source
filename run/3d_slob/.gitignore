@@ -1,2 +1,5 @@
 *.gcode
 *.log
+*.txt
+*.prof
+*.lprof

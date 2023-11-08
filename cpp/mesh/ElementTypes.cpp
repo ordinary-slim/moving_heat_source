@@ -88,7 +88,7 @@ std::vector<std::vector<unsigned int>> getFacetVertexSets( const std::vector<uns
       setsOfIndices.push_back( std::vector<unsigned int>{3, 2, 6, 7} );
       setsOfIndices.push_back( std::vector<unsigned int>{0, 3, 7, 4} );
       setsOfIndices.push_back( std::vector<unsigned int>{1, 2, 6, 5} );
-      for (auto iset : setsOfIndices) {
+      for (auto& iset : setsOfIndices) {
         vset.clear();
         vset.reserve( nnodesCell );
         for (int index : iset) {

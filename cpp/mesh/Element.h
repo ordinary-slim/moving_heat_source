@@ -112,7 +112,7 @@ class Element {
     void appendPlanes(std::vector<Plane> &v) const {
       v.reserve( std::min<int>(v.size(), 2*getNnodesElType( facetRefEl->elementType ) ) );
       std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( refEl->elementType );
-      for ( std::vector<unsigned int> facetLocalCon : setsFacetLocalCons ) {
+      for ( std::vector<unsigned int>& facetLocalCon : setsFacetLocalCons ) {
         Element facetEl = getFacetElement( &facetLocalCon );
         v.push_back( Plane( +facetEl.normal[0],
                             +facetEl.normal[1],

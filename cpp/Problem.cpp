@@ -87,7 +87,7 @@ void Problem::setNeumann( vector<vector<unsigned int>> neumannNodes, double neum
   int  idxMatch;
   int nfacetgpoints = domain.mesh->refFacetEl.ngpoints;
   vector<int> indicesBounFacets = domain.boundaryFacets.getIndices();
-  for (vector<unsigned int> potentialFacet : neumannNodes ) {
+  for (vector<unsigned int>& potentialFacet : neumannNodes ) {
     std::sort( potentialFacet.begin(), potentialFacet.end() );
     idxMatch = -1;
     for (int iBFacet : indicesBounFacets) {
@@ -143,7 +143,7 @@ void Problem::setNeumann( Eigen::Vector3d pointInPlane, Eigen::Vector3d normal, 
 
 void Problem::setNeumann( vector<int> otherNeumannFacets, std::function<Eigen::Vector3d(Eigen::Vector3d)> fluxFunc ) {
   mesh::Element e;
-  for (auto ifacet : otherNeumannFacets) {
+  for (auto& ifacet : otherNeumannFacets) {
     // Test if ifacet belongs to boundary
     if (!domain.boundaryFacets[ifacet]) {
       printf("%i is not a boundary facet, skipped\n", ifacet);
@@ -174,7 +174,7 @@ void Problem::setConvection(bool resetBcs) {
 }
 
 void Problem::setDirichlet( vector<int> otherDirichletFacets, std::function<double(Eigen::Vector3d)> dirichletFunc ) {
-  for (auto ifacet : otherDirichletFacets) {
+  for (auto& ifacet : otherDirichletFacets) {
     // Test if ifacet belongs to boundary
     if (!domain.boundaryFacets[ifacet]) {
       printf("%i is not a boundary facet, skipped\n", ifacet);

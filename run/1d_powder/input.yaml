@@ -1,0 +1,33 @@
+radius : 2
+power : 500
+dt : 0.1
+# PROPS
+HeatSourceSpeed : [20, 0.0, 0.0]
+material1 : {
+  rho : 4.3E-06,
+  conductivity : 10.0E-02,
+  specific_heat : 700,
+}
+material2 : {
+  rho : 4.3E-06,
+  conductivity : 10.0E-04,
+  specific_heat : 700,
+}
+environmentTemperature : 25
+depositionTemperature : 25
+# EPROPS
+timeIntegration : 1
+sourceTerm : 0
+speedDomain : [0.0, 0.0, 0.0]
+SUPG : 1
+L : 100
+print : True
+printer: {
+  "width" : 1,
+  "height" : 1,
+  "depth" : 1,
+}
+path : "Path.gcode"
+adimDtRef : 0.5
+adimDtCoupled : 0.25
+nels : 1000
