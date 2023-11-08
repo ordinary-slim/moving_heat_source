@@ -65,6 +65,7 @@ class Problem(Problem):
         if not(self.hasPreIterated):
             self.preIterate(True)
         self.assemble()
+        self.ls.setInitialGuess( self )
         self.ls.solve()
         self.gather()
         self.postIterate()

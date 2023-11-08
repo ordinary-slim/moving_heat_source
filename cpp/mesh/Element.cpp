@@ -61,17 +61,15 @@ void mesh::Element::computeDerivatives() {
   }
 }
 
-Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertices ) const {
+Element mesh::Element::getFacet( const std::vector<unsigned int>* vertices ) const {
   /*
-   * Vertices: Local connectivity of facet
-   * TODO: facetRefEl should come from somewhere else!
+    Returns geometry of facet without Gauss point information
    */
   Element e;
   e.setElementType( facetRefEl );
-  e.allocate();
+  e.pos.resize( e.nnodes, 3 );
 
   // positions
-  int locInode;
   int counter = 0;
   for (int locInode : *vertices ) {
     e.pos.row( counter ) = pos.row( locInode );
@@ -83,7 +81,7 @@ Element mesh::Element::getFacetElement( const std::vector<unsigned int>* vertice
   return e;
 }
 
-Eigen::VectorXd mesh::Element::evaluateShaFuns( Eigen::Vector3d pos ) {
+Eigen::VectorXd mesh::Element::evaluateShaFuns( const Eigen::Vector3d &pos ) const {
   /*
   Evaluate shape funcs at a point
   */
@@ -100,7 +98,7 @@ Eigen::VectorXd mesh::Element::evaluateShaFuns( Eigen::Vector3d pos ) {
   return shaFunsVals;
 }
 
-Dense3ColMat mesh::Element::evaluateGradShaFuns( Eigen::Vector3d pos ) {
+Dense3ColMat mesh::Element::evaluateGradShaFuns( const Eigen::Vector3d &pos ) const {
   /*
   Evaluate grad shape funcs at a point
   */
@@ -118,7 +116,7 @@ Dense3ColMat mesh::Element::evaluateGradShaFuns( Eigen::Vector3d pos ) {
   return gradShaFuns;
 }
 
-void mesh::Element::computeNormal( Eigen::Vector3d parentCentroid ) {
+void mesh::Element::computeNormal( const Eigen::Vector3d& parentCentroid ) {
   normal.setZero();
   switch (dim) {
     case 0: {//point1

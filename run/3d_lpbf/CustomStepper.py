@@ -21,6 +21,9 @@ class CustomStepper(LpbfAdaptiveStepper):
             adimDt = self.adimDt
         return min(adimDt + 4*self.adimFineDt, adimDt * 2 )
 
+    def getIsPrinting( self ):
+        return (self.pFixed.mhs.currentTrack.type == TrackType.printing)
+
 class DriverReference:
     def __init__(self, problem):
         self.problem = problem
@@ -97,4 +100,7 @@ class DriverReference:
                     "material":self.problem.domain.materialTag,
                     },
                 )
+
+    def getIsPrinting( self ):
+        return (self.problem.mhs.currentTrack.type == TrackType.printing)
 

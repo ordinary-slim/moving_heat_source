@@ -23,7 +23,7 @@ class AdaptiveStepper:
                  adimMinRadius=2,
                  adimPosZLen=None,
                  adimNegZLen=None,
-                 isCoupled=True,
+                 alwaysCoupled=False,
                  slowDown=True,
                  slowAdimDt=None,
                  ):
@@ -38,7 +38,8 @@ class AdaptiveStepper:
             raise Exception("AdapativeStepper requires gcode.")
         self.nextTrack = self.pFixed.mhs.path.interpolateTrack( self.pFixed.time )
 
-        self.isCoupled = isCoupled
+        self.alwaysCoupled = alwaysCoupled
+        self.isCoupled = alwaysCoupled
         self.slowDown = slowDown
         self.adimMaxDt = maxAdimtDt
         self.adimMaxSubdomainSize = self.computeSizeSubdomain(self.adimMaxDt)
@@ -272,7 +273,8 @@ class AdaptiveStepper:
 
 
     def onNewTrackOperations(self):
-        self.isCoupled = False
+        if not(self.alwaysCoupled):
+            self.isCoupled = False
         speed = self.nextTrack.getSpeed()
         self.pMoving.setAdvectionSpeed( -speed )
         self.pMoving.domain.setSpeed( speed )
@@ -355,6 +357,7 @@ class AdaptiveStepper:
             # Build ls
             ls.assemble()
             # Solve ls
+            ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
             self.pFixed.gather()
@@ -524,6 +527,7 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
             # Build ls
             ls.assemble()
             # Solve ls
+            ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
             self.pFixed.gather()

@@ -10,19 +10,6 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(cpp, m) {
-    py::class_<LinearSystem, std::shared_ptr<LinearSystem>>(m, "LinearSystem")
-        .def( py::init<>() )
-        .def( py::init<Problem&>() )
-        .def( py::init<Problem&, Problem&>() )
-        .def_static("Create", &LinearSystem::Create, py::return_value_policy::reference)
-        .def_readonly("lhs", &LinearSystem::lhs)
-        .def_readonly("rhs", &LinearSystem::rhs)
-        .def_readonly("sol", &LinearSystem::sol)
-        .def("assemble", &LinearSystem::assemble)
-        .def("solve", &LinearSystem::solve)
-        .def("cleanup", &LinearSystem::cleanup)
-        .def("setSolver", &LinearSystem::setSolver)
-        .def("ndofs", &LinearSystem::getNdofs);
     py::class_<Problem>(m, "Problem", py::dynamic_attr())
         //.def(py::init<Problem>())//copy constructor
         // doesnt work currently with HeatSource unique pointer
@@ -94,6 +81,21 @@ PYBIND11_MODULE(cpp, m) {
         .def("uniteExternal", &Problem::uniteExternal,
             "Unite domain with external domain.",
             py::arg("pExt"), py::arg("updateGamma") = true );
+    py::class_<LinearSystem, std::shared_ptr<LinearSystem>>(m, "LinearSystem")
+        .def( py::init<>() )
+        .def( py::init<Problem&>() )
+        .def( py::init<Problem&, Problem&>() )
+        .def_static("Create", &LinearSystem::Create, py::return_value_policy::reference)
+        .def_readonly("lhs", &LinearSystem::lhs)
+        .def_readonly("rhs", &LinearSystem::rhs)
+        .def_readonly("sol", &LinearSystem::sol)
+        .def("setInitialGuess", &LinearSystem::setInitialGuess,
+            py::arg("p1"), py::arg("p2") = static_cast<Problem *>(nullptr))
+        .def("assemble", &LinearSystem::assemble)
+        .def("solve", &LinearSystem::solve)
+        .def("cleanup", &LinearSystem::cleanup)
+        .def("setSolver", &LinearSystem::setSolver)
+        .def("ndofs", &LinearSystem::getNdofs);
     py::class_<mesh::Domain>(m, "Domain")
         .def_readonly("posLab", &mesh::Domain::posLab)
         .def_readonly("translationLab", &mesh::Domain::translationLab)

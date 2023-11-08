@@ -88,11 +88,19 @@ std::shared_ptr<LinearSystem> LinearSystem::Create(Problem &p1, Problem &p2) {
 
 void LinearSystem::solve() {
   if (not(_ndofs)) { return; }
-  externalSolve( lhs, rhs, sol );
+  externalSolve( lhs, rhs, sol, initialGuess );
 }
 
 void LinearSystem::assemble() {
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+}
+
+void LinearSystem::setInitialGuess(Problem* p1, Problem* p2) {
+  initialGuess.resize( _ndofs );
+  p1->setInitialGuess();
+  if (p2 != nullptr) {
+    p2->setInitialGuess();
+  }
 }
 
 void LinearSystem::setSolver(bool isSymmetric) {
@@ -105,7 +113,8 @@ void LinearSystem::setSolver(bool isSymmetric) {
 
 void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol ) {
+                         Eigen::VectorXd &sol,
+                         Eigen::VectorXd &initialGuess) {
 
   Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
   solver.compute( lhs );
@@ -113,11 +122,19 @@ void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
     std::cout << "Singular matrix!" << std::endl;
     exit(-1);
   }
-  sol = solver.solve(rhs);
+  if (initialGuess.size()) {
+    std::cout << "Solving with guess " << std::endl;
+    sol = solver.solveWithGuess(rhs, initialGuess);
+  } else {
+    sol = solver.solve(rhs);
+  }
+  std::cout << "EigenBiCGSTAB #iterations:     " << solver.iterations() << std::endl;
+  std::cout << "EigenBiCGSTAB estimated error: " << solver.error()      << std::endl;
 }
 void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                    Eigen::VectorXd &rhs,
-                   Eigen::VectorXd &sol ) {
+                   Eigen::VectorXd &sol,
+                   Eigen::VectorXd &initialGuess) {
 
   Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
   solver.compute( lhs );
@@ -125,5 +142,11 @@ void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
     std::cout << "Singular matrix!" << std::endl;
     exit(-1);
   }
-  sol = solver.solve(rhs);
+  if (initialGuess.size()) {
+    sol = solver.solveWithGuess(rhs, initialGuess);
+  } else {
+    sol = solver.solve(rhs);
+  }
+  std::cout << "CG #iterations:     " << solver.iterations() << std::endl;
+  std::cout << "CG estimated error: " << solver.error()      << std::endl;
 }

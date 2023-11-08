@@ -110,7 +110,8 @@ class Problem {
     void updateInterface( const Problem &pExt );
     void updateInterface( mesh::MeshTag<int> &activeInExternal );
     void assemble(const Problem* externalProblem = nullptr);
-    void gather();
+    void gather();// Recover solution from Linear System
+    void setInitialGuess();// Set initial guess for Linear System
     void assembleDomain();//mass, diffusion, advection
     void assembleBoundary();
     void assembleTime();

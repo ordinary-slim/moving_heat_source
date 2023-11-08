@@ -90,11 +90,11 @@ class Element {
 
     void computeDerivatives();
 
-    Eigen::Vector3d map_ref2loc( Eigen::Vector3d xi ) {
+    Eigen::Vector3d map_ref2loc( Eigen::Vector3d xi ) const {
       return ref2locShift + ref2locMatrix * xi;
     }
 
-    Eigen::Vector3d map_loc2ref( Eigen::Vector3d x ) {
+    Eigen::Vector3d map_loc2ref( Eigen::Vector3d x ) const {
       return loc2refShift + loc2refMatrix * x;
     }
 
@@ -103,17 +103,17 @@ class Element {
     }
 
     void computeCentroid();
-    void computeNormal( Eigen::Vector3d parentCentroid );
-    Element getFacetElement( const std::vector<unsigned int>* vertices ) const;
-    Eigen::VectorXd evaluateShaFuns( Eigen::Vector3d pos );
-    Dense3ColMat evaluateGradShaFuns( Eigen::Vector3d pos );
+    void computeNormal( const Eigen::Vector3d &parentCentroid );
+    Element getFacet( const std::vector<unsigned int>* vertices ) const;
+    Eigen::VectorXd evaluateShaFuns( const Eigen::Vector3d &pos ) const;
+    Dense3ColMat evaluateGradShaFuns( const Eigen::Vector3d &pos ) const;
     double getSizeAlongVector( Eigen::Vector3d vector ) const;
     template<typename Plane>
     void appendPlanes(std::vector<Plane> &v) const {
       v.reserve( std::min<int>(v.size(), 2*getNnodesElType( facetRefEl->elementType ) ) );
       std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( refEl->elementType );
       for ( std::vector<unsigned int>& facetLocalCon : setsFacetLocalCons ) {
-        Element facetEl = getFacetElement( &facetLocalCon );
+        Element facetEl = getFacet( &facetLocalCon );
         v.push_back( Plane( +facetEl.normal[0],
                             +facetEl.normal[1],
                             +facetEl.normal[2],

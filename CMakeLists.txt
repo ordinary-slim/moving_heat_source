@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.13)
 project(MovingHeatSource LANGUAGES CXX)
 
 # Build compiler_commands.json for LSPs
@@ -17,6 +17,12 @@ add_subdirectory(external/pybind11)
 set(CGAL_DIR ${PROJECT_SOURCE_DIR}/external/cgal)
 find_package(CGAL REQUIRED)
 add_definitions(-DCGAL_USE_BASIC_VIEWER)
+
+# Profiling with Valgrind
+if($ENV{Valgrind})
+  set(CMAKE_BUILD_TYPE Debug)
+  add_definitions(-DCGAL_DISABLE_ROUNDING_MATH_CHECK)
+endif()
 
 pybind11_add_module(cpp ${mySources})
 

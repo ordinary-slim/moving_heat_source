@@ -11,10 +11,12 @@ namespace mesh { class Domain; }// Forward declaration within a namespace
 
 void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol );
+                         Eigen::VectorXd &sol,
+                         Eigen::VectorXd &initialGuess );
 void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                    Eigen::VectorXd &rhs,
-                   Eigen::VectorXd &sol );
+                   Eigen::VectorXd &sol,
+                   Eigen::VectorXd &initialGuess );
 
 
 class LinearSystem 
@@ -26,6 +28,7 @@ class LinearSystem
     size_t _ndofs;
     std::vector<Eigen::Triplet<double>> lhsCoeffs;
     Eigen::VectorXd sol;
+    Eigen::VectorXd initialGuess;
 
     LinearSystem() = default;
     LinearSystem(Problem &p);
@@ -51,9 +54,11 @@ class LinearSystem
       rhs.resize( _ndofs );
     }
 
+    void setInitialGuess(Problem* p1, Problem* p2 = nullptr);
     void assemble();
     void solve();
     void (*externalSolve)( Eigen::SparseMatrix<double, Eigen::RowMajor> &,
+                           Eigen::VectorXd &,
                            Eigen::VectorXd &,
                            Eigen::VectorXd &) = &solveEigenBiCGSTAB;
     void setSolver(bool isSymmetric = false);

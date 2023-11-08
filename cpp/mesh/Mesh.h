@@ -43,7 +43,9 @@ class Mesh {
     double toleranceSearches = 1e-10;
 
     Element getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
+    Element getEntityGeometry(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl = NULL ) const;
     Element getElement(int ielem) const;
+    Element getElementGeometry(int ielem) const;
 
     int getNumEntities( const int inputDim ) const {
       if (inputDim == dim ) {

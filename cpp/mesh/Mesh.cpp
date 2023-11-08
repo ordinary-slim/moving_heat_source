@@ -9,10 +9,12 @@ namespace mesh
 
 Element Mesh::getEntity(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl ) const {
 
+  // Is this necessary?
   if (ient < 0) {
     throw std::invalid_argument( "received negative value." );
   }
 
+  // Call default constructor then populate manually
   Element e;
   e.ient = ient;
   e.setElementType( refEl );
@@ -37,9 +39,45 @@ Element Mesh::getEntity(int ient, const Connectivity &connectivity, const Refere
   return e;
 }
 
+Element Mesh::getEntityGeometry(int ient, const Connectivity &connectivity, const ReferenceElement *refEl, const ReferenceElement *facetRefEl ) const {
+  /*
+   * Reduced getEntity with only geometric information
+   */
+
+  // Is this necessary?
+  if (ient < 0) {
+    throw std::invalid_argument( "received negative value." );
+  }
+
+  // Call default constructor then populate manually
+  Element e;
+  e.ient = ient;
+  e.setElementType( refEl );
+  if (facetRefEl) {
+    e.facetRefEl = facetRefEl;
+  }
+
+  e.pos.resize( e.nnodes, 3 );
+
+  // set connectivity
+  e.con = connectivity.getLocalCon( ient );
+  // set pos
+  for (int inode=0; inode < e.nnodes; inode++) {
+    e.pos.row(inode) = pos.row((*e.con)[inode]);
+  }
+
+  e.computeCentroid();
+  return e;
+}
+
 Element Mesh::getElement(int ielem) const {
   return getEntity( ielem, con_CellPoint, &refCellEl, &refFacetEl );
 }
+
+Element Mesh::getElementGeometry(int ielem) const {
+  return getEntityGeometry( ielem, con_CellPoint, &refCellEl, &refFacetEl );
+}
+
 vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   vector<int> indicesOwnerElements;
   vector<int> potentialOwners;
@@ -49,18 +87,15 @@ vector<int> Mesh::findOwnerElements( const Eigen::Vector3d &point ) const {
   looseTree.all_intersected_primitives( cgalPoint, std::back_inserter( potentialOwners ) );
 
   //Narrow Phase
-  Element cellEl;
-  Element facetEl;
-
   indicesOwnerElements.reserve( potentialOwners.size() );
   for ( int ielem : potentialOwners ) {
     bool isInside = true;
-    cellEl = getElement( ielem );
+    Element cellEl = getElementGeometry( ielem );
 
     std::vector<std::vector<unsigned int>> setsFacetLocalCons = getFacetVertexSets( cellEl.refEl->elementType );
 
     for ( std::vector<unsigned int>& facetLocalCon : setsFacetLocalCons ) {
-      facetEl = cellEl.getFacetElement( &facetLocalCon );
+      Element facetEl = cellEl.getFacet( &facetLocalCon );
 
       double projection =  facetEl.normal.dot( point - facetEl.centroid );
       if ( projection > +toleranceSearches ) {

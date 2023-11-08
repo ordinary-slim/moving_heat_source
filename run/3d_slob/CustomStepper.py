@@ -136,9 +136,9 @@ class CustomStepper(AdaptiveStepper):
             # Assembly
             self.pMoving.assemble( self.pFixed )
             self.pFixed.assemble( self.pMoving )
-            # Build ls
+            # Build and solve ls
             ls.assemble()
-            # Solve ls
+            ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
             self.pFixed.gather()

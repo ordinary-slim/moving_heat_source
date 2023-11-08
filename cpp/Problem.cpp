@@ -59,6 +59,16 @@ void Problem::gather() {
   }
 }
 
+void Problem::setInitialGuess() {
+  for (int inode = 0; inode < domain.mesh->nnodes; ++inode) {
+    int inodeDof = dofNumbering[inode] ;
+    if ( inodeDof < 0 ) {
+        continue;
+    }
+    ls->initialGuess(inodeDof) = previousValues.front().values[inode];
+  }
+}
+
 void Problem::postIterate() {
   /* End iteration operations */
 

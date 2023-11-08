@@ -51,7 +51,7 @@ def runCoupled():
     
     elementSize = thinWall.fineElementSize
     driver = MyAdaptiveStepper( pFixed, factor=2, maxAdimtDt=2,
-                 threshold= 0.3, elementSize=elementSize, isCoupled=True, adimMinRadius=1.5 )
+                 threshold= 0.3, elementSize=elementSize, alwaysCoupled=True, adimMinRadius=1.5 )
 
     logger = MyLogger()
     while not(pFixed.mhs.path.isOver(driver.getTime())):
