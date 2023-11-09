@@ -251,8 +251,9 @@ class AdaptiveStepper:
 
     def setCoupling( self ):
         # Set coupling
-        if (not(self.nextTrack.type == TrackType.printing) or \
-            ((self.adimDt <= self.adimFineDt+1e-7) and not(self.isCoupled))):
+        if ((not(self.nextTrack.type == TrackType.printing) or \
+            ((self.adimDt <= self.adimFineDt+1e-7) and not(self.isCoupled))) \
+            and not(self.alwaysCoupled)):
             self.isCoupled = False
         else:
             self.isCoupled = True

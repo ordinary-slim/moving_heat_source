@@ -28,9 +28,8 @@ def runReference(caseName="reference"):
 
     while not(driver.problem.mhs.path.isOver(pReference.time)):
         logger.iterate( driver )
-
-    with open("{}.log".format(caseName), "wb") as reflog:
-        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
+        with open("{}.log".format(caseName), "wb") as reflog:
+            pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 def runCoupled(caseName="fixed"):
     fixedProblemInput = dict( problemInput )
@@ -51,9 +50,8 @@ def runCoupled(caseName="fixed"):
     logger = MyLogger()
     while not(driver.pFixed.mhs.path.isOver( driver.getTime() ) ) :
         logger.iterate( driver )
-
-    with open("{}.log".format(caseName), "wb") as reflog:
-        pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
+        with open("{}.log".format(caseName), "wb") as reflog:
+            pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__=="__main__":

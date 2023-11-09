@@ -116,7 +116,7 @@ void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &sol,
                          Eigen::VectorXd &initialGuess) {
 
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
+  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor>, Eigen::IncompleteLUT<double> > solver;
   solver.compute( lhs );
   if (not(solver.info() == Eigen::Success)) {
     std::cout << "Singular matrix!" << std::endl;
