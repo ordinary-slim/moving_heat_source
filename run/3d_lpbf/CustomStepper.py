@@ -41,6 +41,7 @@ class DriverReference:
         self.tol = 1e-7
         self.nextTrack = self.problem.mhs.currentTrack
         self.onNewTrack = True
+        self.adimDt = 0.5 / self.problem.input["fineTStepFactor"]
 
     def setDtFromAdimR( self, adimR, maxDt=None):
         if (self.nextTrack.type == TrackType.printing) or (self.nextTrack.type == TrackType.cooling):
@@ -60,7 +61,7 @@ class DriverReference:
                            )
 
     def iterate( self ):
-        self.setDtFromAdimR( 0.5, self.dt2trackEnd )
+        self.setDtFromAdimR( self.adimDt, self.dt2trackEnd )
         self.tnp = float(self.problem.time)
         self.tnp1 = self.problem.time + self.problem.dt
         self.track = self.problem.mhs.path.interpolateTrack( self.tnp1 )
