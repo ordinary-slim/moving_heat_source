@@ -42,7 +42,7 @@ def runCoupled(caseName="fixed"):
                            maxAdimtDt=5,
                            elementSize=fineElSizeMoving / problemInput["fineElFactorMovingSubdomain"],
                            threshold=0.15,
-                           adimMinRadius=1.8,
+                           adimMinRadius=3,
                            slowAdimDt=1.0,
                            adimPosZLen=0.5,
                            )

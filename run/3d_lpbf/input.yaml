@@ -28,7 +28,7 @@ layerThickness : &layer_thickness
   0.025
 partWidth : &part_width
   0.1
-part: [5, *part_width, 1]
+part: [5, *part_width, 0.25]
 substrate : [7, 2, 1]
 printer: {
   "width" : *part_width,

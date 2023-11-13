@@ -63,6 +63,7 @@ class AdaptiveStepper:
         if "cooling_dt" in self.pFixed.input:
             self.cooling_dt = self.pFixed.input["cooling_dt"]
         self.update()
+        self.traveledDistance = 0.0
         self.onNewTrack = True
         self.hasPrinter = False
         self.physicalDomain = mhs.MeshTag( self.pFixed.domain.activeElements )
@@ -193,10 +194,12 @@ class AdaptiveStepper:
         self.adimDt = min( self.maxAdimDtPrinting, self.adimDt )
         self.setSizeSubdomain()
         self.dt = tUnit * self.adimDt
+        self.traveledDistance += self.adimDt
 
     def coolingUpdate(self):
         self.dt = min( self.cooling_dt, self.dt2trackEnd )
         self.setSizeSubdomain( adimDt=self.adimFineDt )
+        self.traveledDistance = 0.0
 
     def rotateSubdomain( self ):
         '''
@@ -299,10 +302,11 @@ class AdaptiveStepper:
 
     def prettyPrintIteration( self ):
         if self.isCoupled:
-            print( "{} iter# {}, time={}".format(
+            print( "{} iter# {}, time={}, travelled distance = {}R".format(
                 self.pFixed.caseName,
                 self.pFixed.iter,
-                self.pFixed.time) )
+                self.pFixed.time,
+                self.traveledDistance) )
         # Called at tn
         if self.pFixed.mhs.currentTrack.type == TrackType.printing :
             print(" dt = {}R, domainSize = {}R, is coupled = {}".format( self.adimDt,
