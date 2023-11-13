@@ -183,11 +183,14 @@ int Domain::findOwnerElements( const Eigen::Vector3d &point ) const {
       return ielem;
     }
   }
-  std::stringstream errorMessage;
-  errorMessage << "Point " << point << " is not owned by active element.";
-  throw std::invalid_argument(errorMessage.str());
+  return -1;
 }
 
+void throwPointOutOfBounds(  const Eigen::Vector3d &point  ) {
+  char errMessage[74];
+  sprintf( errMessage, "Point (%3.3g, %3.3g, %3.3g) is not owned by active element", point(0), point(1), point(2));
+  throw std::invalid_argument(errMessage);
+}
 
 void Domain::intersect( const MeshTag<int> activeElements) {
   this->activeElements &= activeElements;

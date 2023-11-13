@@ -10,7 +10,7 @@ class AbstractFunction {
   public:
     const mesh::Domain* domain;//This line should stay at the top
     Eigen::VectorXd values;
-    virtual double evaluate( Eigen::Vector3d &point ) const = 0;
+    virtual double evaluate( Eigen::Vector3d &point, double* sentinel = nullptr ) const = 0;
     AbstractFunction(size_t ndofs, const mesh::Domain* dom) {
       _ndofs = ndofs;
       domain = dom;
@@ -65,7 +65,7 @@ class Function : public AbstractFunction {
     template<typename T>
     Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) : AbstractFunction( dom->mesh->nnodes, dom, tag) {}
 
-    double evaluate( Eigen::Vector3d &point ) const;
+    double evaluate( Eigen::Vector3d &point, double* sentinel = nullptr ) const;
     Eigen::Vector3d evaluateGrad( Eigen::Vector3d &point );
     void interpolate(const AbstractFunction &extFEMFunc,
         const mesh::MeshTag<int> &nodalTag,
@@ -92,7 +92,7 @@ class DG0Function : public AbstractFunction {
     template<typename T>
     DG0Function(const mesh::Domain* dom, const mesh::MeshTag<T> &tag) : AbstractFunction( dom->mesh->nels, dom, tag) {}
 
-    double evaluate( Eigen::Vector3d &point ) const;
+    double evaluate( Eigen::Vector3d &point, double* sentinel = nullptr ) const;
     void interpolate(const AbstractFunction &extFEMFunc,
         const mesh::MeshTag<int> &cellTag,
         std::function<bool(int)> filter = nullptr,
@@ -107,7 +107,7 @@ class ConstantFunction : public AbstractFunction {
         AbstractFunction(1, dom) {
           values(0) = c;
     }
-    double evaluate( Eigen::Vector3d &point ) const {
+    double evaluate( Eigen::Vector3d &point, double* sentinel = nullptr ) const {
       //TODO: Check if point is in domain (?)
       return values(0);
     }

@@ -14,7 +14,7 @@ adimR = problemInput["radius"] / np.linalg.norm(problemInput["HeatSourceSpeed"])
 boxPhys = [-10, 10, -10, 10]
 gcodeFile = problemInput["path"]
 radiusHs = problemInput["radius"]
-fineElSize = radiusHs/4
+fineElSize = radiusHs/2
 
 def meshBox(box, elementSize=0.25):
     cell_type="quad4"

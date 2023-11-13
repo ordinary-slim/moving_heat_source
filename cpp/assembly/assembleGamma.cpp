@@ -15,6 +15,7 @@ void Problem::assembleNeumannGamma(const Problem *pExt) {
       Eigen::Vector3d xgp_ext = facet.gpos.row( igp ).transpose() + domain.translationLab - pExt->domain.translationLab;
       // Find out which element of external mesh owns Gauss point
       int idx_el_ext = pExt->domain.findOwnerElements( xgp_ext );
+      if (idx_el_ext == -1) { mesh::throwPointOutOfBounds( xgp_ext ); };
       mesh::Element e_ext = pExt->domain.getElement( idx_el_ext );
       const ThermalMaterial* ext_mat = &pExt->materials[ e_ext.imat ];
 
@@ -70,6 +71,7 @@ void Problem::assembleDirichletGamma(const Problem *pExt) {
     Eigen::Vector3d xnode_ext = domain.mesh->pos.row( inode ).transpose() + domain.translationLab - pExt->domain.translationLab;
 
     int idx_el_ext = pExt->domain.findOwnerElements( xnode_ext ) ;
+    if (idx_el_ext == -1) { mesh::throwPointOutOfBounds( xnode_ext ); };
     mesh::Element e_ext = pExt->domain.getElement( idx_el_ext );
 
     Eigen::VectorXd shaFuns = e_ext.evaluateShaFuns( xnode_ext );

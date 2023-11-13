@@ -90,5 +90,6 @@ class Domain {
   private:
     int _dim;
 };
+  void throwPointOutOfBounds(  const Eigen::Vector3d &point  );
 }
 #endif

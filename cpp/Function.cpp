@@ -3,12 +3,19 @@
 
 namespace fem
 {
-double Function::evaluate( Eigen::Vector3d &point ) const {
+double Function::evaluate( Eigen::Vector3d &point, double* sentinel ) const {
   /*
   Output val of Function at input point
   */
   // GET VALS OF SHAPE FUNCS AT POINT
   int idxOwnerEl = domain->findOwnerElements( point );
+  if (idxOwnerEl == -1) {
+    if (sentinel == nullptr) {
+      mesh::throwPointOutOfBounds( point );
+    } else {
+      return *sentinel;
+    }
+  }
   mesh::Element e = domain->mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::VectorXd shaFunVals = e.evaluateShaFuns( point );
 
@@ -23,6 +30,9 @@ Eigen::Vector3d Function::evaluateGrad( Eigen::Vector3d &point ) {
 
   // GET VALS OF GRAD o SHAPE FUNCS AT POINT
   int idxOwnerEl = domain->findOwnerElements( point );
+  if (idxOwnerEl == -1) {
+    mesh::throwPointOutOfBounds( point );
+  }
   mesh::Element e = domain->mesh->getElement( idxOwnerEl );//Load element containing point
   Eigen::MatrixXd gradShaFunVals = e.evaluateGradShaFuns( point );
 
@@ -39,6 +49,7 @@ void Function::interpolate(const AbstractFunction &extFEMFunc, const mesh::MeshT
 
   if (nodalTag.dim() != 0) { throw std::invalid_argument("Interpolate requires nodal mesh tag."); }
 
+  double sentinel = -1;
   vector<int> nodesOfInterest;
   if (filter == nullptr) {
      nodesOfInterest = nodalTag.getIndices();
@@ -49,16 +60,10 @@ void Function::interpolate(const AbstractFunction &extFEMFunc, const mesh::MeshT
   for (int inode : nodesOfInterest) {
     // Move to reference frame of external
     Eigen::Vector3d posExt = domain->posLab.row(inode) - extFEMFunc.domain->translationLab.transpose();
-    try {
+    if (domain->activeNodes[inode] && not(ignoreOutside)) {
       values[inode] = extFEMFunc.evaluate( posExt );
-    } catch ( const std::invalid_argument &e ) {
-      // Point outside of domain
-      if (domain->activeNodes[inode] && not(ignoreOutside)) {
-        throw;
-      } else {
-        values[inode] = -1;// sentinel value, if it shows up in active
-                           // nodes of simulation something went wrong
-      }
+    } else {
+      values[inode] = extFEMFunc.evaluate( posExt, &sentinel );
     }
   }
 }
@@ -113,8 +118,15 @@ Function operator/(const Function& f, const double c) {
   return Function( f.domain, values );
 }
 
-double DG0Function::evaluate(Eigen::Vector3d &point) const {
+double DG0Function::evaluate(Eigen::Vector3d &point, double* sentinel) const {
   int idxOwnerEl = domain->findOwnerElements( point );
+  if (idxOwnerEl == -1) {
+    if (sentinel == nullptr) {
+      mesh::throwPointOutOfBounds( point );
+    } else {
+      return *sentinel;
+    }
+  }
   return values[idxOwnerEl];
 }
 
@@ -124,6 +136,7 @@ void DG0Function::interpolate(const AbstractFunction &extFEMFunc,
 
   if (cellTag.dim() != domain->mesh->dim ) { throw std::invalid_argument("Interpolate requires cell mesh tag."); }
 
+  double sentinel = -1;
   vector<int> cellsOfInterest;
   if (filter == nullptr) {
      cellsOfInterest = cellTag.getIndices();
@@ -135,16 +148,10 @@ void DG0Function::interpolate(const AbstractFunction &extFEMFunc,
     // Move to reference frame of external
     mesh::Element e = domain->getElement( ielem );
     Eigen::Vector3d posExt = e.centroid + domain->translationLab - extFEMFunc.domain->translationLab;
-    try {
+    if (domain->activeElements[ielem] && not(ignoreOutside)) {
       values[ielem] = extFEMFunc.evaluate( posExt );
-    } catch ( const std::invalid_argument &e ) {
-      // Point outside of domain
-      if (domain->activeElements[ielem] && not(ignoreOutside)) {
-        throw;
-      } else {
-        values[ielem] = -1;// sentinel value, if it shows up in active
-                           // elements of simulation something went wrong
-      }
+    } else {
+      values[ielem] = extFEMFunc.evaluate( posExt, &sentinel );
     }
   }
 }
