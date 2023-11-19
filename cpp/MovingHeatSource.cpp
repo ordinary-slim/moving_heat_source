@@ -147,11 +147,13 @@ PYBIND11_MODULE(cpp, m) {
         .def_readonly("nels", &mesh::Mesh::nels)
         .def_readonly("nnodes", &mesh::Mesh::nnodes)
         .def_readonly("dim", &mesh::Mesh::dim)
-        .def_readonly("elementTypes", &mesh::Mesh::elementTypes)
+        .def("getElementType", &mesh::Mesh::getElementType,
+            py::arg("ielem") = 0)
         .def("findOwnerElements", &mesh::Mesh::findOwnerElements)
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const MyAABB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const MyOBB&) const>(&mesh::Mesh::findCollidingElements))
         .def("findCollidingElements", static_cast<std::vector<int> (mesh::Mesh::*)(const Eigen::Vector3d&, const double R) const>(&mesh::Mesh::findCollidingElements))
+        .def("getElementGeometry", &mesh::Mesh::getElementGeometry)
         .def("getElement", &mesh::Mesh::getElement);
     py::class_<AbstractFunction>(m, "AbstractFunction");
     py::class_<fem::Function, AbstractFunction>(m, "Function")

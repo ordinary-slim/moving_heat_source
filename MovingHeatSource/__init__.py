@@ -133,7 +133,7 @@ class Problem(Problem):
             cell_data[label] = [tag.x]
 
         #export
-        myCellType = self.domain.mesh.elementTypes[0].name
+        myCellType = self.domain.mesh.getElementType(0).name
         cellMappingMeshio = {
                 "line2" : "line",
                 "quad4" : "quad",

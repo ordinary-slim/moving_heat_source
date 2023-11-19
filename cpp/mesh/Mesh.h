@@ -32,7 +32,9 @@ class Mesh {
     Connectivity  con_FacetPoint;
     Connectivity  con_FacetCell;
     Connectivity  con_CellFacet;
-    vector<ElementType> elementTypes;
+    ElementType getElementType(int ielem = 0) {
+      return elementTypes[ ielem ];
+    }
     ReferenceElement refCellEl;
     ReferenceElement refFacetEl;
     // Fast spatial search
@@ -64,6 +66,8 @@ class Mesh {
     vector<int> findCollidingElements( const MyAABB &aabb ) const;
     vector<int> findCollidingElements( const MyOBB &obb ) const;
     vector<int> findCollidingElements( const Eigen::Vector3d &center, const double R) const;
+  private:
+    vector<ElementType> elementTypes;
 };
 void inPlaneRotate( Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> &points, 
     const Eigen::Vector3d &center, double angle );

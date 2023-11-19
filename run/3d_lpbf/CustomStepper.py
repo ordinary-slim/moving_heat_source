@@ -16,16 +16,15 @@ class CustomStepper(LpbfAdaptiveStepper):
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        #return max(adimDt + 16*self.adimFineDt, adimDt * 2 )
-        factor = 2
-        if adimDt >= 2.0:
-            factor = 2.5
-        if adimDt >= 4.0:
-            factor = 3.0
-        return adimDt + (factor*adimDt)*self.adimFineDt
-
+        adimSize = np.round(4*(1 + adimDt + (adimDt**2.3)*self.adimFineDt)) / 4
+        adimSize = min( adimSize, self.pFixed.input["maxAdimSize"] )
+        return adimSize
+    
     def getIsPrinting( self ):
         return (self.pFixed.mhs.currentTrack.type == TrackType.printing)
+
+    def getNdofs( self ):
+        return self.pFixed.ls.ndofs()
 
 class DriverReference:
     def __init__(self, problem):
@@ -107,4 +106,7 @@ class DriverReference:
 
     def getIsPrinting( self ):
         return (self.problem.mhs.currentTrack.type == TrackType.printing)
+
+    def getNdofs( self ):
+        return self.problem.ls.ndofs()
 

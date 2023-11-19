@@ -39,9 +39,9 @@ def runCoupled(caseName="fixed"):
 
     driver = CustomStepper( pFixed,
                            adimFineDt=0.5 / problemInput["fineTStepFactorMoving"],
-                           maxAdimtDt=5,
+                           maxAdimtDt=problemInput["maxAdimDt"],
                            elementSize=fineElSizeMoving / problemInput["fineElFactorMovingSubdomain"],
-                           threshold=0.15,
+                           threshold=0.02,
                            adimMinRadius=3,
                            slowAdimDt=1.0,
                            adimPosZLen=0.5,

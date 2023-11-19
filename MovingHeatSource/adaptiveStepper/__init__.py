@@ -62,8 +62,8 @@ class AdaptiveStepper:
         self.cooling_dt = self.adimFineDt
         if "cooling_dt" in self.pFixed.input:
             self.cooling_dt = self.pFixed.input["cooling_dt"]
-        self.update()
         self.traveledDistance = 0.0
+        self.update()
         self.onNewTrack = True
         self.hasPrinter = False
         self.physicalDomain = mhs.MeshTag( self.pFixed.domain.activeElements )
@@ -188,6 +188,7 @@ class AdaptiveStepper:
             self.maxAdimDtPrinting = min( maxDt2TrackEnd, self.adimMaxDt )
             self.computeSteadinessMetric(verbose=True)
             if (self.checkSteadinessCriterion()):
+                self.isCoupled = True
                 self.increaseDt()
 
         # Cap dt
@@ -252,6 +253,7 @@ class AdaptiveStepper:
         self.pMoving.setDt( self.dt )
         self.pFixed.setDt( self.dt )
 
+    '''
     def setCoupling( self ):
         # Set coupling
         if ((not(self.nextTrack.type == TrackType.printing) or \
@@ -260,6 +262,7 @@ class AdaptiveStepper:
             self.isCoupled = False
         else:
             self.isCoupled = True
+    '''
 
     def writepos( self ):
         self.pFixed.writepos(
@@ -320,7 +323,7 @@ class AdaptiveStepper:
         self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
-        self.setCoupling()
+        #self.setCoupling()
 
         if self.isNewLayer():
             self.onNewLayerOperations()
@@ -476,7 +479,7 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
         self.pFixed.domain.setActivation(self.physicalDomain)
 
         self.setDt()
-        self.setCoupling()
+        #self.setCoupling()
 
         # RECOAT
         if self.isNewLayer():
@@ -687,7 +690,7 @@ def deactivateBelowSurface(p, heightOSurface = 0):
     activeEls = []
     powderEls = []
     for ielem in range( nels ):
-        e = p.domain.mesh.getElement( ielem )
+        e = p.domain.mesh.getElementGeometry( ielem )
         if (e.getCentroid()[idxHeight] < heightOSurface):
             activeEls.append( ielem )
         else:
@@ -710,7 +713,7 @@ def activatePowderLayer( p, printer, powderSet = 1 ):
     nels = p.domain.mesh.nels
     newPowderEls = []
     for ielem in range( nels ):
-        e = p.domain.mesh.getElement( ielem )
+        e = p.domain.mesh.getElementGeometry( ielem )
         if (e.getCentroid()[idxHeight] < thresholdHeight) and \
         not(p.domain.activeElements[ielem]):
             newPowderEls.append( ielem )

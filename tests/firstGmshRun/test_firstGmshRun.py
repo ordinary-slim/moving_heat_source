@@ -1,15 +1,58 @@
 import MovingHeatSource as mhs
-from MovingHeatSource.gcode import gcode2laserPath
-from CustomStepper import CustomStepper
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper, TrackType
 import numpy as np
 import meshio
+
+class CustomStepper(AdaptiveStepper):
+    def shapeSubdomain( self ):
+        '''
+        At t^n, do things
+        '''
+        if not(self.nextTrack.type == TrackType.printing):
+            return
+        # OBB
+        radius = self.pFixed.mhs.radius
+
+        # compute front and sides
+        sideRadius = self.adimMinRadius * radius
+        adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
+        backRadius = max( adimBackRadius, self.adimMinRadius ) * radius
+        zRadius    = 1
+        xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
+
+        backRadiusObb = max(backRadius - radius, 0.0)
+        p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
+        obb = mhs.MyOBB( p0, self.pMoving.mhs.position, 2*sideRadius, 2*zRadius )
+        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
+        collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
+        collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
+        subdomainEls += collidingElsBackSphere
+        subdomainEls += collidingElsFrontSphere
+        subdomain = mhs.MeshTag( self.pMoving.domain.mesh, self.pMoving.domain.mesh.dim, subdomainEls )
+        self.pMoving.domain.intersect( subdomain )
+
+    def writepos( self ):
+        activeInExternal = self.pFixed.getActiveInExternal( self.pMoving, 1e-7 )
+        self.pFixed.writepos(
+            nodeMeshTags={
+                "gammaNodes":self.pFixed.gammaNodes,
+                "forcedDofs":self.pFixed.forcedDofs,
+                "activeInExternal":activeInExternal,
+                },
+            cellMeshTags={
+                "physicalDomain":self.physicalDomain,
+                },
+                          )
+        self.pMoving.writepos(
+            nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
+            )
 
 def deactivateBelowSurface(p,
                            surfacey = 0):
     nels = p.domain.mesh.nels
     activeels = []
     for ielem in range( nels ):
-        e = p.domain.mesh.getElement( ielem )
+        e = p.domain.mesh.getElementGeometry( ielem )
         if (e.getCentroid()[1] < surfacey):
             activeels.append( ielem )
     substrateels = mhs.MeshTag( p.domain.mesh, p.domain.mesh.dim, activeels )
