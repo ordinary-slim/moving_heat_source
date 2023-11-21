@@ -7,9 +7,9 @@ import pdb
 problemInput = readInput( "../input.yaml" )
 power = problemInput["power"]
 radius = problemInput["radius"]
-rho = problemInput["rho"]
-k = problemInput["conductivity"]
-cp = problemInput["specific_heat"]
+rho = problemInput["material"]["rho"]
+k = problemInput["material"]["conductivity"]
+cp = problemInput["material"]["specific_heat"]
 Tenv = problemInput["environmentTemperature"]
 speed = np.linalg.norm( problemInput["HeatSourceSpeed"] )
 kappa = k / rho / cp
@@ -32,7 +32,7 @@ def solveNguyen(points, time):
     T = np.zeros( points.shape[0] )
     N = 6*np.sqrt(3) * power / (rho*cp*np.power(np.pi, 1.5))
     taoMax = time
-    taoSamples = np.linspace( 0, taoMax, num=1000 )
+    taoSamples = np.linspace( 0, taoMax, num=4000 )
     for inode, pos in enumerate(points):
         # NGuyen solution
         integrand = np.zeros( taoSamples.size )
@@ -45,13 +45,14 @@ def solveNguyen(points, time):
         T[inode] = Tenv + N * integral
     return T
 
-def main(time=0.2):
+def main(time=0.01):
+    elSize = radius/8
     # Mesh
-    box = [-6*radius, +1*radius, 0.0, +2.5*radius, -radius/16, 0.0]
-    points, cells = meshBox( box, radius/16 )
+    box = [-4*radius, +1*radius, 0.0, +2.0*radius, -elSize, 0.0]
+    points, cells = meshBox( box, elSize )
     # Solve
     T = solveNguyen( points, time )
-    # Post
+    # Posrun/3d_lpbft
     fileName = "nguyen.vtk"
     dataSet = meshio.Mesh(
             points,

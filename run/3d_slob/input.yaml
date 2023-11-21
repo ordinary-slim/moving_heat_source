@@ -19,10 +19,10 @@ isAdvection : 0
 advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
 SUPG : 1
-substrate : [6, 2.4, 1.2]
-part: [5, 0.6, 0.6]
+substrate : [3.6, 2.0, 1.0]
+part: [2.4, 0.4, 0.4]
 path: "Path.gcode"
-elsPerRadius : 4
+elsPerRadius : 16
 tstepsPerRadius : 2
 factorFineElMoving : 1
 adimFixedDtCoupled : 2

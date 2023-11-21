@@ -3,3 +3,5 @@
 *.txt
 *.prof
 *.lprof
+*.png
+callgrind.*

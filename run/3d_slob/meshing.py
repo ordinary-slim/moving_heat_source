@@ -10,7 +10,7 @@ substrateLens = np.array(problemInput["substrate"])
 radiusHs = problemInput["radius"]
 elsPerRadius = problemInput["elsPerRadius"]
 fineElSize = radiusHs / elsPerRadius
-nBounLayers = 4
+nBounLayers = 1
 coarseElFactor = 4
 
 def boundaryLayerProgression( extrusionSize, nBounLayers, fineElSize, coarseElFactor=2 ):

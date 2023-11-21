@@ -15,14 +15,6 @@ class CustomStepper(AdaptiveStepper):
     lastVals4mean = 2
     maximumTs = [np.inf]*(lastVals4mean+1)
 
-    def onNewTrackOperations(self):
-        self.rotateSubdomain()
-        self.isCoupled = True
-        speed = self.nextTrack.getSpeed()
-        self.pMoving.setAdvectionSpeed( -speed )
-        self.pMoving.domain.setSpeed( speed )
-        self.pMoving.mhs.setPower( self.nextTrack.power )
-
     def shapeSubdomain( self ):
         '''
         At t^n, do things
@@ -68,7 +60,13 @@ class CustomStepper(AdaptiveStepper):
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        return adimDt + 4
+        return 6
+
+    def getIsPrinting( self ):
+        return (self.pFixed.mhs.currentTrack.type == TrackType.printing)
+
+    def getNdofs( self ):
+        return self.pFixed.ls.ndofs()
 
     def computeSteadinessMetric( self, verbose=True ):
         # TODO: Change this
@@ -92,82 +90,6 @@ class CustomStepper(AdaptiveStepper):
     def checkSteadinessCriterion(self):
         return (((self.valuesOfMetric[-1] < self.threshold) or (self.relChangeMetric < 0.01)) \
                 and (self.maxTChange < 0.05))
-
-    def iterate( self ):
-        # MY SCHEME ITERATE
-        # PRE-ITERATE AND DOMAIN OPERATIONS
-        self.pMoving.domain.resetActivation()
-        self.pFixed.domain.setActivation(self.physicalDomain)
-
-        self.setDt()
-        self.setCoupling()
-        if self.onNewTrack:
-            self.onNewTrackOperations()
-
-        self.shapeSubdomain()
-
-        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#tn intersect
-
-        # Motion, other operations
-        self.pMoving.preIterate(canPreassemble=False)
-        self.pFixed.preIterate(canPreassemble=False)
-
-        self.pMoving.intersectExternal(self.pFixed, updateGamma=False)#physical domain intersect
-
-        if self.hasPrinter:
-            self.deposit()
-
-        if self.isCoupled:
-            self.pFixed.substractExternal(self.pMoving, updateGamma=False)
-            self.pFixed.updateInterface( self.pMoving )
-            self.pMoving.updateInterface( self.pFixed )
-            # Set interface boundary conditions
-            self.pFixed.setGamma2Dirichlet()
-            self.pMoving.setGamma2Neumann()
-        self.setBCs()
-
-        self.pMoving.preAssemble(allocateLs=False)
-
-        if self.isCoupled:
-            # Pre-assembly, updating free dofs
-            self.pFixed.preAssemble(allocateLs=False)
-        
-            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
-            # Assembly
-            self.pMoving.assemble( self.pFixed )
-            self.pFixed.assemble( self.pMoving )
-            # Build and solve ls
-            ls.assemble()
-            ls.setInitialGuess( self.pMoving, self.pFixed )
-            ls.solve()
-            # Recover solution
-            self.pFixed.gather()
-            self.pMoving.gather()
-
-            self.pFixed.unknown.interpolateInactive( self.pMoving.unknown, ignoreOutside = False )
-            self.pMoving.unknown.interpolateInactive( self.pFixed.unknown, ignoreOutside = False )
-            # Post iteration
-            self.pFixed.postIterate()
-            self.pMoving.postIterate()
-        else:
-            self.pFixed.clearGamma()
-            self.pFixed.preAssemble(allocateLs=True)
-            self.pFixed.iterate()
-            try:
-                self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
-            except ValueError:
-                self.writepos()
-                raise
-            self.pMoving.postIterate()
-
-        # Compute next dt && domain size
-        try:
-            self.update()
-        except ZeroDivisionError:
-            self.writepos()
-            raise
-        # Write vtk files
-        self.writepos()
 
     def writepos( self ):
         self.pFixed.writepos(

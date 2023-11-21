@@ -1,2 +1,5 @@
 *.gcode
 *.log
+*.png
+*.txt
+bak*

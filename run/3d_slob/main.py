@@ -73,6 +73,7 @@ def runCoupled(caseName="coupled"):
                            threshold=0.2,
                            adimMinRadius=2,
                            adimNegZLen=2,
+                           alwaysCoupled=True,
                            maxAdimtDt=problemInput["adimFixedDtCoupled"],
                            adimFineDt=problemInput["adimFixedDtCoupled"],
                            )
