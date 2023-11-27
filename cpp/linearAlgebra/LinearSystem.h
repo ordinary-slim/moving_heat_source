@@ -9,7 +9,11 @@
 class Problem;// Forward declaration of problem class
 namespace mesh { class Domain; }// Forward declaration within a namespace
 
-void solveEigenBiCGSTAB( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
+void solveEigenBiCGSTAB_IncompleteLUT( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
+                         Eigen::VectorXd &rhs,
+                         Eigen::VectorXd &sol,
+                         Eigen::VectorXd &initialGuess );
+void solveEigenBiCGSTAB_Jacobi( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
                          Eigen::VectorXd &rhs,
                          Eigen::VectorXd &sol,
                          Eigen::VectorXd &initialGuess );
@@ -60,7 +64,7 @@ class LinearSystem
     void (*externalSolve)( Eigen::SparseMatrix<double, Eigen::RowMajor> &,
                            Eigen::VectorXd &,
                            Eigen::VectorXd &,
-                           Eigen::VectorXd &) = &solveEigenBiCGSTAB;
-    void setSolver(bool isSymmetric = false);
+                           Eigen::VectorXd &) = &solveEigenBiCGSTAB_IncompleteLUT;
+    void setSolver(int idxSolver);
 };
 #endif

@@ -23,6 +23,7 @@ class AdaptiveStepper:
                  adimMinRadius=2,
                  adimPosZLen=None,
                  adimNegZLen=None,
+                 adimSideRadius=None,
                  alwaysCoupled=False,
                  slowDown=True,
                  slowAdimDt=None,
@@ -45,11 +46,14 @@ class AdaptiveStepper:
         self.adimMaxSubdomainSize = self.computeSizeSubdomain(self.adimMaxDt)
         self.adimMinRadius = adimMinRadius
         self.adimNegZLen = adimMinRadius
+        self.adimSideRadius = adimMinRadius
         if not(adimNegZLen is None):
             self.adimNegZLen = adimNegZLen
         self.adimPosZLen = self.adimNegZLen
         if not(adimPosZLen is None):
             self.adimPosZLen = adimPosZLen
+        if not(adimSideRadius is None):
+            self.adimSideRadius = adimSideRadius
         self.slowAdimDt  = adimFineDt
         if not(slowAdimDt is None):
             self.slowAdimDt = slowAdimDt
@@ -225,7 +229,7 @@ class AdaptiveStepper:
         radius = self.pFixed.mhs.radius
 
         # compute front and sides
-        sideRadius = self.adimMinRadius * radius
+        sideRadius = self.adimSideRadius * radius
         adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
         backRadiusAabb = max( adimBackRadius, self.adimMinRadius ) * radius
         frontRadiusAabb = self.adimMinRadius*radius
@@ -365,6 +369,7 @@ class AdaptiveStepper:
             # Build ls
             ls.assemble()
             # Solve ls
+            ls.setSolver( self.pFixed.idxSolver )
             ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
@@ -402,8 +407,8 @@ class AdaptiveStepper:
     def meshAroundHS( self, elementSizes, shift=None ):
         # Compute lengths of box
         radius = self.pFixed.mhs.radius
-        minRadius = self.adimMinRadius * radius
-        YRadius   = self.adimMinRadius * radius
+        minRadius = self.adimMinRadius  * radius
+        YRadius   = self.adimSideRadius * radius
         negZRadius   = self.adimNegZLen * radius
         posZRadius   = self.adimPosZLen * radius
         meshCenter = np.array(self.pFixed.mhs.position)
@@ -535,6 +540,7 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
             # Build ls
             ls.assemble()
             # Solve ls
+            ls.setSolver( self.pFixed.idxSolver )
             ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution

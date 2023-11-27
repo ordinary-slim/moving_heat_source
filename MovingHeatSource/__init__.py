@@ -24,6 +24,9 @@ class Problem(Problem):
         self.input = dict(input)
         self.iter = 0
         self.postFolder = "post_{}".format( self.caseName )
+        self.idxSolver = 0
+        if "idxSolver" in self.input:
+            self.idxSolver = int( self.input["idxSolver"] )
 
         if problem:
             self.input = problem.input
@@ -65,6 +68,7 @@ class Problem(Problem):
         if not(self.hasPreIterated):
             self.preIterate(True)
         self.assemble()
+        self.ls.setSolver( self.idxSolver )
         self.ls.setInitialGuess( self )
         self.ls.solve()
         self.gather()

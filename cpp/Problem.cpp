@@ -43,7 +43,7 @@ void Problem::preAssemble(bool allocateLs) {
   // If problem is not coupled, get its own Linear System
   if (allocateLs) {
     this->ls = std::make_shared<LinearSystem>(*this);
-    this->ls->setSolver(isSymmetric);
+    this->ls->setSolver(int(isSymmetric));
     assembling2external = false;
   }
 

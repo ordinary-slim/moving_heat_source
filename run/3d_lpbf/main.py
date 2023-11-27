@@ -41,10 +41,12 @@ def runCoupled(caseName="fixed"):
                            adimFineDt=0.5 / problemInput["fineTStepFactorMoving"],
                            maxAdimtDt=problemInput["maxAdimDt"],
                            elementSize=fineElSizeMoving / problemInput["fineElFactorMovingSubdomain"],
-                           threshold=0.02,
+                           threshold=problemInput["steadinessThreshold"],
                            adimMinRadius=3,
                            slowAdimDt=1.0,
                            adimPosZLen=0.5,
+                           adimNegZLen=1.5,
+                           adimSideRadius=1.5,
                            )
     
     logger = MyLogger()

@@ -5,15 +5,15 @@ HeatSourceSpeed : [1000, 0, 0]
 dt : 0.1
 # PROPS
 material_metal : {
-  rho : 4.45E-06, # kg / mm3
-  conductivity : 6.0E-03, # W / mm / K
-  specific_heat : 564, # J / kg / K
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-03, # W / mm / K
+  specific_heat : 700, # J / kg / K
   convectionCoeff : 2.0E-05,
 }
 material_powder : {
-  rho : 4.45E-06, # kg / mm3
-  conductivity : 6.0E-05, # W / mm / K
-  specific_heat : 564, # J / kg / K
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-05, # W / mm / K
+  specific_heat : 700, # J / kg / K
   convectionCoeff : 2.0E-05,
 }
 environmentTemperature : 25
@@ -44,3 +44,4 @@ fineTStepFactorMoving: 1
 fineElFactorMovingSubdomain: 1
 maxAdimDt: 8
 maxAdimSize: 50
+steadinessThreshold: 0.02

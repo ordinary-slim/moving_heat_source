@@ -228,7 +228,7 @@ void Domain::invertProjection( Eigen::VectorXd &sol, Eigen::VectorXd &projection
     ls->rhs[idof] = projection[inode];
   }
 
-  ls->setSolver( true );
+  ls->setSolver( 1 );
   ls->solve();
 
   // Gather to solution
