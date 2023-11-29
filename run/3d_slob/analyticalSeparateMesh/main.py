@@ -16,9 +16,9 @@ kappa = k / rho / cp
 
 def meshBox(box, elementSize=0.25):
     cell_type="hexa8"
-    nelsX = int((box[1] - box[0])/elementSize)
-    nelsY = int((box[3] - box[2])/elementSize)
-    nelsZ = int((box[5] - box[4])/elementSize)
+    nelsX = np.round((box[1] - box[0])/elementSize).astype(int)
+    nelsY = np.round((box[3] - box[2])/elementSize).astype(int)
+    nelsZ = np.round((box[5] - box[4])/elementSize).astype(int)
 
     points, cells = meshzoo.cube_hexa(
         np.linspace( box[0], box[1], nelsX+1),
@@ -28,11 +28,11 @@ def meshBox(box, elementSize=0.25):
     cells = cells.astype( np.uint32 )
     return points, cells
 
-def solveNguyen(points, time):
+def solveNguyen(points, time, num = 1000):
     T = np.zeros( points.shape[0] )
     N = 6*np.sqrt(3) * power / (rho*cp*np.power(np.pi, 1.5))
     taoMax = time
-    taoSamples = np.linspace( 0, taoMax, num=4000 )
+    taoSamples = np.linspace( 0, taoMax, num=num )
     for inode, pos in enumerate(points):
         # NGuyen solution
         integrand = np.zeros( taoSamples.size )
@@ -45,15 +45,14 @@ def solveNguyen(points, time):
         T[inode] = Tenv + N * integral
     return T
 
-def main(time=0.01):
-    elSize = radius/8
+def main(time=0.005, num = 4000):
+    elSize = radius/16
     # Mesh
-    box = [-4*radius, +1*radius, 0.0, +2.0*radius, -elSize, 0.0]
+    box = [-12*radius, +5*radius, 0.0, +elSize, -elSize, 0.0]
     points, cells = meshBox( box, elSize )
     # Solve
     T = solveNguyen( points, time )
-    # Posrun/3d_lpbft
-    fileName = "nguyen.vtk"
+    fileName = "nguyen_{}.vtu".format( num )
     dataSet = meshio.Mesh(
             points,
             [("hexahedron", cells)],

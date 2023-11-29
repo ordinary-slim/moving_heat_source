@@ -60,7 +60,7 @@ class CustomStepper(AdaptiveStepper):
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        return 6
+        return 10
 
     def getIsPrinting( self ):
         return (self.pFixed.mhs.currentTrack.type == TrackType.printing)
@@ -126,7 +126,8 @@ class DriverReference:
                                      )
         self.isCoupled = False
         self.tol = 1e-7
-        self.nextTrack = None
+        self.nextTrack = self.problem.mhs.currentTrack
+        self.onNewTrack = True
 
     def setDtFromAdimR( self, adimR, maxDt=None):
         r =self.problem.input["radius"]
@@ -147,10 +148,6 @@ class DriverReference:
         self.setDtFromAdimR( self.adimDt, self.dt2trackEnd )
         tnp1 = self.problem.time + self.problem.dt
         track = self.problem.mhs.path.interpolateTrack( tnp1 )
-        if (track.hasDeposition) and (self.printer is not None):
-            self.printer.deposit( self.problem.mhs.position,
-                                self.problem.mhs.path.interpolatePosition(tnp1)
-                               )
         #self.problem.setConvection( resetBcs = True )
         self.solve()
         self.dt2trackEnd = self.problem.mhs.currentTrack.endTime - self.problem.time
@@ -158,6 +155,14 @@ class DriverReference:
             self.nextTrack = self.problem.mhs.getNextTrack()
             self.dt2trackEnd = self.nextTrack.endTime - self.problem.time
         self.writepos()
+
+
+    def getIsPrinting( self ):
+        return (self.problem.mhs.currentTrack.type == TrackType.printing)
+
+    def getNdofs( self ):
+        return self.problem.ls.ndofs()
+
 
 class DriverAnalytical( DriverReference ):
     def solve(self):

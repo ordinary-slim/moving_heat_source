@@ -23,7 +23,7 @@ def write_runsh( coupledRun, elsPerRadius, tstepsPerRadius ):
     caseName = None
     runType = None
     if coupledRun:
-        caseName = "coupled_elsPerRad{}{}".format(
+        caseName = "coupled_elsPerRad{}".format(
                 elsPerRadius )
         runType = "coupled"
     else:
@@ -37,10 +37,10 @@ def write_runsh( coupledRun, elsPerRadius, tstepsPerRadius ):
     "#SBATCH --job-name={}".format( caseName ),
     "#SBATCH --output=output-job_%j.out",
     "#SBATCH --error=output-job_%j.err",
-    "#SBATCH --partition=R815",
+    "#SBATCH --partition=HighParallelization",
     "#SBATCH --ntasks=1",
-    "#SBATCH --mem=20G",
-    "#SBATCH --time=2-0",
+    "#SBATCH --mem=30G",
+    "#SBATCH --time=4-0",
     "########### Further details -> man sbatch ##########",
     "source /data0/home/mslimani/moving_heat_source/modules.sh",
     "source /data0/home/mslimani/moving_heat_source/.venv/bin/activate",
@@ -50,8 +50,10 @@ def write_runsh( coupledRun, elsPerRadius, tstepsPerRadius ):
         ),
     ]
 
-    with open("run.sh", "w") as runsh:
+    fileName = caseName + ".sh"
+    with open(fileName, "w") as runsh:
         runsh.writelines( line + "\n" for line in runSh )
+    return fileName
 
 def checkSlurmJobState( jobid ) :
     checkCmd = "seff {}".format( jobid )
@@ -78,16 +80,18 @@ def runSbatch( sbatchFile ):
 
 def main():
     # Loop over desired properties
-    for elsPerRadius in [1, 2, 4]:
-        for tstepsPerRadius in [2, 4, 8]:
+    for elsPerRadius in [2, 4, 8, 16]:
+        for tstepsPerRadius in [2, 4, 8, 16]:
+            if tstepsPerRadius > elsPerRadius:
+                continue
             rewrite_input( elsPerRadius, tstepsPerRadius )
-            write_runsh( False, elsPerRadius, tstepsPerRadius )
-            runSbatch( "run.sh" )
+            fileName = write_runsh( False, elsPerRadius, tstepsPerRadius )
+            runSbatch( fileName )
 
-    for elsPerRadius in [1, 2, 4]:
+    for elsPerRadius in [2, 4, 8, 16]:
         rewrite_input( elsPerRadius, 2 )
-        write_runsh( True, elsPerRadius, 2 )
-        runSbatch( "run.sh" )
+        fileName = write_runsh( True, elsPerRadius, 2 )
+        runSbatch( fileName )
 
 if __name__=="__main__":
     main()

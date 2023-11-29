@@ -80,6 +80,7 @@ class DriverReference:
 
         self.problem.preAssemble()
         self.problem.assemble()
+        self.problem.ls.setSolver( self.problem.idxSolver )
         self.problem.ls.solve()
         self.problem.gather()
         self.problem.postIterate()
