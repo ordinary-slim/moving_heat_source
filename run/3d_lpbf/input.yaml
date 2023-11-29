@@ -45,3 +45,5 @@ fineElFactorMovingSubdomain: 1
 maxAdimDt: 8
 maxAdimSize: 50
 steadinessThreshold: 0.02
+idxSolverUncoupledIter: 1
+idxSolverCoupledIter: 2

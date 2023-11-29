@@ -81,7 +81,12 @@ class AdaptiveStepper:
 
         # Initialize steadiness criterion
         self.metric = 1e99
-
+        self.idxSolverUncoupledIter = 1
+        if "idxSolverUncoupledIter" in self.pFixed.input:
+            self.idxSolverUncoupledIter = self.pFixed.input["idxSolverUncoupledIter" ]
+        self.idxSolverCoupledIter = self.pFixed.idxSolver
+        if "idxSolverCoupledIter" in self.pFixed.input:
+            self.idxSolverCoupledIter = self.pFixed.input["idxSolverCoupledIter" ]
 
     def buildMovingProblem(self, elementSize, shift):
         meshInputMoving = {}
@@ -540,7 +545,7 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
             # Build ls
             ls.assemble()
             # Solve ls
-            ls.setSolver( self.pFixed.idxSolver )
+            ls.setSolver( self.idxSolverCoupledIter )
             ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
@@ -555,6 +560,7 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
         else:
             self.pFixed.clearGamma()
             self.pFixed.preAssemble(allocateLs=True)
+            self.pFixed.idxSolver = self.idxSolverUncoupledIter
             self.pFixed.iterate()
             try:
                 self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )
