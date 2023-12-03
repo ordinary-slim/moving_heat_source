@@ -39,11 +39,12 @@ path: "Path.gcode"
 interLayerDelay : 2
 cooling_dt: 0.5
 fineElFactor: 1
-fineTStepFactor: 1
+fineTStepFactor: 2
 fineTStepFactorMoving: 1
 fineElFactorMovingSubdomain: 1
 maxAdimDt: 8
 maxAdimSize: 50
 steadinessThreshold: 0.02
+idxSolver: 1
 idxSolverUncoupledIter: 1
-idxSolverCoupledIter: 2
+idxSolverCoupledIter: 0

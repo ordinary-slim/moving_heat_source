@@ -374,7 +374,7 @@ class AdaptiveStepper:
             # Build ls
             ls.assemble()
             # Solve ls
-            ls.setSolver( self.pFixed.idxSolver )
+            ls.setSolver( self.idxSolverCoupledIter )
             ls.setInitialGuess( self.pMoving, self.pFixed )
             ls.solve()
             # Recover solution
@@ -389,6 +389,7 @@ class AdaptiveStepper:
         else:
             self.pFixed.clearGamma()
             self.pFixed.preAssemble(allocateLs=True)
+            self.pFixed.idxSolver = self.idxSolverUncoupledIter
             self.pFixed.iterate()
             try:
                 self.pMoving.unknown.interpolate( self.pFixed.unknown, ignoreOutside = False )

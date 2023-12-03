@@ -5,3 +5,5 @@
 *.lprof
 *.png
 callgrind.*
+*.out
+*.err
