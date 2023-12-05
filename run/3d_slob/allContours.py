@@ -744,7 +744,8 @@ def main(coupledDataSet, refDataSet):
     SetActiveSource(slice1)
 
     # Properties modified on extractEdges1Display
-    extractEdges1Display.Opacity = 0.3
+    extractEdges1Display.Opacity = 0.2
+    extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
 
     # create a query selection
     QuerySelect(QueryString='(T == max(T))', FieldType='POINT', InsideOut=0)

@@ -3,23 +3,21 @@ from paraview.simple import *
 
 contourValues = [700.0, 1150.0, 1400.0, 1600.0, 1900.0, 2300.0, 2100.0]
 
-def takeScreenshot( fileName, closeInterface=False ):
+def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     #### disable automatic camera reset on 'Show'
     paraview.simple._DisableFirstRenderCameraReset()
 
-
-    # Get extension
-    ext = fileName.split(".")[-1]
-
     dataSet = None
-    if ext=="pvd":
-        # create a new 'PVD Reader'
-        dataSet = PVDReader(registrationName='dataSet', FileName=(fileName) )
-    else:
-        Exception("Invalid data set, must be PVD.")
+    dataSet = PVDReader(registrationName='dataSet', FileName=(fileName) )
 
     dataSet.CellArrays = ['ActiveElements', 'physicalDomain']
     dataSet.PointArrays = ['T', 'Pulse', 'ActiveNodes', 'gammaNodes', 'forcedDofs']
+
+    # get active view
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
+    # hide data in view
+    Hide(dataSet, renderView1)
 
     # get animation scene
     animationScene1 = GetAnimationScene()
@@ -29,40 +27,6 @@ def takeScreenshot( fileName, closeInterface=False ):
 
     # update animation scene based on data timesteps
     animationScene1.UpdateAnimationUsingDataTimeSteps()
-
-    # get active view
-    renderView1 = GetActiveViewOrCreate('RenderView')
-
-    # show data in view
-    dataSetDisplay = Show(dataSet, renderView1, 'UnstructuredGridRepresentation')
-
-    # trace defaults for the display properties.
-    dataSetDisplay.Representation = 'Surface'
-    dataSetDisplay.ColorArrayName = [None, '']
-    dataSetDisplay.SelectTCoordArray = 'None'
-    dataSetDisplay.SelectNormalArray = 'None'
-    dataSetDisplay.SelectTangentArray = 'None'
-    dataSetDisplay.OSPRayScaleArray = 'ActiveNodes'
-    dataSetDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-    dataSetDisplay.SelectOrientationVectors = 'None'
-    dataSetDisplay.ScaleFactor = 0.36
-    dataSetDisplay.SelectScaleArray = 'ActiveNodes'
-    dataSetDisplay.GlyphType = 'Arrow'
-    dataSetDisplay.GlyphTableIndexArray = 'ActiveNodes'
-    dataSetDisplay.GaussianRadius = 0.018
-    dataSetDisplay.SetScaleArray = ['POINTS', 'ActiveNodes']
-    dataSetDisplay.ScaleTransferFunction = 'PiecewiseFunction'
-    dataSetDisplay.OpacityArray = ['POINTS', 'ActiveNodes']
-    dataSetDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-    dataSetDisplay.DataAxesGrid = 'GridAxesRepresentation'
-    dataSetDisplay.PolarAxes = 'PolarAxesRepresentation'
-    dataSetDisplay.ScalarOpacityUnitDistance = 0.11913968780301959
-    dataSetDisplay.OpacityArrayName = ['POINTS', 'ActiveNodes']
-    dataSetDisplay.SelectInputVectors = [None, '']
-    dataSetDisplay.WriteLog = ''
-
-    # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
-    dataSetDisplay.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
 
     # reset view to fit data
     renderView1.ResetCamera(False)
@@ -81,77 +45,61 @@ def takeScreenshot( fileName, closeInterface=False ):
     slice1.SliceType = 'Plane'
     slice1.HyperTreeGridSlicer = 'Plane'
     slice1.SliceOffsetValues = [0.0]
-
-    # init the 'Plane' selected for 'SliceType'
-    slice1.SliceType.Origin = [-0.9999999999999993, 0.5, -0.5875]
-
-    # init the 'Plane' selected for 'HyperTreeGridSlicer'
-    slice1.HyperTreeGridSlicer.Origin = [-0.9999999999999993, 0.5, -0.5875]
-
-    # Properties modified on slice1.SliceType
     slice1.SliceType.Origin = [0.0, 0.0, 0.0]
     slice1.SliceType.Normal = [0.0, 0.0, 1.0]
-
-    # show data in view
-    slice1Display = Show(slice1, renderView1, 'GeometryRepresentation')
-
-    # trace defaults for the display properties.
-    slice1Display.Representation = 'Surface'
-    slice1Display.ColorArrayName = [None, '']
-    slice1Display.SelectTCoordArray = 'None'
-    slice1Display.SelectNormalArray = 'None'
-    slice1Display.SelectTangentArray = 'None'
-    slice1Display.OSPRayScaleArray = 'ActiveNodes'
-    slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-    slice1Display.SelectOrientationVectors = 'None'
-    slice1Display.ScaleFactor = 0.36000000000000004
-    slice1Display.SelectScaleArray = 'ActiveNodes'
-    slice1Display.GlyphType = 'Arrow'
-    slice1Display.GlyphTableIndexArray = 'ActiveNodes'
-    slice1Display.GaussianRadius = 0.018000000000000002
-    slice1Display.SetScaleArray = ['POINTS', 'ActiveNodes']
-    slice1Display.ScaleTransferFunction = 'PiecewiseFunction'
-    slice1Display.OpacityArray = ['POINTS', 'ActiveNodes']
-    slice1Display.OpacityTransferFunction = 'PiecewiseFunction'
-    slice1Display.DataAxesGrid = 'GridAxesRepresentation'
-    slice1Display.PolarAxes = 'PolarAxesRepresentation'
-    slice1Display.SelectInputVectors = [None, '']
-    slice1Display.WriteLog = ''
-
-    # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
-    slice1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
-
-    # hide data in view
-    Hide(dataSet, renderView1)
-
-    # update the view to ensure updated data information
-    renderView1.Update()
-
-    # Properties modified on slice1
     slice1.Triangulatetheslice = 0
-
-    # update the view to ensure updated data information
-    renderView1.Update()
 
     # create a new 'Clip'
     clip1 = Clip(registrationName='Clip1', Input=slice1)
+
+    if not(otherMeshFile):
+        extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=clip1)
+        extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
+        extractEdges1Display.Representation = 'Surface'
+        extractEdges1Display.ColorArrayName = [None, '']
+        extractEdges1Display.Opacity = 0.2
+        extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
+    else:
+        dataSetMesh = PVDReader(registrationName='dataSetMesh', FileName=(otherMeshFile) )
+        Hide(dataSetMesh, renderView1)
+        # create a new 'Slice'
+        sliceMesh = Slice(registrationName='sliceMesh', Input=dataSetMesh)
+        sliceMesh.SliceType = 'Plane'
+        sliceMesh.HyperTreeGridSlicer = 'Plane'
+        sliceMesh.SliceOffsetValues = [0.0]
+        sliceMesh.SliceType.Origin = [0.0, 0.0, 0.0]
+        sliceMesh.SliceType.Normal = [0.0, 0.0, 1.0]
+        sliceMesh.Triangulatetheslice = 0
+        Hide(sliceMesh, renderView1)
+        clipMesh = Clip(registrationName='clipMesh', Input=sliceMesh)
+        clipMesh.ClipType = 'Plane'
+        clipMesh.HyperTreeGridClipper = 'Plane'
+        clipMesh.Scalars = ['POINTS', 'ActiveNodes']
+        clipMesh.Value = 0.5
+        clipMesh.Invert = 0
+        clipMesh.ClipType.Origin = [0.0999999, 0.0, 0.0]
+        clipMesh.ClipType.Normal = [-1.0, 0.0, 0.0]
+        # init the 'Plane' selected for 'HyperTreeGridClipper'
+        clipMesh.HyperTreeGridClipper.Origin = [-0.9999999999999993, 0.5, 0.0]
+        Hide(clipMesh, renderView1)
+
+        extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=clipMesh)
+        extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
+        extractEdges1Display.Representation = 'Surface'
+        extractEdges1Display.ColorArrayName = [None, '']
+        extractEdges1Display.Opacity = 0.2
+        extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
+
+
     clip1.ClipType = 'Plane'
     clip1.HyperTreeGridClipper = 'Plane'
     clip1.Scalars = ['POINTS', 'ActiveNodes']
     clip1.Value = 0.5
-
-    # init the 'Plane' selected for 'ClipType'
-    clip1.ClipType.Origin = [-0.9999999999999993, 0.5, 0.0]
-
+    clip1.Invert = 0
+    clip1.ClipType.Origin = [0.0999999, 0.0, 0.0]
+    clip1.ClipType.Normal = [-1.0, 0.0, 0.0]
     # init the 'Plane' selected for 'HyperTreeGridClipper'
     clip1.HyperTreeGridClipper.Origin = [-0.9999999999999993, 0.5, 0.0]
-
-    # Properties modified on clip1
-    clip1.Invert = 0
-
-    # Properties modified on clip1.ClipType
-    clip1.ClipType.Origin = [0.1, 0.0, 0.0]
-    clip1.ClipType.Normal = [-1.0, 0.0, 0.0]
 
     # show data in view
     clip1Display = Show(clip1, renderView1, 'UnstructuredGridRepresentation')
@@ -183,9 +131,6 @@ def takeScreenshot( fileName, closeInterface=False ):
 
     # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
     clip1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
-
-    # hide data in view
-    Hide(slice1, renderView1)
 
     # update the view to ensure updated data information
     renderView1.Update()
@@ -252,9 +197,6 @@ def takeScreenshot( fileName, closeInterface=False ):
 
     # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
     contour1Display.OpacityTransferFunction.Points = [700.0, 0.0, 0.5, 0.0, 2300.0, 1.0, 0.5, 0.0]
-
-    # hide data in view
-    Hide(clip1, renderView1)
 
     # show color bar/color legend
     contour1Display.SetScalarBarVisibility(renderView1, True)
@@ -610,19 +552,10 @@ def takeScreenshot( fileName, closeInterface=False ):
 
     # show data in view
     clip1Display = Show(clip1, renderView1, 'UnstructuredGridRepresentation')
-
-    # hide data in view
-    Hide(clip1, renderView1)
-
-    # show data in view
-    clip1Display = Show(clip1, renderView1, 'UnstructuredGridRepresentation')
-
     # set scalar coloring
     ColorBy(clip1Display, ('POINTS', 'T'))
-
     # rescale color and/or opacity maps used to include current data range
     clip1Display.RescaleTransferFunctionToDataRange(True, False)
-
     # show color bar/color legend
     clip1Display.SetScalarBarVisibility(renderView1, True)
 
@@ -684,8 +617,7 @@ def takeScreenshot( fileName, closeInterface=False ):
     slice2Display.SelectionPointLabelFormat = '%.0f'
 
     if (closeInterface):
-        extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=clip1)
-        Hide(extractEdges1, renderView1)
+        #Hide(extractEdges1, renderView1)
 
         threshold1 = Threshold(registrationName='Threshold1', Input=extractEdges1)
         threshold1.Scalars = ['POINTS', 'gammaNodes']
@@ -731,8 +663,8 @@ def takeScreenshot( fileName, closeInterface=False ):
 
     # get color legend/bar for tLUT in view renderView1
     tLUTColorBar = GetScalarBar(tLUT, renderView1)
+    tLUTColorBar.Orientation = 'Vertical'
     tLUTColorBar.WindowLocation = 'Any Location'
-    tLUTColorBar.Position = [0.8937831021437578, 0.2606250000000001]
     tLUTColorBar.Title = 'T'
     tLUTColorBar.ComponentTitle = ''
     tLUTColorBar.TitleColor = [0.0, 0.0, 0.16]
@@ -744,7 +676,7 @@ def takeScreenshot( fileName, closeInterface=False ):
     tLUTColorBar.ScalarBarLength = 0.6081250000000009
     tLUTColorBar.RangeLabelFormat = '%#.0f'
     # change scalar bar placement
-    tLUTColorBar.Position = [0.9013493064312735, 0.2606250000000001]
+    tLUTColorBar.Position = [0.9013493064312735, 0.1906250000000001]
     renderView1.OrientationAxesVisibility = 0
 
     # save screenshot
@@ -779,5 +711,6 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('dataSet')
     parser.add_argument('-i', '--interface', action='store_true')
+    parser.add_argument('--other-mesh-file', default="")
     args = parser.parse_args()
-    takeScreenshot( args.dataSet, args.interface )
+    takeScreenshot( args.dataSet, args.interface, args.other_mesh_file )

@@ -519,6 +519,7 @@ def takeScreenshot( fileName ):
 
     # get color legend/bar for errorLUT in view renderView1
     errorLUTColorBar = GetScalarBar(errorLUT, renderView1)
+    errorLUTColorBar.Orientation = 'Vertical'
     errorLUTColorBar.WindowLocation = 'Any Location'
     errorLUTColorBar.Title = 'Error squared'
     errorLUTColorBar.ComponentTitle = ''
@@ -635,6 +636,35 @@ def takeScreenshot( fileName ):
 
     # Properties modified on errorLUTColorBar
     errorLUTColorBar.RangeLabelFormat = '%#.0f'
+
+    # Show mesh
+    # create a new 'Slice'
+    sliceMesh = Slice(registrationName='sliceMesh', Input=dataSet)
+    sliceMesh.SliceType = 'Plane'
+    sliceMesh.HyperTreeGridSlicer = 'Plane'
+    sliceMesh.SliceOffsetValues = [0.0]
+    sliceMesh.SliceType.Origin = [0.0, 0.0, 0.0]
+    sliceMesh.SliceType.Normal = [0.0, 0.0, 1.0]
+    sliceMesh.Triangulatetheslice = 0
+    Hide(sliceMesh, renderView1)
+    clipMesh = Clip(registrationName='clipMesh', Input=sliceMesh)
+    clipMesh.ClipType = 'Plane'
+    clipMesh.HyperTreeGridClipper = 'Plane'
+    clipMesh.Scalars = ['POINTS', 'ActiveNodes']
+    clipMesh.Value = 0.5
+    clipMesh.Invert = 0
+    clipMesh.ClipType.Origin = [0.0999999, 0.0, 0.0]
+    clipMesh.ClipType.Normal = [-1.0, 0.0, 0.0]
+    # init the 'Plane' selected for 'HyperTreeGridClipper'
+    clipMesh.HyperTreeGridClipper.Origin = [-0.9999999999999993, 0.5, 0.0]
+    Hide(clipMesh, renderView1)
+
+    extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=clipMesh)
+    extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
+    extractEdges1Display.Representation = 'Surface'
+    extractEdges1Display.ColorArrayName = [None, '']
+    extractEdges1Display.Opacity = 0.2
+    extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
 
     # get layout
     layout1 = GetLayout()
