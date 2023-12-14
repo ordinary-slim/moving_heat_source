@@ -7,7 +7,7 @@ from paraview.simple import *
 import argparse
 import numpy as np
 
-maxError = 100
+maxError = 10
 
 def takeScreenshot( fileName ):
     #### disable automatic camera reset on 'Show'
@@ -442,17 +442,17 @@ def takeScreenshot( fileName ):
     calculator3.Function = ''
 
     # Properties modified on calculator3
-    calculator3.ResultArrayName = 'Error squared'
-    calculator3.Function = '(Th - Tanal)^2'
+    calculator3.ResultArrayName = 'Error'
+    calculator3.Function = 'abs(Th - Tanal)'
 
     # show data in view
     calculator3Display = Show(calculator3, renderView1, 'GeometryRepresentation')
 
-    # get 2D transfer function for 'Error squared'
-    errorTF2D = GetTransferFunction2D('Error squared')
+    # get 2D transfer function for 'Error'
+    errorTF2D = GetTransferFunction2D('Error')
 
-    # get color transfer function/color map for 'Error squared'
-    errorLUT = GetColorTransferFunction('Error squared')
+    # get color transfer function/color map for 'Error'
+    errorLUT = GetColorTransferFunction('Error')
     errorLUT.TransferFunction2D = errorTF2D
     errorLUT.RGBPoints = [1.931156797141398e-05, 1.0, 1.0, 1.0, 185.64793887269494, 0.0, 0.0, 1.0, 371.29585843382193, 0.0, 1.0, 1.0, 546.0233121384119, 0.0, 1.0, 0.0, 731.6712316995389, 1.0, 1.0, 0.0, 917.3191512606656, 1.0, 0.0, 0.0, 1092.046604965256, 0.878431372549, 0.0, 1.0]
     errorLUT.ColorSpace = 'RGB'
@@ -460,22 +460,22 @@ def takeScreenshot( fileName ):
 
     # trace defaults for the display properties.
     calculator3Display.Representation = 'Surface'
-    calculator3Display.ColorArrayName = ['POINTS', 'Error squared']
+    calculator3Display.ColorArrayName = ['POINTS', 'Error']
     calculator3Display.LookupTable = errorLUT
     calculator3Display.SelectTCoordArray = 'TextureCoordinates'
     calculator3Display.SelectNormalArray = 'Normals'
     calculator3Display.SelectTangentArray = 'None'
-    calculator3Display.OSPRayScaleArray = 'Error squared'
+    calculator3Display.OSPRayScaleArray = 'Error'
     calculator3Display.OSPRayScaleFunction = 'PiecewiseFunction'
     calculator3Display.SelectOrientationVectors = 'None'
     calculator3Display.ScaleFactor = 0.04979999884963036
-    calculator3Display.SelectScaleArray = 'Error squared'
+    calculator3Display.SelectScaleArray = 'Error'
     calculator3Display.GlyphType = 'Arrow'
-    calculator3Display.GlyphTableIndexArray = 'Error squared'
+    calculator3Display.GlyphTableIndexArray = 'Error'
     calculator3Display.GaussianRadius = 0.002489999942481518
-    calculator3Display.SetScaleArray = ['POINTS', 'Error squared']
+    calculator3Display.SetScaleArray = ['POINTS', 'Error']
     calculator3Display.ScaleTransferFunction = 'PiecewiseFunction'
-    calculator3Display.OpacityArray = ['POINTS', 'Error squared']
+    calculator3Display.OpacityArray = ['POINTS', 'Error']
     calculator3Display.OpacityTransferFunction = 'PiecewiseFunction'
     calculator3Display.DataAxesGrid = 'GridAxesRepresentation'
     calculator3Display.PolarAxes = 'PolarAxesRepresentation'
@@ -500,8 +500,8 @@ def takeScreenshot( fileName ):
     # update the view to ensure updated data information
     renderView1.Update()
 
-    # get opacity transfer function/opacity map for 'Error squared'
-    errorPWF = GetOpacityTransferFunction('Error squared')
+    # get opacity transfer function/opacity map for 'Error'
+    errorPWF = GetOpacityTransferFunction('Error')
     errorPWF.Points = [1.931156797141398e-05, 0.0, 0.5, 0.0, 1092.046604965256, 1.0, 0.5, 0.0]
     errorPWF.ScalarRangeInitialized = 1
 
@@ -521,7 +521,7 @@ def takeScreenshot( fileName ):
     errorLUTColorBar = GetScalarBar(errorLUT, renderView1)
     errorLUTColorBar.Orientation = 'Vertical'
     errorLUTColorBar.WindowLocation = 'Any Location'
-    errorLUTColorBar.Title = 'Error squared'
+    errorLUTColorBar.Title = 'Error'
     errorLUTColorBar.ComponentTitle = ''
     errorLUTColorBar.TitleColor = [0.0, 0.0, 0.16]
     errorLUTColorBar.TitleFontFamily = 'Times'
@@ -538,7 +538,7 @@ def takeScreenshot( fileName ):
 
     # create a new 'Contour'
     contour1 = Contour(registrationName='Contour1', Input=calculator3)
-    contour1.ContourBy = ['POINTS', 'Error squared']
+    contour1.ContourBy = ['POINTS', 'Error']
     contour1.Isosurfaces = [190.85209656718354]
     contour1.PointMergeMethod = 'Uniform Binning'
 
@@ -610,7 +610,7 @@ def takeScreenshot( fileName ):
     calculator3Display.SetScalarBarVisibility(renderView1, True)
 
     # Properties modified on errorLUTColorBar
-    errorLUTColorBar.Title = 'Error squared'
+    errorLUTColorBar.Title = 'Error'
 
     # set active source
     SetActiveSource(plane1)
@@ -678,7 +678,7 @@ def takeScreenshot( fileName ):
     renderView1.CameraParallelScale = 0.2538725016795355
 
     # save screenshot
-    SaveScreenshot('/home/mslimani/acuario/moving_heat_source/run/3d_slob/figures/err_{}.png'.format(
+    SaveScreenshot('./figures/err_{}.png'.format(
         fileName.split(".")[0] ),
                    renderView1,
                    ImageResolution=[1586, 320],
@@ -711,7 +711,7 @@ def takeScreenshot( fileName ):
     # Compute L2 error
     # create a new 'Integrate Variables'
     integrateVariables1 = IntegrateVariables(registrationName='IntegrateVariables1', Input=calculator3)
-    l2Err = np.sqrt( integrateVariables1.PointData["Error squared"].GetRange()[0] )
+    l2Err = np.sqrt( integrateVariables1.PointData["Error"].GetRange()[0] )
     with open("l2Errors.txt", "a") as l2File:
         l2File.write("{}: {}\n".format( fileName, l2Err ) )
 

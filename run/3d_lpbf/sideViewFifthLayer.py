@@ -204,6 +204,7 @@ def main(dataSet, isCoupled):
     contour1Display.PolarAxes = 'PolarAxesRepresentation'
     contour1Display.SelectInputVectors = [None, '']
     contour1Display.WriteLog = ''
+    contour1Display.DiffuseColor = [0.0, 0.0, 0.0]
     # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
     contour1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
     # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
@@ -626,9 +627,16 @@ def main(dataSet, isCoupled):
     tPWF.RescaleTransferFunction(25.0, 2600.0)
     # Rescale 2D transfer function
     tTF2D.RescaleTransferFunction(25.0, 2600.0, 0.0, 1.0)
+
+    # create a new 'Extract Edges'
+    extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=slice1)
+    extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
+    extractEdges1Display.Representation = 'Surface'
+    extractEdges1Display.ColorArrayName = [None, '']
+    extractEdges1Display.Opacity = 0.2
+    extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
+
     if isCoupled:
-        # create a new 'Extract Edges'
-        extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=slice1)
         # update the view to ensure updated data information
         renderView1.Update()
         # create a new 'Threshold'
@@ -672,8 +680,6 @@ def main(dataSet, isCoupled):
         threshold2Display.ScaleTransferFunction.Points = [1.0, 0.0, 0.5, 0.0, 1.000244140625, 1.0, 0.5, 0.0]
         # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
         threshold2Display.OpacityTransferFunction.Points = [1.0, 0.0, 0.5, 0.0, 1.000244140625, 1.0, 0.5, 0.0]
-        # hide data in view
-        Hide(extractEdges1, renderView1)
         # show color bar/color legend
         threshold2Display.SetScalarBarVisibility(renderView1, True)
         # change solid color
@@ -704,7 +710,7 @@ def main(dataSet, isCoupled):
         text1Display.FontSize = 36
         # Properties modified on text1Display
         text1Display.Color = [1.0, 1.0, 1.0]
-        text1Display.Position = [0.12, 0.1]
+        text1Display.Position = [0.12, 0.07]
 
     # update the view to ensure updated data information
     renderView1.Update()

@@ -1,6 +1,8 @@
 #include "../Problem.h"
 #include "../mesh/Domain.h"
 #include "LinearSystem.h"
+#include <cmath>
+#include <unsupported/Eigen/SparseExtra>
 
 template<typename Solver>
 void iterativeSolve( Solver &solver,
@@ -176,4 +178,10 @@ void iterativeSolve( Solver &solver,
   }
   std::cout << "#Iterations:     " << solver.iterations() << std::endl;
   std::cout << "Estimated error: " << solver.error()      << std::endl;
+
+  if (std::isnan(solver.error())) {
+    Eigen::saveMarket(lhs, "faulty_lhs.mtx");
+    Eigen::saveMarketVector(rhs, "faulty_rhs.mtx");
+    throw std::runtime_error("Solver did not converge, wrote mtx files.");
+  }
 }

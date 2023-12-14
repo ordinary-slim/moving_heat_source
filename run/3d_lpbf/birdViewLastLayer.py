@@ -670,43 +670,15 @@ def main(dataSet, isCoupled):
     # set active source
     SetActiveSource(slice1)
 
+    # create a new 'Extract Edges'
+    extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=slice1)
+    extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
+    extractEdges1Display.Representation = 'Surface'
+    extractEdges1Display.ColorArrayName = [None, '']
+    extractEdges1Display.Opacity = 0.2
+    extractEdges1Display.DiffuseColor = [0.0, 0.0, 0.0]
+
     if isCoupled:
-        # create a new 'Extract Edges'
-        extractEdges1 = ExtractEdges(registrationName='ExtractEdges1', Input=slice1)
-
-        # show data in view
-        extractEdges1Display = Show(extractEdges1, renderView1, 'GeometryRepresentation')
-
-        # trace defaults for the display properties.
-        extractEdges1Display.Representation = 'Surface'
-        extractEdges1Display.ColorArrayName = ['POINTS', 'T']
-        extractEdges1Display.LookupTable = tLUT
-        extractEdges1Display.SelectTCoordArray = 'None'
-        extractEdges1Display.SelectNormalArray = 'None'
-        extractEdges1Display.SelectTangentArray = 'None'
-        extractEdges1Display.OSPRayScaleArray = 'ActiveNodes'
-        extractEdges1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-        extractEdges1Display.SelectOrientationVectors = 'None'
-        extractEdges1Display.ScaleFactor = 1.2000000000000002
-        extractEdges1Display.SelectScaleArray = 'ActiveNodes'
-        extractEdges1Display.GlyphType = 'Arrow'
-        extractEdges1Display.GlyphTableIndexArray = 'ActiveNodes'
-        extractEdges1Display.GaussianRadius = 0.06
-        extractEdges1Display.SetScaleArray = ['POINTS', 'ActiveNodes']
-        extractEdges1Display.ScaleTransferFunction = 'PiecewiseFunction'
-        extractEdges1Display.OpacityArray = ['POINTS', 'ActiveNodes']
-        extractEdges1Display.OpacityTransferFunction = 'PiecewiseFunction'
-        extractEdges1Display.DataAxesGrid = 'GridAxesRepresentation'
-        extractEdges1Display.PolarAxes = 'PolarAxesRepresentation'
-        extractEdges1Display.SelectInputVectors = [None, '']
-        extractEdges1Display.WriteLog = ''
-
-        # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
-        extractEdges1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
-
-        # show color bar/color legend
-        extractEdges1Display.SetScalarBarVisibility(renderView1, True)
-
         # update the view to ensure updated data information
         renderView1.Update()
 
@@ -755,9 +727,6 @@ def main(dataSet, isCoupled):
 
         # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
         threshold1Display.OpacityTransferFunction.Points = [1.0, 0.0, 0.5, 0.0, 1.000244140625, 1.0, 0.5, 0.0]
-
-        # hide data in view
-        Hide(extractEdges1, renderView1)
 
         # show color bar/color legend
         threshold1Display.SetScalarBarVisibility(renderView1, True)

@@ -1,7 +1,7 @@
 import argparse
 from paraview.simple import *
 
-contourValues = [700.0, 1150.0, 1400.0, 1600.0, 1900.0, 2300.0, 2100.0]
+contourValues = [700.0, 1150.0, 1400.0, 1700.0, 1900.0, 2100.0, 2300.0]
 
 def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     #### disable automatic camera reset on 'Show'
@@ -366,15 +366,9 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     slice2.HyperTreeGridSlicer = 'Plane'
     slice2.SliceOffsetValues = [0.0]
 
-    # init the 'Plane' selected for 'SliceType'
-    slice2.SliceType.Origin = [-0.007336654251120126, 0.01730698788025198, 0.0]
-
-    # init the 'Plane' selected for 'HyperTreeGridSlicer'
-    slice2.HyperTreeGridSlicer.Origin = [-0.007336654251120126, 0.01730698788025198, 0.0]
-
     # Properties modified on slice2.SliceType
-    slice2.SliceType.Origin = [-0.05, 0.0, 0.0]
-    slice2.SliceType.Normal = [-1.0, -0.5, 0.0]
+    slice2.SliceType.Origin = [-0.075, 0.0, 0.0]
+    slice2.SliceType.Normal = [-0.2, -0.5, 0.0]
 
     # show data in view
     slice2Display = Show(slice2, renderView1, 'GeometryRepresentation')
@@ -518,19 +512,10 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
 
     # trace defaults for the display properties.
     annotateAttributeData1Display.WindowLocation = 'Any Location'
-    annotateAttributeData1Display.FontSize = 34
+    annotateAttributeData1Display.FontSize = 36
 
     # update the view to ensure updated data information
     renderView1.Update()
-
-    # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.Position = [0.55, 0.009375000000000001]
-
-    # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.Position = [0.6, 0.009375000000000001]
-
-    # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.Position = [0.575, 0.009375000000000001]
 
     # Properties modified on annotateAttributeData1Display
     annotateAttributeData1Display.Position = [0.575, 0.001]
@@ -613,7 +598,8 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     # Properties modified on slice2Display
     slice2Display.SelectionPointLabelColor = [0.0, 0.0, 0.16000610360875867]
     slice2Display.SelectionPointLabelFontFamily = 'Times'
-    slice2Display.SelectionPointLabelFontSize = 22
+    slice2Display.SelectionPointLabelBold = 1
+    slice2Display.SelectionPointLabelFontSize = 24
     slice2Display.SelectionPointLabelFormat = '%.0f'
 
     if (closeInterface):
@@ -680,7 +666,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     renderView1.OrientationAxesVisibility = 0
 
     # save screenshot
-    SaveScreenshot('/home/mslimani/acuario/moving_heat_source/run/3d_slob/figures/' + fileName.split(".")[0] + ".png", renderView1, ImageResolution=[1586, 320],
+    SaveScreenshot('./figures/' + fileName.split(".")[0] + ".png", renderView1, ImageResolution=[1586, 320],
         TransparentBackground=1)
 
     #================================================================

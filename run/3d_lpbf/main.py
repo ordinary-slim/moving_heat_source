@@ -45,8 +45,8 @@ def runCoupled(caseName="fixed"):
                            adimMinRadius=3,
                            slowAdimDt=1.0,
                            adimPosZLen=0.5,
-                           adimNegZLen=1.5,
-                           adimSideRadius=1.5,
+                           adimNegZLen=2.0,
+                           adimSideRadius=2.0,
                            )
     
     logger = MyLogger()

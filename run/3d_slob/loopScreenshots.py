@@ -19,3 +19,4 @@ if __name__=="__main__":
     for dataSet in coupledDataSets + refDataSets:
         subprocess.run(["pvpython", "screenshotContours.py", dataSet]) 
         subprocess.run(["pvpython", "screenshotError.py", dataSet]) 
+    subprocess.run(["pvpython", "screenshotContours.py", "-i", "coupled_elsPerRad8_closeInterface.pvd"]) 
