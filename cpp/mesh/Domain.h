@@ -5,10 +5,12 @@
 #include "MeshTag.h"
 #include "MeshTagImpl.h"
 #include "Element.h"
-#include "../linearAlgebra/LinearSystem.h"
 #include <Eigen/Sparse>
 
+// Forward declarations
 class Problem;
+class LinearSystem;
+
 namespace fem {
   class Function;
 }

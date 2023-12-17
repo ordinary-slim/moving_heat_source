@@ -1,4 +1,5 @@
 #include <iostream>
+#include "linearAlgebra/LinearSystem.h"
 #include "Problem.h"
 
 void Problem::iterate() {

@@ -6,6 +6,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/functional.h>
 #include <pybind11/operators.h>
+#include "linearAlgebra/LinearSystem.h"
 
 namespace py = pybind11;
 

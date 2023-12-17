@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Problem.h"
+#include "linearAlgebra/LinearSystem.h"
 
 void Problem::assemble(const Problem* externalProblem) {
   // ASSEMBLY

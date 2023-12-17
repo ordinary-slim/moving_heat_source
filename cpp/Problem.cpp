@@ -2,6 +2,7 @@
 #include "Function.h"
 #include <pybind11/eigen.h>
 #include <Eigen/Core>
+#include "linearAlgebra/LinearSystem.h"
 
 void Problem::preIterate( bool canPreassemble ) {
   /* Beginning of iteration operations*/

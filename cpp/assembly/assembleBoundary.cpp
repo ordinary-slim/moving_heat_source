@@ -1,3 +1,4 @@
+#include "../linearAlgebra/LinearSystem.h"
 #include "../Problem.h"
 #include "Form.h"
 #include <Eigen/Core>

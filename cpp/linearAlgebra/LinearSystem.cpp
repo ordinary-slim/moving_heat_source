@@ -1,12 +1,8 @@
 #include "../Problem.h"
 #include "../mesh/Domain.h"
 #include "LinearSystem.h"
+#include "Solver.h"
 #include <cmath>
-#include <unsupported/Eigen/SparseExtra>
-
-template<typename Solver>
-void iterativeSolve( Solver &solver,
-    Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs, Eigen::VectorXd &rhs, Eigen::VectorXd &sol, Eigen::VectorXd &initialGuess);
 
 void LinearSystem::concatenateProblem(Problem &p) {
   /*
@@ -94,7 +90,7 @@ std::shared_ptr<LinearSystem> LinearSystem::Create(Problem &p1, Problem &p2) {
 
 void LinearSystem::solve() {
   if (not(_ndofs)) { return; }
-  externalSolve( lhs, rhs, sol, initialGuess );
+  solver->solve( this );
 }
 
 void LinearSystem::assemble() {
@@ -112,76 +108,16 @@ void LinearSystem::setInitialGuess(Problem* p1, Problem* p2) {
 void LinearSystem::setSolver(int idxSolver) {
   switch (idxSolver) {
     case 1:
-      externalSolve = &solveEigenCG;
+      solver = std::make_unique<EigenCG>();
       break;
     case 2:
-      externalSolve = &solveEigenBiCGSTAB_Jacobi;
+      solver = std::make_unique<EigenBiCGSTAB_Jacobi>();
+      break;
+    case 3:
+      solver = std::make_unique<MatLabSolver>();
       break;
     case 0: default:
-      externalSolve = &solveEigenBiCGSTAB_IncompleteLUT;
+      solver = std::make_unique<EigenBiCGSTAB_IncompleteLUT>();
       break;
-  }
-}
-
-void solveEigenBiCGSTAB_Diagonal( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                         Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol,
-                         Eigen::VectorXd &initialGuess) {
-
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor>> solver;
-  std::cout << "Using BiCGSTAB with diagonal preconditioner" << std::endl;
-  iterativeSolve( solver, lhs, rhs, sol, initialGuess );
-}
-
-void solveEigenBiCGSTAB_IncompleteLUT( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                         Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol,
-                         Eigen::VectorXd &initialGuess) {
-
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor>, Eigen::IncompleteLUT<double> > solver;
-  std::cout << "Using BiCGSTAB with IncompleteLUT preconditioner" << std::endl;
-  iterativeSolve( solver, lhs, rhs, sol, initialGuess );
-}
-
-void solveEigenBiCGSTAB_Jacobi( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                         Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol,
-                         Eigen::VectorXd &initialGuess) {
-
-  Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor>> solver;
-  std::cout << "Using BiCGSTAB with diagonal preconditioner" << std::endl;
-  iterativeSolve( solver, lhs, rhs, sol, initialGuess );
-}
-
-void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                   Eigen::VectorXd &rhs,
-                   Eigen::VectorXd &sol,
-                   Eigen::VectorXd &initialGuess) {
-
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor> > solver;
-  std::cout << "Using CG" << std::endl;
-  iterativeSolve( solver, lhs, rhs, sol, initialGuess );
-}
-
-template<typename Solver>
-void iterativeSolve( Solver &solver,
-    Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs, Eigen::VectorXd &rhs, Eigen::VectorXd &sol, Eigen::VectorXd &initialGuess) {
-  solver.compute( lhs );
-  if (not(solver.info() == Eigen::Success)) {
-    std::cout << "Singular matrix!" << std::endl;
-    exit(-1);
-  }
-  if (initialGuess.size()) {
-    sol = solver.solveWithGuess(rhs, initialGuess);
-  } else {
-    sol = solver.solve(rhs);
-  }
-  std::cout << "#Iterations:     " << solver.iterations() << std::endl;
-  std::cout << "Estimated error: " << solver.error()      << std::endl;
-
-  if (std::isnan(solver.error())) {
-    Eigen::saveMarket(lhs, "faulty_lhs.mtx");
-    Eigen::saveMarketVector(rhs, "faulty_rhs.mtx");
-    throw std::runtime_error("Solver did not converge, wrote mtx files.");
   }
 }

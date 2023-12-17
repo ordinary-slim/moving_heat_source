@@ -10,13 +10,14 @@
 #include "heatSource/HeatSource.h"
 #include "heatSource/LumpedHeatSource.h"
 #include "timeIntegrator.h"
-#include "linearAlgebra/LinearSystem.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
+
+class LinearSystem;
 
 class Problem {
   public:

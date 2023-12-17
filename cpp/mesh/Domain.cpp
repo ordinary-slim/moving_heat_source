@@ -1,6 +1,7 @@
 #include "Domain.h"
 #include "Mesh.h"
 #include "../Problem.h"
+#include "../linearAlgebra/LinearSystem.h"
 
 namespace mesh {
 Domain::Domain(Mesh *m, Problem *p) :

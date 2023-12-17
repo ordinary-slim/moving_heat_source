@@ -1,5 +1,6 @@
 #ifndef LINEARSYSTEM
 #define LINEARSYSTEM
+#include "Solver.h"
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 #include <vector>
@@ -8,20 +9,6 @@
 
 class Problem;// Forward declaration of problem class
 namespace mesh { class Domain; }// Forward declaration within a namespace
-
-void solveEigenBiCGSTAB_IncompleteLUT( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                         Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol,
-                         Eigen::VectorXd &initialGuess );
-void solveEigenBiCGSTAB_Jacobi( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                         Eigen::VectorXd &rhs,
-                         Eigen::VectorXd &sol,
-                         Eigen::VectorXd &initialGuess );
-void solveEigenCG( Eigen::SparseMatrix<double, Eigen::RowMajor> &lhs,
-                   Eigen::VectorXd &rhs,
-                   Eigen::VectorXd &sol,
-                   Eigen::VectorXd &initialGuess );
-
 
 class LinearSystem 
   : public std::enable_shared_from_this<LinearSystem>
@@ -60,11 +47,10 @@ class LinearSystem
 
     void setInitialGuess(Problem* p1, Problem* p2 = nullptr);
     void assemble();
+
+    std::unique_ptr<Solver> solver = std::make_unique<EigenBiCGSTAB_IncompleteLUT>();
     void solve();
-    void (*externalSolve)( Eigen::SparseMatrix<double, Eigen::RowMajor> &,
-                           Eigen::VectorXd &,
-                           Eigen::VectorXd &,
-                           Eigen::VectorXd &) = &solveEigenBiCGSTAB_IncompleteLUT;
     void setSolver(int idxSolver);
+
 };
 #endif

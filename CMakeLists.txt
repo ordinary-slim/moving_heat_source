@@ -10,7 +10,7 @@ add_custom_target(
         ${CMAKE_CURRENT_LIST_DIR}
     )
 
-FILE(GLOB_RECURSE mySources cpp/*.cpp)
+FILE(GLOB_RECURSE mySources cpp/*.cpp cpp/linearAlgebra/*.cpp)
 
 add_subdirectory(external/pybind11)
 
@@ -29,3 +29,12 @@ pybind11_add_module(cpp ${mySources})
 target_include_directories(cpp PUBLIC ${PROJECT_SOURCE_DIR}/external/pybind11/include)
 target_include_directories(cpp PUBLIC ${PROJECT_SOURCE_DIR}/external/eigen)
 target_link_libraries(cpp PUBLIC CGAL::CGAL)
+
+# MATLAB
+set(matlabroot "/usr/local/MATLAB/R2023a")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+target_include_directories(cpp PUBLIC "${matlabroot}/extern/include/")
+target_link_directories(cpp PUBLIC "${matlabroot}/extern/bin/glnxa64/")
+target_link_libraries(cpp PUBLIC MatlabDataArray)
+target_link_libraries(cpp PUBLIC MatlabEngine)
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pthread")

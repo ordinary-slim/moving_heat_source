@@ -1,5 +1,6 @@
 #include <list>
 #include "Function.h"
+#include "linearAlgebra/LinearSystem.h"
 
 namespace fem
 {

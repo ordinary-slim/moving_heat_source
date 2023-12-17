@@ -1,3 +1,4 @@
+#include "../linearAlgebra/LinearSystem.h"
 #include "../mesh/Domain.h"
 #include "Form.h"
 

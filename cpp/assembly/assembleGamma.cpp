@@ -1,3 +1,4 @@
+#include "../linearAlgebra/LinearSystem.h"
 #include "../Problem.h"
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> Dense3ColMat;
