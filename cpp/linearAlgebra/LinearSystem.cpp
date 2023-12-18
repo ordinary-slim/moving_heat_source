@@ -2,6 +2,7 @@
 #include "../mesh/Domain.h"
 #include "LinearSystem.h"
 #include "Solver.h"
+#include "MATLAB.h"
 #include <cmath>
 
 void LinearSystem::concatenateProblem(Problem &p) {
@@ -95,6 +96,7 @@ void LinearSystem::solve() {
 
 void LinearSystem::assemble() {
   lhs.setFromTriplets( lhsCoeffs.begin(), lhsCoeffs.end() );
+  lhsCoeffs.clear();
 }
 
 void LinearSystem::setInitialGuess(Problem* p1, Problem* p2) {

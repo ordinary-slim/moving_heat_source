@@ -19,7 +19,15 @@ problemInput = mhs.readInput( inputFile )
 
 def runReference(caseName="reference"):
     mesh = getMeshPhysical()
-    pReference = mhs.Problem( mesh, problemInput, caseName=caseName)
+
+    matlab = None
+    if problemInput["idxSolver"] == 3:
+        matlab = mhs.MatLabSession()
+
+    pReference = mhs.Problem( mesh,
+                             problemInput,
+                             caseName=caseName,
+                             matlabSession=matlab,)
     deactivateBelowSurface( pReference ) 
 
     driver = DriverReference( pReference )
@@ -34,9 +42,13 @@ def runReference(caseName="reference"):
 def runCoupled(caseName="fixed"):
     fixedProblemInput = dict( problemInput )
     meshFixed = getMeshPhysical()
-    pFixed = mhs.Problem(meshFixed, fixedProblemInput, caseName=caseName)
-    deactivateBelowSurface( pFixed )
 
+    matlab = None
+    if problemInput["idxSolver"] == 3:
+        matlab = mhs.MatLabSession()
+
+    pFixed = mhs.Problem(meshFixed, fixedProblemInput, caseName=caseName, matlabSession=matlab)
+    deactivateBelowSurface( pFixed )
     driver = CustomStepper( pFixed,
                            adimFineDt=0.5 / problemInput["fineTStepFactorMoving"],
                            maxAdimtDt=problemInput["maxAdimDt"],
@@ -47,6 +59,7 @@ def runCoupled(caseName="fixed"):
                            adimPosZLen=0.5,
                            adimNegZLen=2.0,
                            adimSideRadius=2.0,
+                           matlabSession=matlab,
                            )
     
     logger = MyLogger()

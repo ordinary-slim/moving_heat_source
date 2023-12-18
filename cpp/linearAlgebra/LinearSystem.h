@@ -43,6 +43,7 @@ class LinearSystem
     void allocate() {
       lhs.resize( _ndofs, _ndofs );
       rhs.resize( _ndofs );
+      sol.resize( _ndofs );
     }
 
     void setInitialGuess(Problem* p1, Problem* p2 = nullptr);

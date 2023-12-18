@@ -111,7 +111,7 @@ class CustomStepper(AdaptiveStepper):
 
 
 class DriverReference:
-    def __init__(self, problem, adimDt=0.5):
+    def __init__(self, problem, adimDt=0.5, matlab=None):
         self.problem = problem
         if "path" in self.problem.input:
             self.problem.setPath( self.problem.input["path"] )

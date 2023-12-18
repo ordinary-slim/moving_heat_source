@@ -19,12 +19,18 @@ def readInput(fileName):
 
 class Problem(Problem):
     # Convenience glob vars
-    def __init__(self, mesh, input, problem=None, caseName="case"):
+    def __init__(self, mesh,
+                       input,
+                       problem=None,
+                       caseName="case",
+                       matlabSession=None,):
+
         self.caseName= caseName
         self.input = dict(input)
         self.iter = 0
         self.postFolder = "post_{}".format( self.caseName )
         self.idxSolver = 0
+        self.matlabSession = matlabSession # If solver is matlab
         if "idxSolver" in self.input:
             self.idxSolver = int( self.input["idxSolver"] )
 
@@ -64,12 +70,18 @@ class Problem(Problem):
         self.iter += 1
         super(Problem, self).preIterate(canPreassemble)
 
+    def preSolve(self):
+        self.ls.setSolver( self.idxSolver )
+        if (self.idxSolver == 3):
+            self.ls.solver.setSession( self.matlabSession )
+        else:
+            self.ls.setInitialGuess( self )
+
     def iterate(self):
         if not(self.hasPreIterated):
             self.preIterate(True)
         self.assemble()
-        self.ls.setSolver( self.idxSolver )
-        self.ls.setInitialGuess( self )
+        self.preSolve()
         self.ls.solve()
         self.gather()
         self.postIterate()

@@ -1,5 +1,6 @@
 #ifndef MYSOLVER
 #define MYSOLVER
+
 class LinearSystem;
 
 class Solver {
@@ -19,9 +20,4 @@ class EigenBiCGSTAB_Jacobi : public Solver {
 class EigenCG : public Solver {
   void solve(LinearSystem *ls);
 };
-
-class MatLabSolver : public Solver {
-  void solve(LinearSystem *ls);
-};
-
 #endif

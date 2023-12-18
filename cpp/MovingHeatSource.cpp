@@ -7,6 +7,10 @@
 #include <pybind11/functional.h>
 #include <pybind11/operators.h>
 #include "linearAlgebra/LinearSystem.h"
+#include "linearAlgebra/Solver.h"
+#ifdef hasMATLAB
+#include "linearAlgebra/MATLAB.h"
+#endif
 
 namespace py = pybind11;
 
@@ -93,10 +97,19 @@ PYBIND11_MODULE(cpp, m) {
         .def("setInitialGuess", &LinearSystem::setInitialGuess,
             py::arg("p1"), py::arg("p2") = static_cast<Problem *>(nullptr))
         .def("assemble", &LinearSystem::assemble)
+        .def_property_readonly("solver", [](const LinearSystem& ls){ return ls.solver.get(); },
+            py::return_value_policy::reference_internal)
         .def("solve", &LinearSystem::solve)
         .def("cleanup", &LinearSystem::cleanup)
         .def("setSolver", &LinearSystem::setSolver)
         .def("ndofs", &LinearSystem::getNdofs);
+    py::class_<Solver>(m, "Solver");
+#ifdef hasMATLAB
+    py::class_<MatLabSession>(m, "MatLabSession")
+        .def( py::init<>() );
+    py::class_<MatLabSolver>(m, "MatLabSolver")
+        .def("setSession", &MatLabSolver::setSession, py::arg("matlabSession") = static_cast<MatLabSession *>(nullptr));
+#endif
     py::class_<mesh::Domain>(m, "Domain")
         .def_readonly("posLab", &mesh::Domain::posLab)
         .def_readonly("translationLab", &mesh::Domain::translationLab)

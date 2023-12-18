@@ -37,7 +37,10 @@ def setAdimR( adimR, input ):
 
 def runReference(caseName="reference"):
     mesh = getMeshPhysical()
-    pReference = mhs.Problem( mesh, problemInput, caseName=caseName)
+    matlab = None
+    if problemInput["idxSolver"] == 3:
+        matlab = mhs.MatLabSession()
+    pReference = mhs.Problem( mesh, problemInput, caseName=caseName, matlabSession = matlab)
     deactivateBelowSurface( pReference ) 
 
     adimDt = 1 / problemInput["tstepsPerRadius"]
@@ -69,14 +72,20 @@ def runCoupled(caseName="coupled"):
 
     deactivateBelowSurface( pFixed )
 
+    matlab = None
+    if problemInput["idxSolver"] == 3:
+        matlab = mhs.MatLabSession()
+
     fineElFactor = problemInput["factorFineElMoving"]
     driver = CustomStepper( pFixed,
                            elementSize=fineElSize/fineElFactor,
                            threshold=0.2,
                            adimMinRadius=2,
                            adimNegZLen=2,
+                           alwaysCoupled=True,
                            maxAdimtDt=problemInput["adimFixedDtCoupled"],
                            adimFineDt=problemInput["adimFixedDtCoupled"],
+                           matlabSession=matlab,
                            )
     
     logger = MyLogger()

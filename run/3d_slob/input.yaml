@@ -22,7 +22,10 @@ SUPG : 1
 substrate : [3.6, 2.0, 1.0]
 part: [2.4, 0.4, 0.4]
 path: "Path.gcode"
-elsPerRadius : 16
+elsPerRadius : 8
 tstepsPerRadius : 2
 factorFineElMoving : 1
 adimFixedDtCoupled : 2
+idxSolver: 3
+idxSolverUncoupledIter: 3
+idxSolverCoupledIter: 3

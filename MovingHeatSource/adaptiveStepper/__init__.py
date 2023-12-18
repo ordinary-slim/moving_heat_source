@@ -27,6 +27,7 @@ class AdaptiveStepper:
                  alwaysCoupled=False,
                  slowDown=True,
                  slowAdimDt=None,
+                 matlabSession=None,
                  ):
 
         self.pFixed = pFixed
@@ -87,6 +88,7 @@ class AdaptiveStepper:
         self.idxSolverCoupledIter = self.pFixed.idxSolver
         if "idxSolverCoupledIter" in self.pFixed.input:
             self.idxSolverCoupledIter = self.pFixed.input["idxSolverCoupledIter" ]
+        self.matlabSession = matlabSession
 
     def buildMovingProblem(self, elementSize, shift):
         meshInputMoving = {}
@@ -324,6 +326,12 @@ class AdaptiveStepper:
             print(" dt = {}R, domainSize = {}R, is coupled = {}".format( self.adimDt,
                                                                         self.adimSubdomainSize,
                                                                         self.isCoupled ) )
+    def preSolve(self):
+        self.ls.setSolver( self.idxSolverCoupledIter )
+        if (self.idxSolverCoupledIter == 3):
+            self.ls.solver.setSession( self.matlabSession )
+        else:
+            self.ls.setInitialGuess( self.pMoving, self.pFixed )
 
     def iterate( self ):
         # MY SCHEME ITERATE
@@ -367,16 +375,14 @@ class AdaptiveStepper:
             # Pre-assembly, updating free dofs
             self.pFixed.preAssemble(allocateLs=False)
         
-            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+            self.ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
             # Assembly
             self.pMoving.assemble( self.pFixed )
             self.pFixed.assemble( self.pMoving )
             # Build ls
-            ls.assemble()
-            # Solve ls
-            ls.setSolver( self.idxSolverCoupledIter )
-            ls.setInitialGuess( self.pMoving, self.pFixed )
-            ls.solve()
+            self.ls.assemble()
+            self.preSolve()
+            self.ls.solve()
             # Recover solution
             self.pFixed.gather()
             self.pMoving.gather()
@@ -539,16 +545,14 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
             # Pre-assembly, updating free dofs
             self.pFixed.preAssemble(allocateLs=False)
         
-            ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+            self.ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
             # Assembly
             self.pMoving.assemble( self.pFixed )
             self.pFixed.assemble( self.pMoving )
             # Build ls
-            ls.assemble()
-            # Solve ls
-            ls.setSolver( self.idxSolverCoupledIter )
-            ls.setInitialGuess( self.pMoving, self.pFixed )
-            ls.solve()
+            self.ls.assemble()
+            self.preSolve()
+            self.ls.solve()
             # Recover solution
             self.pFixed.gather()
             self.pMoving.gather()
