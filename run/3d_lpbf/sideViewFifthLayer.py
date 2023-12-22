@@ -211,6 +211,8 @@ def main(dataSet, isCoupled):
     contour1Display.ScaleTransferFunction.Points = [900.0, 0.0, 0.5, 0.0, 2400.0, 1.0, 0.5, 0.0]
     # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
     contour1Display.OpacityTransferFunction.Points = [900.0, 0.0, 0.5, 0.0, 2400.0, 1.0, 0.5, 0.0]
+    contour1Display.LineWidth = 3
+    contour1Display.Opacity = 0.5
     # hide data in view
     Hide(slice1, renderView1)
     # show color bar/color legend
@@ -474,7 +476,7 @@ def main(dataSet, isCoupled):
     slice2Display.SelectionPointLabelBold = 1
     slice2Display.SelectionPointLabelFontFamily = 'Times'
     slice2Display.SelectionPointLabelFormat = '%.0f'
-    slice2Display.SelectionPointLabelFontSize = 24
+    slice2Display.SelectionPointLabelFontSize = 29
     slice2Display.SelectionPointLabelColor = [0.0, 0.0, 0.16000610360875867]
     # set active source
     SetActiveSource(slice2)
@@ -592,9 +594,10 @@ def main(dataSet, isCoupled):
     annotateAttributeData1Display = Show(annotateAttributeData1, renderView1, 'TextSourceRepresentation')
     # trace defaults for the display properties.
     annotateAttributeData1Display.WindowLocation = 'Any Location'
-    annotateAttributeData1Display.FontSize = 36
+    annotateAttributeData1Display.FontSize = 40
     annotateAttributeData1Display.FontFamily = 'Times'
-    annotateAttributeData1Display.Position = [0.90, 0.77]
+    annotateAttributeData1Display.Position = [0.87, 0.75]
+    annotateAttributeData1Display.Color = [1.0, 1.0, 1.0]
     renderView1.Update()
     # set active source
     SetActiveSource(slice1)
@@ -607,17 +610,17 @@ def main(dataSet, isCoupled):
     tLUTColorBar.WindowLocation = 'Any Location'
     tLUTColorBar.Title = 'T'
     tLUTColorBar.ComponentTitle = ''
-    tLUTColorBar.TitleColor = [0.0, 0.0, 0.0]
+    tLUTColorBar.TitleColor = [1.0, 1.0, 1.0]
     tLUTColorBar.TitleFontFamily = 'Times'
-    tLUTColorBar.TitleFontSize = 30
-    tLUTColorBar.LabelColor = [0.0, 0.0, 0.0]
+    tLUTColorBar.TitleFontSize = 38
+    tLUTColorBar.LabelColor = [1.0, 1.0, 1.0]
     tLUTColorBar.LabelFontFamily = 'Times'
-    tLUTColorBar.LabelFontSize = 30
+    tLUTColorBar.LabelFontSize = 38
     tLUTColorBar.ScalarBarLength = 0.33000000000000096
     tLUTColorBar.RangeLabelFormat = '%#.2f'
     # change scalar bar placement
     tLUTColorBar.Orientation = 'Horizontal'
-    tLUTColorBar.Position = [0.3861329431438122, 0.27445652173913043]
+    tLUTColorBar.Position = [0.3861329431438122, 0.25]
     tLUTColorBar.ScalarBarLength = 0.3300000000000011
     # Properties modified on tLUTColorBar
     tLUTColorBar.RangeLabelFormat = '%#.0f'
@@ -707,7 +710,8 @@ def main(dataSet, isCoupled):
         # Properties modified on text1Display
         text1Display.FontFamily = 'Times'
         # Properties modified on text1Display
-        text1Display.FontSize = 36
+        text1Display.FontSize = 40
+        text1Display.Bold = 1
         # Properties modified on text1Display
         text1Display.Color = [1.0, 1.0, 1.0]
         text1Display.Position = [0.12, 0.07]

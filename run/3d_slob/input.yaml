@@ -26,6 +26,6 @@ elsPerRadius : 8
 tstepsPerRadius : 2
 factorFineElMoving : 1
 adimFixedDtCoupled : 2
-idxSolver: 3
-idxSolverUncoupledIter: 3
-idxSolverCoupledIter: 3
+idxSolver: 2
+idxSolverUncoupledIter: 2
+idxSolverCoupledIter: 2

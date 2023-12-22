@@ -1,5 +1,6 @@
 import argparse
 from paraview.simple import *
+import numpy as np
 
 contourValues = [700.0, 1150.0, 1400.0, 1700.0, 1900.0, 2100.0, 2300.0]
 
@@ -188,6 +189,8 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     contour1Display.PolarAxes = 'PolarAxesRepresentation'
     contour1Display.SelectInputVectors = [None, '']
     contour1Display.WriteLog = ''
+    contour1Display.Opacity = 0.4
+    contour1Display.LineWidth = 3
 
     # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
     contour1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
@@ -368,7 +371,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
 
     # Properties modified on slice2.SliceType
     slice2.SliceType.Origin = [-0.075, 0.0, 0.0]
-    slice2.SliceType.Normal = [-0.2, -0.5, 0.0]
+    slice2.SliceType.Normal = [-0.14, -0.5, 0.0]
 
     # show data in view
     slice2Display = Show(slice2, renderView1, 'GeometryRepresentation')
@@ -388,6 +391,8 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     slice2Display.GaussianRadius = -0.01
     slice2Display.SetScaleArray = [None, '']
     slice2Display.ScaleTransferFunction = 'PiecewiseFunction'
+    #slice2Display.LineWidth = 2
+    #slice2Display.Opacity = 0.5
     slice2Display.OpacityArray = [None, '']
     slice2Display.OpacityTransferFunction = 'PiecewiseFunction'
     slice2Display.DataAxesGrid = 'GridAxesRepresentation'
@@ -512,7 +517,6 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
 
     # trace defaults for the display properties.
     annotateAttributeData1Display.WindowLocation = 'Any Location'
-    annotateAttributeData1Display.FontSize = 36
 
     # update the view to ensure updated data information
     renderView1.Update()
@@ -564,10 +568,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     annotateAttributeData1Display.Color = [0.0, 0.0, 0.0]
 
     # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.FontSize = 3
-
-    # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.FontSize = 30
+    annotateAttributeData1Display.FontSize = 34
 
     # set active source
     SetActiveSource(extractSelection1)
@@ -599,7 +600,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     slice2Display.SelectionPointLabelColor = [0.0, 0.0, 0.16000610360875867]
     slice2Display.SelectionPointLabelFontFamily = 'Times'
     slice2Display.SelectionPointLabelBold = 1
-    slice2Display.SelectionPointLabelFontSize = 24
+    slice2Display.SelectionPointLabelFontSize = 29
     slice2Display.SelectionPointLabelFormat = '%.0f'
 
     if (closeInterface):
@@ -615,7 +616,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
         text1Display = Show(text1, renderView1, 'TextSourceRepresentation')
         threshold1Display.DiffuseColor = [0.0, 0.0, 0.0]
         threshold1Display.LineWidth = 2.0
-        text1Display.FontSize = 30
+        text1Display.FontSize = 34
         text1Display.FontFamily = 'Times'
         text1Display.Position = [0.145, 0.018]
 
@@ -655,14 +656,14 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     tLUTColorBar.ComponentTitle = ''
     tLUTColorBar.TitleColor = [0.0, 0.0, 0.16]
     tLUTColorBar.TitleFontFamily = 'Times'
-    tLUTColorBar.TitleFontSize = 30
+    tLUTColorBar.TitleFontSize = 32
     tLUTColorBar.LabelColor = [0.0, 0.0, 0.16000610360875867]
     tLUTColorBar.LabelFontFamily = 'Times'
-    tLUTColorBar.LabelFontSize = 30
+    tLUTColorBar.LabelFontSize = 32
     tLUTColorBar.ScalarBarLength = 0.6081250000000009
     tLUTColorBar.RangeLabelFormat = '%#.0f'
     # change scalar bar placement
-    tLUTColorBar.Position = [0.9013493064312735, 0.1906250000000001]
+    tLUTColorBar.Position = [0.89, 0.1906250000000001]
     renderView1.OrientationAxesVisibility = 0
 
     # save screenshot
@@ -678,7 +679,7 @@ def takeScreenshot( fileName, closeInterface=False, otherMeshFile="" ):
     # saving layout sizes for layouts
 
     # layout/tab size in pixels
-    layout1.SetSize(1586, 320)
+    layout1.SetSize(np.array([1586, 320])*1)
 
     #-----------------------------------
     # saving camera placements for views

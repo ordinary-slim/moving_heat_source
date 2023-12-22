@@ -7,7 +7,7 @@ from paraview.simple import *
 import argparse
 import numpy as np
 
-maxError = 10
+maxError = 100
 
 def takeScreenshot( fileName ):
     #### disable automatic camera reset on 'Show'
@@ -572,6 +572,8 @@ def takeScreenshot( fileName ):
     contour1Display.PolarAxes = 'PolarAxesRepresentation'
     contour1Display.SelectInputVectors = ['POINTS', 'Normals']
     contour1Display.WriteLog = ''
+    contour1Display.Opacity = 0.4
+    contour1Display.LineWidth = 3
 
     # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
     contour1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]

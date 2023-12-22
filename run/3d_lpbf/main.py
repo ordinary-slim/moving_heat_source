@@ -23,7 +23,6 @@ def runReference(caseName="reference"):
     matlab = None
     if problemInput["idxSolver"] == 3:
         matlab = mhs.MatLabSession()
-
     pReference = mhs.Problem( mesh,
                              problemInput,
                              caseName=caseName,

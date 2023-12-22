@@ -1,6 +1,7 @@
 import MovingHeatSource as mhs
 import numpy as np
 import sys
+from MovingHeatSource.adaptiveStepper import AdaptiveStepper
 from meshing import getMeshPhysical, fineElSize
 from CustomStepper import CustomStepper, DriverReference, DriverAnalytical
 from scanningPath import writeGcode
@@ -40,7 +41,10 @@ def runReference(caseName="reference"):
     matlab = None
     if problemInput["idxSolver"] == 3:
         matlab = mhs.MatLabSession()
-    pReference = mhs.Problem( mesh, problemInput, caseName=caseName, matlabSession = matlab)
+    pReference = mhs.Problem( mesh,
+                              problemInput,
+                              caseName=caseName,
+                              matlabSession = matlab,)
     deactivateBelowSurface( pReference ) 
 
     adimDt = 1 / problemInput["tstepsPerRadius"]
@@ -139,6 +143,7 @@ if __name__=="__main__":
         lp = LineProfiler()
         lp.add_module(mhs)
         lp.add_module(CustomStepper)
+        lp.add_module(AdaptiveStepper)
         lp_wrapper = lp(runCoupled)
         lp_wrapper(caseName=caseName)
         lp.print_stats()

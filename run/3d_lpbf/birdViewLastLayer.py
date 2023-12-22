@@ -368,8 +368,10 @@ def main(dataSet, isCoupled):
 
     # Properties modified on annotateAttributeData1Display
     # Properties modified on annotateAttributeData1Display
-    annotateAttributeData1Display.FontSize = 36
+    annotateAttributeData1Display.FontSize = 40
     annotateAttributeData1Display.Position = [0.07, 0.57]
+    annotateAttributeData1Display.Color = [1.0, 1.0, 1.0]
+    #annotateAttributeData1Display.Bold = 1.0
 
     # set active source
     SetActiveSource(slice1)
@@ -382,12 +384,12 @@ def main(dataSet, isCoupled):
     tLUTColorBar.WindowLocation = 'Any Location'
     tLUTColorBar.Title = 'T'
     tLUTColorBar.ComponentTitle = ''
-    tLUTColorBar.TitleColor = [0.0, 0.0, 0.0]
+    tLUTColorBar.TitleColor = [1.0, 1.0, 1.0]
     tLUTColorBar.TitleFontFamily = 'Times'
-    tLUTColorBar.TitleFontSize = 30
-    tLUTColorBar.LabelColor = [0.0, 0.0, 0.0]
+    tLUTColorBar.TitleFontSize = 38
+    tLUTColorBar.LabelColor = [1.0, 1.0, 1.0]
     tLUTColorBar.LabelFontFamily = 'Times'
-    tLUTColorBar.LabelFontSize = 30
+    tLUTColorBar.LabelFontSize = 38
     tLUTColorBar.ScalarBarLength = 0.33000000000000096
     tLUTColorBar.RangeLabelFormat = '%#.2f'
 
@@ -468,6 +470,9 @@ def main(dataSet, isCoupled):
 
     # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
     contour1Display.OpacityTransferFunction.Points = [1900.0, 0.0, 0.5, 0.0, 2400.0, 1.0, 0.5, 0.0]
+
+    contour1Display.Opacity = 0.5
+    contour1Display.LineWidth = 3
 
     # hide data in view
     Hide(slice1, renderView1)
@@ -647,7 +652,7 @@ def main(dataSet, isCoupled):
 
     # Properties modified on slice2Display
     slice2Display.SelectionPointLabelVisibility = 1
-    slice2Display.SelectionPointLabelFontSize = 24
+    slice2Display.SelectionPointLabelFontSize = 29
     slice2Display.SelectionPointLabelBold = 1
 
     # Properties modified on slice2Display
@@ -718,6 +723,7 @@ def main(dataSet, isCoupled):
         threshold1Display.OpacityArrayName = ['POINTS', 'ActiveNodes']
         threshold1Display.SelectInputVectors = [None, '']
         threshold1Display.WriteLog = ''
+        threshold1Display.LineWidth = 2
 
         # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
         threshold1Display.OSPRayScaleFunction.Points = [0.0, 0.0, 0.5, 0.0, 3.9208114632984963e-05, 1.0, 0.5, 0.0]
@@ -764,7 +770,8 @@ def main(dataSet, isCoupled):
         text1Display.FontFamily = 'Times'
 
         # Properties modified on text1Display
-        text1Display.FontSize = 36
+        text1Display.FontSize = 40
+        text1Display.Bold = 1
 
     # set active source
     SetActiveSource(slice1)

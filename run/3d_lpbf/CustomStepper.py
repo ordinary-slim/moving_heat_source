@@ -81,6 +81,8 @@ class DriverReference:
         self.problem.preAssemble()
         self.problem.assemble()
         self.problem.ls.setSolver( self.problem.idxSolver )
+        if ( self.problem.idxSolver == 3):
+            self.problem.ls.solver.setSession( self.problem.matlabSession )
         self.problem.ls.solve()
         self.problem.gather()
         self.problem.postIterate()
