@@ -1,18 +1,16 @@
-radius : 1.0
-power : 100.0
+radius : 0.2
+power : 100
 initialPosition : [-5, -1, 0.0]
-HeatSourceSpeed : [10, 0, 0]
+HeatSourceSpeed : [100, 0, 0]
 dt : 0.25
-t : 0.0
-Tfinal : 20.0
-maxIter : 5
-material : {
-  rho : 1,
-  conductivity : 1,
-  specific_heat : 1,
+# PROPS
+material_metal : {
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-03, # W / mm / K
+  specific_heat : 700, # J / kg / K
+  convectionCoeff : 2.0E-05,
 }
 environmentTemperature : 25
-plot : 1
 timeIntegration : 1
 sourceTerm : 0
 isAdvection : 0
@@ -20,3 +18,12 @@ advectionSpeed : [0.0, 0.0, 0.0]
 speedDomain : [0.0, 0.0, 0.0]
 SUPG : 1
 path: "Path.gcode"
+idxSolver: 1
+idxSolverUncoupledIter: 2
+idxSolverCoupledIter: 2
+maxAdimSize: 50
+elSizeFactor: 1.0
+frfTstepFactor: 1.0
+idxSolver: 1
+idxSolverUncoupledIter: 2
+idxSolverCoupledIter: 2

@@ -3,18 +3,17 @@ from MovingHeatSource.gcode import gcode2laserPath
 import numpy as np
 import meshzoo
 from CustomStepper import CustomStepper
-import sys
-import pdb
+import argparse
 
 inputFile = "input.yaml"
 tol = 1e-7
 adimR_domain = 10 
 problemInput = mhs.readInput( inputFile )
 adimR = problemInput["radius"] / np.linalg.norm(problemInput["HeatSourceSpeed"])
-boxPhys = [-10, 10, -10, 10]
+boxPhys = [-7, 7, -7, 7]
 gcodeFile = problemInput["path"]
 radiusHs = problemInput["radius"]
-fineElSize = radiusHs/2
+fineElSize = radiusHs/2/problemInput["elSizeFactor"]
 
 def meshBox(box, elementSize=0.25):
     cell_type="quad4"
@@ -35,33 +34,70 @@ def getMesh(elementSize=fineElSize):
     meshInput["points"], meshInput["cells"], meshInput["cell_type"] = meshBox(boxPhys, elementSize=elementSize)
     return mhs.Mesh( meshInput )
 
-def runReference():
-    mesh = getMesh()
-    pFRF     = mhs.Problem(mesh, problemInput, caseName="FRF")
+def writeGcode():
+    gcodeLines = []
+    '''
+    lenX = boxPhys[1] - boxPhys[0]
+    lenY = boxPhys[3] - boxPhys[2]
+    lenPathX = lenX * 0.75
+    lenPathY = lenY * 0.75
+    '''
+    x0 = -5
+    x1 = +5
+    y0 = -5
+    y1 = +5
+    speed = np.array(problemInput["HeatSourceSpeed"])
+    V = np.linalg.norm( speed )
+    gcodeLines.append(
+            "G0 F{} X{} Y{} Z0".format( V, x0, y0 ))
+    gcodeLines.append(
+            "G1 X{} E0.1".format( x1 ))
+    gcodeLines.append(
+            "G1 Y{} E0.2".format( y1 ))
+    gcodeLines.append(
+            "G1 X{} E0.3".format( x0 ))
+    gcodeLines.append(
+            "G1 Y{} E0.4".format( y0 ))
+    with open(problemInput["path"], 'w') as gf:
+        gf.writelines([l+"\n" for l in gcodeLines])
+
+def runReference(caseName="frf"):
+    mesh = getMesh(elementSize=fineElSize)
+    pFRF     = mhs.Problem(mesh, problemInput, caseName=caseName)
     # Set path
     pFRF.setPath( gcodeFile )
 
-    pFRF.setDt( 0.5*adimR )
+    pFRF.setDt( 0.5*adimR/problemInput["frfTstepFactor"] )
 
     while not(pFRF.mhs.path.isOver(pFRF.time)):
         pFRF.iterate()
         pFRF.writepos()
 
-def runCoupled():
-    meshFixed  = getMesh()
-    pFixed   = mhs.Problem(meshFixed, problemInput, caseName="fixed")
-    myDriver = CustomStepper( pFixed, maxAdimtDt=adimR_domain-2, elementSize=fineElSize, adimMinRadius=3, threshold=0.015 )
+def runCoupled(caseName="coupled"):
+    meshFixed = getMesh(elementSize=fineElSize)
+    pFixed   = mhs.Problem(meshFixed, problemInput, caseName=caseName)
+    myDriver = CustomStepper( pFixed,
+                              elementSize=fineElSize,
+                              adimMinRadius=3,
+                              slowAdimDt=1.0,
+                              threshold=0.01,)
+                              #adimPosZLen=0.5,
+                              #adimNegZLen=2.0,
+                              #adimSideRadius=2.0,)
 
     while not(pFixed.mhs.path.isOver(pFixed.time)):
         myDriver.iterate()
 
 
 if __name__=="__main__":
-
-    isRunReference = ("--run-reference" in sys.argv)
-    onlyRunReference = ("--only-reference" in sys.argv)
-    if isRunReference or onlyRunReference:
-        runReference()
-
-    if not(onlyRunReference):
-        runCoupled()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--run-reference', action='store_true')
+    parser.add_argument('-c', '--run-coupled', action='store_true')
+    parser.add_argument('--layers', default=-1, type=int)
+    parser.add_argument('--case-name', default='case')
+    parser.add_argument('--plot', action='store_true')
+    args = parser.parse_args()
+    if args.run_reference:
+        runReference(caseName=args.case_name)
+    if args.run_coupled:
+        runCoupled(caseName=args.case_name)

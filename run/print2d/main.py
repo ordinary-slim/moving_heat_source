@@ -30,13 +30,12 @@ def mesh(box, meshDen=1, variant="zigzag", cell_type="triangle3"):
 
 def meshAroundHS( adimR, problemInput, meshDen=4, cell_type="triangle3" ):
     radius = problemInput["radius"]
-    initialPositionX = problemInput["initialPositionX"]
-    initialPositionY = problemInput["initialPositionY"]
+    initialPosition = problemInput["initialPosition"]
     trailLength = adimR * radius
     capotLength = min( trailLength, 3*radius )
     halfLengthY = min( trailLength, capotLength )
-    box = [initialPositionX - trailLength, initialPositionX + capotLength,
-           initialPositionY - halfLengthY, initialPositionY + halfLengthY,
+    box = [initialPosition[0] - trailLength, initialPosition[0] + capotLength,
+           initialPosition[1] - halfLengthY, initialPosition[1] + halfLengthY,
            ]
 
     return mesh(box, meshDen=meshDen, cell_type=cell_type)
@@ -53,10 +52,8 @@ def deactivateBelowSurface(p, surfaceZ = 0):
 
 def setAdimR( adimR, input ):
     r = input["radius"]
-    HeatSourceSpeedX = max( abs(input["HeatSourceSpeedX"]), abs(input["advectionSpeedX"]))
-    HeatSourceSpeedY = max( abs(input["HeatSourceSpeedY"]), abs(input["advectionSpeedY"]))
-    HeatSourceSpeedZ = max( abs(input["HeatSourceSpeedZ"]), abs(input["advectionSpeedZ"]))
-    speed  = np.linalg.norm( np.array( [HeatSourceSpeedX, HeatSourceSpeedY, HeatSourceSpeedZ] ) )
+    heatSourceSpeed = input["HeatSourceSpeed"]
+    speed  = np.linalg.norm( np.array(heatSourceSpeed) )
     return (adimR * r / speed)
 
 if __name__=="__main__":
@@ -82,7 +79,7 @@ if __name__=="__main__":
     meshInputFixed, meshInputMoving = {}, {}
     meshInputFixed["points"], meshInputFixed["cells"], meshInputFixed["cell_type"] = mesh(boxDomain, meshDen=meshDen, cell_type="quad4")
     ##meshDen = 4
-    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen, cell_type="quad4")
+    meshInputMoving["points"], meshInputMoving["cells"], meshInputMoving["cell_type"] = meshAroundHS(adimR_domain, movingProblemInput, meshDen=meshDen*2, cell_type="triangle3")
 
     meshFixed  = mhs.Mesh(meshInputFixed)
     meshMoving = mhs.Mesh(meshInputMoving)
@@ -97,9 +94,9 @@ if __name__=="__main__":
 
     #set MRF business NO TRANSPORT
     movingProblemInput["isAdvection"] = 1
-    movingProblemInput["advectionSpeedX"] = -fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["speedFRF_X"]      = fixedProblemInput["HeatSourceSpeedX"]
-    movingProblemInput["HeatSourceSpeedX"] = 0.0
+    movingProblemInput["advectionSpeed"] = -fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["speedDomain"]      = fixedProblemInput["HeatSourceSpeed"]
+    movingProblemInput["HeatSourceSpeed"] = [0, 0, 0]
 
     pFixed         = mhs.Problem(meshFixed, fixedProblemInput, caseName="fixed")
     pFRF           = mhs.Problem(meshFixed, fixedProblemInput, caseName="FRF")
@@ -117,10 +114,9 @@ if __name__=="__main__":
     if pFineFRF:
         deactivateBelowSurface( pFineFRF )
 
-
     # Set up printer
     mdwidth = 0.99
-    mdheight = 1.99
+    mdheight = 0.49
     printerFRF = mhs.Printer( pFRF, mdwidth, mdheight )
 
     while (pFRF.time < Tfinal - tol) :
@@ -182,7 +178,7 @@ if __name__=="__main__":
         # Pre-assembly, updating free dofs
         pMoving.preAssemble(allocateLs=True)
         pFixed.preAssemble(allocateLs=True)
-        ls = mhs.LinearSystem.Create( self.pMoving, self.pFixed )
+        ls = mhs.LinearSystem.Create( pMoving, pFixed )
         # Assembly
         pMoving.assemble( pFixed )
         pFixed.assemble( pMoving )

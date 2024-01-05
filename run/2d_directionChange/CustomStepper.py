@@ -5,9 +5,21 @@ from MovingHeatSource.adaptiveStepper import AdaptiveStepper
 #TODO: Store hatch and not adim + nonAdim
 
 class CustomStepper( AdaptiveStepper ):
-    def setSizeSubdomain( self, adimDt = None ):
-        self.adimSubdomainSize = min(self.adimDt + 0.5, self.adimDt * 2 )
-        return self.adimSubdomainSize
+
+    def setBCs( self ):
+        self.pFixed.setConvection( resetBcs = False )
+        if self.isCoupled:
+            self.pMoving.setConvection( resetBcs = False )
+
+    def computeSizeSubdomain( self, adimDt = None ):
+        if adimDt is None:
+            adimDt = self.adimDt
+        adimSize = np.round(4*(1 + adimDt + (adimDt**2.3)*self.adimFineDt)) / 4
+        adimSize = min( adimSize, self.pFixed.input["maxAdimSize"] )
+        return adimSize
+
+    def increaseDt( self ):
+        self.adimDt += self.adimFineDt
 
     def onNewTrackOperations(self):
         self.rotateSubdomain()
@@ -42,5 +54,3 @@ class CustomStepper( AdaptiveStepper ):
         subdomainEls += collidingElsFrontSphere
         subdomain = mhs.MeshTag( self.pMoving.domain.mesh, self.pMoving.domain.mesh.dim, subdomainEls )
         self.pMoving.domain.intersect( subdomain )
-
-
