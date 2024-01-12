@@ -78,9 +78,12 @@ def runCoupled(caseName="coupled"):
     pFixed   = mhs.Problem(meshFixed, problemInput, caseName=caseName)
     myDriver = CustomStepper( pFixed,
                               elementSize=fineElSize,
-                              adimMinRadius=3,
-                              slowAdimDt=1.0,
-                              threshold=0.01,)
+                              adimMinRadius=4,
+                              slowDown=False,
+                              threshold=0.02,
+                              alwaysCoupled=False,
+                              adimFineDt=0.5,
+                             )
                               #adimPosZLen=0.5,
                               #adimNegZLen=2.0,
                               #adimSideRadius=2.0,)
@@ -97,6 +100,7 @@ if __name__=="__main__":
     parser.add_argument('--case-name', default='case')
     parser.add_argument('--plot', action='store_true')
     args = parser.parse_args()
+    writeGcode()
     if args.run_reference:
         runReference(caseName=args.case_name)
     if args.run_coupled:

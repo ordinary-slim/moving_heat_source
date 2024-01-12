@@ -14,13 +14,14 @@ class CustomStepper( AdaptiveStepper ):
     def computeSizeSubdomain( self, adimDt = None ):
         if adimDt is None:
             adimDt = self.adimDt
-        adimSize = np.round(4*(1 + adimDt + (adimDt**2.3)*self.adimFineDt)) / 4
+        adimSize = np.round(4*(1 + adimDt + (adimDt**2.1)*self.adimFineDt)) / 4
         adimSize = min( adimSize, self.pFixed.input["maxAdimSize"] )
         return adimSize
 
     def increaseDt( self ):
         self.adimDt += self.adimFineDt
 
+    '''
     def onNewTrackOperations(self):
         self.rotateSubdomain()
         self.isCoupled = False
@@ -28,6 +29,7 @@ class CustomStepper( AdaptiveStepper ):
         self.pMoving.setAdvectionSpeed( -speed )
         self.pMoving.domain.setSpeed( speed )
         self.pMoving.mhs.setPower( self.nextTrack.power )
+    '''
 
     def shapeSubdomain( self ):
         '''
