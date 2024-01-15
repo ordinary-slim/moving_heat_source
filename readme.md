@@ -1,6 +1,6 @@
 Moving heat sources using FEM
 
-![2D welding animation with coupled and reference method](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExejN3bGx2YnYyOHZhbjV2c3U4NGxwMGNha3hqbWMwMDZvdTI0MzkxcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DxIklBpZcCns3DUTB0/giphy.gif)
+![2D welding animation with coupled and reference method](https://github.com/ordinary-slim/media_moving_heat_source/blob/master/animation.gif)
 
 To-do:
 ------
