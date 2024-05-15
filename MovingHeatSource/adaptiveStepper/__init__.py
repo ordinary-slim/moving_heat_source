@@ -338,6 +338,8 @@ class AdaptiveStepper:
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
         self.pFixed.domain.setActivation(self.physicalDomain)
+        self.pMoving.clearBCs()
+        self.pFixed.clearBCs()
 
         self.setDt()
         #self.setCoupling()
@@ -494,6 +496,8 @@ class LpbfAdaptiveStepper(AdaptiveStepper):
         # PRE-ITERATE AND DOMAIN OPERATIONS
         self.pMoving.domain.resetActivation()
         self.pFixed.domain.setActivation(self.physicalDomain)
+        self.pMoving.clearBCs()
+        self.pFixed.clearBCs()
 
         self.setDt()
         #self.setCoupling()

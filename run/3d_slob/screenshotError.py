@@ -443,7 +443,7 @@ def takeScreenshot( fileName ):
 
     # Properties modified on calculator3
     calculator3.ResultArrayName = 'Error'
-    calculator3.Function = 'abs(Th - Tanal)'
+    calculator3.Function = '(Th - Tanal)^2'
 
     # show data in view
     calculator3Display = Show(calculator3, renderView1, 'GeometryRepresentation')
@@ -713,9 +713,12 @@ def takeScreenshot( fileName ):
     # Compute L2 error
     # create a new 'Integrate Variables'
     integrateVariables1 = IntegrateVariables(registrationName='IntegrateVariables1', Input=calculator3)
-    l2Err = np.sqrt( integrateVariables1.PointData["Error"].GetRange()[0] )
+    l2Err    = np.sqrt( integrateVariables1.PointData["Error"].GetRange()[0] )
+    normAnal = np.sqrt( integrateVariables1.PointData["Tanal"].GetRange()[0] )
     with open("l2Errors.txt", "a") as l2File:
         l2File.write("{}: {}\n".format( fileName, l2Err ) )
+    with open("relL2Errors.txt", "a") as l2File:
+        l2File.write("{}: {}\n".format( fileName, 100*l2Err/normAnal ) )
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()

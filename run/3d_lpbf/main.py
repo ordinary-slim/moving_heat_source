@@ -16,6 +16,7 @@ fineElSizeMoving = fineElSize/problemInput["fineElFactorMovingSubdomain"]
 
 # read input
 problemInput = mhs.readInput( inputFile )
+max_iter = problemInput["max_iter"]
 
 def runReference(caseName="reference"):
     mesh = getMeshPhysical()
@@ -33,7 +34,7 @@ def runReference(caseName="reference"):
 
     logger = MyLogger()
 
-    while not(driver.problem.mhs.path.isOver(pReference.time)):
+    while not(driver.problem.mhs.path.isOver(pReference.time))and(pReference.iter < max_iter):
         logger.iterate( driver )
         with open("{}.log".format(caseName), "wb") as reflog:
             pickle.dump( logger, reflog, pickle.HIGHEST_PROTOCOL)

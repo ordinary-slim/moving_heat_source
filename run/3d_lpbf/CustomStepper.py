@@ -67,7 +67,6 @@ class DriverReference:
         self.tnp = float(self.problem.time)
         self.tnp1 = self.problem.time + self.problem.dt
         self.track = self.problem.mhs.path.interpolateTrack( self.tnp1 )
-        self.problem.setConvection( resetBcs = True )
 
         if not(self.problem.hasPreIterated):
             self.problem.preIterate(canPreassemble=False)
@@ -77,6 +76,7 @@ class DriverReference:
         # PRINT
         if (self.track.type == TrackType.printing) and (self.printer is not None):
             self.print()
+        self.problem.setConvection( resetBcs = True )
 
         self.problem.preAssemble()
         self.problem.assemble()
