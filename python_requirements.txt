@@ -1,4 +1,6 @@
-meshio
+gmsh==4.12.0
+meshio==5.3.4
 meshzoo==0.11.0
-pytest
+numpy
+pytest==7.4.0
 PyYAML
