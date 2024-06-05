@@ -1,0 +1,21 @@
+radius : 1.0
+steadyState : 0
+power : 0.0
+initialPosition : [12.5, 0.0, 0.0]
+HeatSourceSpeed : [0, 0, 0]
+dt : 1
+t : 0.0
+Tfinal : 10.0
+maxIter : 5
+material : {
+  rho : 1,
+  conductivity : 1,
+  specific_heat : 1,
+}
+environmentTemperature : 0
+sourceTerm : 1
+isAdvection : 0
+advectionSpeed : [0.0, 0.0, 0.0]
+speedDomain : [0.0, 0.0, 0.0]
+SUPG : 1
+timeIntegration : 1

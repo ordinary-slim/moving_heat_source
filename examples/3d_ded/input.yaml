@@ -3,20 +3,21 @@ power : 500
 dt : 0.1
 # PROPS
 HeatSourceSpeed : [10, 0.0, 0.0]
-rho : 4.3E-06 # kg / mm3
-conductivity : 10.0E-03 # W / mm / K
-specific_heat : 700 # J / kg / K
-convectionCoeff : 2.0E-05
+material : {
+  rho : 4.3E-06, # kg / mm3
+  conductivity : 10.0E-03, # W / mm / K
+  specific_heat : 700, # J / kg / K
+  convectionCoeff : 2.0E-05,
+}
 environmentTemperature : 25
 depositionTemperature : 25
-# EPROPS
 timeIntegration : 1
 sourceTerm : 0
 speedDomain : [0.0, 0.0, 0.0]
 advectionSpeed : [0.0, 0.0, 0.0]
 SUPG : 1
 layerThickness : &layer_thickness
-  0.2
+  0.4
 partWidth : &part_width
   1.6
 part: [20, *part_width, 1]
@@ -31,3 +32,6 @@ path: "Path.gcode"
 fineElFactor: 1
 fineTStepFactor: 1
 fineElFactorMovingSubdomain: 1
+idxSolver: 2
+idxSolverUncoupledIter: 2
+idxSolverCoupledIter: 2

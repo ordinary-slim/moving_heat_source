@@ -9,14 +9,55 @@ import pdb
 
 class CustomStepper(AdaptiveStepper):
 
-    valuesOfMetric = [np.inf]
+    valuesOfMetric = [1e9]
     lastVals4mean = 2
-    maximumTs = [np.inf]*lastVals4mean
+    maximumTs = [np.inf]*(lastVals4mean+1)
+
+    def shapeSubdomain( self ):
+        '''
+        At t^n, do things
+        '''
+        if not(self.nextTrack.type==TrackType.printing):
+            return
+        # OBB
+        radius = self.pFixed.mhs.radius
+
+        # compute front and sides
+        sideRadius = self.adimMinRadius * radius
+        adimBackRadius = min( self.adimMaxSubdomainSize, self.adimSubdomainSize )
+        backRadius = max( adimBackRadius, self.adimMinRadius ) * radius
+        zRadius    = self.adimNegZLen * radius
+        xAxis      = self.nextTrack.getSpeed() / self.nextTrack.speed
+
+        backRadiusObb = max(backRadius - radius, 0.0)
+        p0 = self.pMoving.mhs.position - backRadiusObb*xAxis
+        p1 = self.pMoving.mhs.position + self.adimMinRadius*xAxis
+        obb = mhs.MyOBB( p0, p1, 2*sideRadius, 2*zRadius )
+        subdomainEls = self.pMoving.domain.mesh.findCollidingElements( obb )
+        collidingElsBackSphere = self.pMoving.domain.mesh.findCollidingElements( p0, self.adimMinRadius*radius )
+        #collidingElsFrontSphere = self.pMoving.domain.mesh.findCollidingElements( self.pMoving.mhs.position, self.adimMinRadius*radius )
+        subdomainEls += collidingElsBackSphere
+        #subdomainEls += collidingElsFrontSphere
+        subdomain = mhs.MeshTag( self.pMoving.domain.mesh, self.pMoving.domain.mesh.dim, subdomainEls )
+        self.pMoving.domain.intersect( subdomain )
+
+
+    def increaseDt( self ):
+        self.adimDt = self.adimDt + 0.5
+        for _ in range( self.lastVals4mean ):
+            self.maximumTs.append( np.inf )
 
     def setBCs( self ):
         self.pFixed.setConvection( resetBcs = False )
         if self.isCoupled:
             self.pMoving.setConvection( resetBcs = False )
+            self.pFixed.mhs.setPower( 0.0 )
+
+    def computeSizeSubdomain( self, adimDt = None ):
+        if adimDt is None:
+            adimDt = self.adimDt
+        return min(adimDt + 0.5, adimDt * 2 )
+
 
     def computeSteadinessMetric( self, verbose=True ):
         # TODO: Change this
@@ -41,58 +82,9 @@ class CustomStepper(AdaptiveStepper):
         return (((self.valuesOfMetric[-1] < self.threshold) or (self.relChangeMetric < 0.01)) \
                 and (self.maxTChange < 0.05))
 
-    def increaseDt( self ):
-        self.adimDt = min( self.factor * self.adimDt, self.adimDt + self.adimFineDt )
-        self.maximumTs.extend( [np.inf]*self.lastVals4mean )
-
-    def computeSizeSubdomain( self, adimDt = None ):
-        if adimDt is None:
-            adimDt = self.adimDt
-        return 4
-
-    def onNewTrackOperations(self):
-        self.rotateSubdomain()
-        self.isCoupled = True
-        speed = self.nextTrack.getSpeed()
-        self.pMoving.setAdvectionSpeed( -speed )
-        self.pMoving.domain.setSpeed( speed )
-        self.pMoving.mhs.setPower( self.nextTrack.power )
-
-    def deposit( self ):
-        '''
-        Do deposition for interval [tn, tn1] at tn+1
-        '''
-        if (self.pFixed.mhs.currentTrack.type==TrackType.printing):
-            origin = self.pFixed.mhs.path.interpolatePosition( self.getTime() - self.dt )
-            destination = self.pFixed.mhs.position
-
-            self.printerFixed.deposit( origin, destination,
-                                self.physicalDomain,
-                                )
-            self.printerMoving.deposit( origin, destination,
-                                self.pMoving.domain.activeElements,
-                                modifyValues=True,
-                                )
-
-    def writepos( self ):
-        self.pFixed.writepos(
-            nodeMeshTags={
-                "gammaNodes":self.pFixed.gammaNodes,
-                "forcedDofs":self.pFixed.forcedDofs,
-                },
-            cellMeshTags={
-                "physicalDomain":self.physicalDomain,
-                },
-                          )
-        self.pMoving.writepos(
-            functions={"prevVal":self.pMoving.previousValues[0]},
-            nodeMeshTags={ "gammaNodes":self.pMoving.gammaNodes, },
-            )
-
-
 
 class DriverReference:
-    def __init__(self, problem, adimFineDt = 0.5):
+    def __init__(self, problem):
         self.problem = problem
         if "path" in self.problem.input:
             self.problem.setPath( self.problem.input["path"] )
@@ -104,7 +96,6 @@ class DriverReference:
                                      self.problem.input["printer"]["height"],
                                      self.problem.input["printer"]["depth"]
                                      )
-        self.adimDt = adimFineDt / self.problem.input["fineTStepFactor"]
         self.isCoupled = False
         self.tol = 1e-7
         self.nextTrack = None
@@ -118,7 +109,7 @@ class DriverReference:
         self.problem.setDt( dt )
 
     def iterate( self ):
-        self.setDtFromAdimR( self.adimDt, self.dt2trackEnd )
+        self.setDtFromAdimR( 0.5, self.dt2trackEnd )
         tnp1 = self.problem.time + self.problem.dt
         track = self.problem.mhs.path.interpolateTrack( tnp1 )
         if (track.type==TrackType.printing) and (self.printer is not None):

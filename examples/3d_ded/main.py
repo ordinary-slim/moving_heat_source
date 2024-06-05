@@ -66,8 +66,8 @@ def runCoupled(caseName="fixed"):
 
     deactivateBelowSurface( pFixed )
 
-    adimFineDt = 0.4 / problemInput["fineTStepFactor"]
-    adimMaxDt  = adimFineDt
+    adimFineDt = 0.5
+    adimMaxDt  = 2
     driver = CustomStepper( pFixed,
                            adimFineDt=adimFineDt,
                            maxAdimtDt=adimMaxDt,

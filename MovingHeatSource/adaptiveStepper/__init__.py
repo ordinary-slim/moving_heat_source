@@ -15,7 +15,7 @@ class AdaptiveStepper:
                  pFixed,
                  isAdaptive=True,
                  factor=2,
-                 maxAdimtDt=8,
+                 maxAdimtDt=8.0,
                  threshold= 0.01,
                  elementSize=[0.25]*3,
                  shift=None,
