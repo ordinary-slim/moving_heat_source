@@ -1,11 +1,14 @@
 [submodule "external/pybind11"]
 	path = external/pybind11
 	url = https://github.com/pybind/pybind11
+	shallow = true
 [submodule "external/eigen"]
 	path = external/eigen
 	url = https://gitlab.com/libeigen/eigen
 	branch = master
+	shallow = true
 [submodule "external/cgal"]
 	path = external/cgal
 	url = https://github.com/CGAL/cgal
   branch = 5.5.x-branch
+	shallow = true
