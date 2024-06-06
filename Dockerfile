@@ -23,3 +23,7 @@ RUN git clone --recurse-submodules \
     python3 -m pip install --break-system-packages \
     -r python_requirements.txt && \
     python3 setup.py develop
+RUN apt clean && \
+    python3 -m pip cache purge && \
+    apt -y auto-remove && \
+    rm -rf .git # Temporary solution to bloated .git
