@@ -14,7 +14,8 @@ RUN apt -qq update && \
     libxrender1 \
     libxcursor1 \
     libxft2 \
-    libxinerama1
+    libxinerama1 && \
+    apt -y auto-remove
 CMD ["/bin/bash"]
 ENV MAIN_DIR=/root/moving_heat_source
 WORKDIR ${MAIN_DIR}
@@ -22,8 +23,6 @@ RUN git clone --recurse-submodules \
     https://github.com/ordinary-slim/moving_heat_source . && \
     python3 -m pip install --break-system-packages \
     -r python_requirements.txt && \
-    python3 setup.py develop
-RUN apt clean && \
+    python3 setup.py develop && \
     python3 -m pip cache purge && \
-    apt -y auto-remove && \
-    rm -rf .git # Temporary solution to bloated .git
+    rm -rf .git
